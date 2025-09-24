@@ -4,9 +4,10 @@ use App\Http\Controllers\InventoryItemController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('inventory.index');
+    return redirect()->route('inventory.dashboard');
 });
 
+Route::get('/dashboard', [InventoryItemController::class, 'dashboard'])->name('inventory.dashboard');
 Route::resource('inventory', InventoryItemController::class);
 Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])
     ->name('inventory.tabs.dashboard');

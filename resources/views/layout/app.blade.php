@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory System</title>
+    <title>MGB VI - Inventory System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('styles.css') }}" rel="stylesheet">
@@ -20,7 +20,7 @@
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center">
                     <a class="navbar-brand fw-bold d-flex align-items-center gap-2 text-primary" href="{{ route('inventory.index') }}">
-                        <i class="bi bi-box-seam"></i> Inventory System
+                        <i class="bi bi-box-seam"></i>MGB VI - Inventory System
                     </a>
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -41,18 +41,18 @@
             <div class="container-fluid px-4">
                 <ul class="nav nav-tabs">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('inventory.tabs.dashboard') }}">
-                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        <a class="nav-link {{ request()->is('dashboard') ? 'active bg-maroon' : '' }}" href="{{ route('inventory.dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
-                            <i class="bi bi-archive me-2"></i>Inventory
+                        <a class="nav-link {{ request()->routeIs('inventory.index') ? 'active bg-maroon' : '' }}" href="{{ route('inventory.index') }}">
+                            <i class="bi bi-archive"></i> Inventory
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('user.management') ? 'active' : '' }}" href="{{ route('user.management') }}">
-                            <i class="bi bi-people me-2"></i>User Management
+                        <a class="nav-link {{ request()->routeIs('user.management') ? 'active bg-maroon' : '' }}" href="{{ route('user.management') }}">
+                            <i class="bi bi-people"></i> User Management
                         </a>
                     </li>
                 </ul>
@@ -82,21 +82,18 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Handle tab active state
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname;
             const tabs = document.querySelectorAll('.nav-tabs .nav-link');
             
             tabs.forEach(tab => {
-                // Remove active class from all tabs first
-                tab.classList.remove('active');
+                tab.classList.remove('active', 'bg-maroon', 'text-white');
                 
-                // Check if this tab's href matches current path
                 const tabHref = tab.getAttribute('href');
                 if (tabHref === currentPath || 
                     (currentPath === '/' && tabHref.includes('inventory')) ||
                     (currentPath.includes('inventory') && tabHref.includes('inventory'))) {
-                    tab.classList.add('active');
+                    tab.classList.add('active', 'bg-maroon', 'text-white');
                 }
             });
         });

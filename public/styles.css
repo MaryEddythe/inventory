@@ -269,10 +269,9 @@ header {
 }
 
 .nav-tabs .nav-link.active {
-    color: #ffffff; /* White text for active tab */
-    background-color: #800000; /* Maroon background for active tab */
+    color: #ffffff;
+    background-color: #800000 !important;
     border-bottom-color: #800000;
-    font-weight: 600;
 }
 
 .nav-tabs .nav-link:not(.active) {
@@ -733,4 +732,9 @@ main.container-fluid {
     .pdf-d-print-table { display: table; }
     .pdf-d-print-table-row { display: table-row; }
     .pdf-d-print-table-cell { display: table-cell; }
+}
+
+.bg-maroon {
+    background-color: #800000 !important;
+    color: #ffffff !important;
 }

@@ -90,11 +90,6 @@ class InventoryItemController extends Controller
         ], 201);
     }
 
-    public function show(InventoryItem $inventoryItem)
-    {
-        return view('inventory.show', compact('inventoryItem'));
-    }
-
     public function edit(InventoryItem $inventoryItem)
     {
         return view('inventory.modals.edit-modal', compact('inventoryItem'));
@@ -239,13 +234,61 @@ class InventoryItemController extends Controller
 
     public function dashboard()
     {
-        return view('inventory.tabs.dashboard');
+        // Summary statistics
+        $totalItems = InventoryItem::active()->count();
+        $totalValue = InventoryItem::active()->sum('unit_price');
+        $itemsThisMonth = InventoryItem::active()
+            ->whereMonth('date_acquired', now()->month)
+            ->whereYear('date_acquired', now()->year)
+            ->count();
+        $totalDivisions = InventoryItem::active()->distinct('division')->count('division');
+
+        // Items by division
+        $divisionData = InventoryItem::active()
+            ->selectRaw('division, count(*) as count')
+            ->groupBy('division')
+            ->get();
+
+        // Monthly acquisitions for the last 6 months
+        $monthlyAcquisitions = InventoryItem::active()
+            ->selectRaw('DATE_FORMAT(date_acquired, "%b %Y") as month, count(*) as count')
+            ->where('date_acquired', '>=', now()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('date_acquired')
+            ->get();
+
+        // Value by classification
+        $classificationData = InventoryItem::active()
+            ->selectRaw('classification, sum(unit_price) as total_value')
+            ->groupBy('classification')
+            ->get();
+
+        // Status distribution
+        $statusData = InventoryItem::active()
+            ->selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->get();
+
+        return view('inventory.tabs.dashboard', compact(
+            'totalItems',
+            'totalValue',
+            'itemsThisMonth',
+            'totalDivisions',
+            'divisionData',
+            'monthlyAcquisitions',
+            'classificationData',
+            'statusData'
+        ));
     }
 
     public function userManagement()
 {
     return view('inventory.tabs.user-management');
 }
+
+    public function show(InventoryItem $inventoryItem)
+    {
+    }
 
 
 }

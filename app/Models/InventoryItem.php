@@ -30,9 +30,17 @@ class InventoryItem extends Model
         'x'
     ];
 
+    protected $dates = [
+        'date_acquired',
+        'created_at',
+        'updated_at'
+    ];
+
     protected $casts = [
-        'unit_price' => 'decimal:2',
-        'date_acquired' => 'date',
+        'date_acquired' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'unit_price' => 'decimal:2'
     ];
 
     protected static function boot()

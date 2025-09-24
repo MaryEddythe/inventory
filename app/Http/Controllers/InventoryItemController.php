@@ -8,9 +8,53 @@ use Illuminate\Validation\Rule;
 
 class InventoryItemController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = InventoryItem::active()->orderBy('no', 'desc')->paginate(10);
+        $query = InventoryItem::active();
+
+        // Search functionality with debounce and optimization
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchTerms = array_filter(explode(' ', $search));
+            
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function($subQuery) use ($term) {
+                        $subQuery->where('division', 'LIKE', "%{$term}%")
+                                ->orWhere('enduser', 'LIKE', "%{$term}%")
+                                ->orWhere('classification', 'LIKE', "%{$term}%")
+                                ->orWhere('description', 'LIKE', "%{$term}%")
+                                ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                                ->orWhere('property_number', 'LIKE', "%{$term}%");
+                    });
+                }
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by division
+        if ($request->filled('division')) {
+            $query->where('division', $request->division);
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('date_acquired', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date_acquired', '<=', $request->date_to);
+        }
+
+        $items = $query->orderBy('no', 'desc')->paginate(10)->withQueryString();
+        
+        if ($request->ajax()) {
+            return view('inventory.table-data', compact('items'))->render();
+        }
+
         return view('inventory.index', compact('items'));
     }
 

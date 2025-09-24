@@ -12,12 +12,18 @@
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
         <h1 class="h4 fw-bold mb-0">Inventory</h1>
         <div class="d-flex gap-2 align-items-center">
-            <form class="d-flex align-items-center" style="min-width: 220px;">
-                <input type="text" class="form-control form-control-sm" placeholder="Search anything here">
+            <form id="searchForm" class="d-flex align-items-center" style="min-width: 220px;">
+                <input type="text" class="form-control form-control-sm" name="search" placeholder="Search anything here" value="{{ request('search') }}">
             </form>
-            <a href="#" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"><i class="bi bi-funnel"></i> Filter</a>
-            <a href="#" class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1"><i class="bi bi-box-arrow-up"></i> Export</a>
-            <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addInventoryModal"><i class="bi bi-plus-circle"></i> Add Inventory</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="bi bi-funnel"></i> Filter
+            </button>
+            <a href="#" class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1">
+                <i class="bi bi-box-arrow-up"></i> Export
+            </a>
+            <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+                <i class="bi bi-plus-circle"></i> Add Inventory
+            </button>
         </div>
     </div>
 
@@ -119,188 +125,69 @@
         </div>
     </div>
 </div>
+
+@include('inventory.filter-modal')
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add CSRF token to all AJAX requests
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+    // Live Search with debounce
+    let searchTimer;
+    const searchInput = document.querySelector('input[name="search"]');
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            updateResults();
+        }, 300); // 300ms delay
+    });
+
+    // Filter form handling
+    const filterForm = document.getElementById('filterForm');
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateResults();
+        $('#filterModal').modal('hide');
+    });
+
+    // Clear filters
+    document.getElementById('clearFilters').addEventListener('click', function() {
+        filterForm.reset();
+        updateResults();
+    });
+
+    function updateResults() {
+        const searchParams = new URLSearchParams();
+        
+        // Add search term
+        if (searchInput.value) {
+            searchParams.append('search', searchInput.value);
         }
-    });
-
-    document.querySelector('#addInventoryModal form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        let form = this;
-        let formData = new FormData(form);
-
-        $.ajax({
-            url: form.action,
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        timer: 1800,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                }
-            },
-            error: function(xhr) {
-                let errorMessage = 'An error occurred';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                }
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: errorMessage
-                });
+        
+        // Add filters
+        const formData = new FormData(filterForm);
+        for (let pair of formData.entries()) {
+            if (pair[1]) {
+                searchParams.append(pair[0], pair[1]);
             }
-        });
-    });
+        }
 
-    // Handle edit form submissions
-    $('.edit-inventory-form').on('submit', function(e) {
-        e.preventDefault();
-        let form = $(this);
-        let itemId = form.attr('id').split('-').pop();
-        let formData = new FormData(form[0]);
+        // Update URL with filters
+        const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+        window.history.pushState({}, '', newUrl);
 
-        $.ajax({
-            url: form.attr('action'),
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
+        // Fetch filtered results
+        fetch(`${window.location.pathname}?${searchParams.toString()}`, {
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            },
-            success: function(response) {
-                console.log('Response:', response); // Debug log
-                
-                if (response.success && response.item) {
-                    let item = response.item;
-                    let row = $(`tr[data-item-id="${itemId}"]`);
-                    
-                    if (row.length) {
-                        row.find('.badge-division').text(item.division);
-                        row.find('.item-enduser').text(item.enduser);
-                        row.find('.item-classification').text(item.classification);
-                        row.find('.item-description').text(
-                            item.description.length > 40 ? item.description.substring(0, 40) + '...' : item.description
-                        );
-                        row.find('.item-serial').text(item.serial_number || 'N/A');
-                        row.find('.item-property').text(item.property_number);
-                        row.find('.item-price').text('₱' + parseFloat(item.unit_price).toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }));
-                        row.find('.item-comooe').text(item.co_mooe);
-                        row.find('.item-date').text(new Date(item.date_acquired).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        }));
-                        row.find('.item-remarks').text(
-                            item.remarks ? (item.remarks.length > 20 ? item.remarks.substring(0, 20) + '...' : item.remarks) : 'N/A'
-                        );
-                        row.find('.badge').removeClass('bg-success bg-warning text-dark').addClass(item.status === 'NEW' ? 'bg-success' : 'bg-warning text-dark').text(item.status);
-
-                        // Close modal and show success message
-                        $(`#editInventoryModal${itemId}`).modal('hide');
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
-                            timer: 1800,
-                            showConfirmButton: false
-                        });
-                    }
-                } else {
-                    throw new Error('Invalid response format');
-                }
-            },
-            error: function(xhr) {
-                console.error('Error:', xhr); // Debug log
-                let errorMessage = 'An error occurred';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                }
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: errorMessage
-                });
+                'X-Requested-With': 'XMLHttpRequest'
             }
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.querySelector('.table-responsive').innerHTML = html;
         });
-    });
-
-    document.querySelectorAll('.delete-form').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const row = form.closest('tr');
-            const division = row.querySelector('.badge-division').textContent.trim();
-            const enduser = row.querySelector('.item-enduser').textContent.trim();
-            
-            Swal.fire({
-                title: 'Are you sure?',
-                html: `Are you sure you want to delete <b>${division} - ${enduser}</b> inventory?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(form.action, {
-                        method: 'POST',
-                        body: new FormData(form),
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            row.remove();
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Deleted',
-                                text: data.message,
-                                timer: 1800,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: data.message || 'Failed to delete item.',
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An error occurred: ' + error.message,
-                        });
-                    });
-                }
-            });
-        });
-    });
+    }
 });
 </script>
 @endpush

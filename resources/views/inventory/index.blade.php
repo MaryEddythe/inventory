@@ -41,22 +41,22 @@
             </thead>
             <tbody>
                 @forelse($items as $item)
-                <tr>
+                <tr data-item-id="{{ $item->no }}">
                     <td class="fw-semibold text-muted">{{ $item->no }}</td>
                     <td>
-                        <span class="badge fw-normal badge-division-{{ $item->division }}">
+                        <span class="badge fw-normal badge-division badge-division-{{ $item->division }}">
                             {{ $item->division }}
                         </span>
                     </td>
-                    <td>{{ $item->enduser }}</td>
-                    <td><span class="badge bg-secondary-subtle text-dark fw-normal">{{ $item->classification }}</span></td>
-                    <td>{{ Str::limit($item->description, 40) }}</td>
-                    <td>{{ $item->serial_number ?? 'N/A' }}</td>
-                    <td>{{ $item->property_number }}</td>
-                    <td>₱{{ number_format($item->unit_price, 2) }}</td>
-                    <td>{{ $item->co_mooe }}</td>
-                    <td>{{ $item->date_acquired->format('M d, Y') }}</td>
-                    <td>{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
+                    <td class="item-enduser">{{ $item->enduser }}</td>
+                    <td><span class="badge bg-secondary-subtle text-dark fw-normal item-classification">{{ $item->classification }}</span></td>
+                    <td class="item-description">{{ Str::limit($item->description, 40) }}</td>
+                    <td class="item-serial">{{ $item->serial_number ?? 'N/A' }}</td>
+                    <td class="item-property">{{ $item->property_number }}</td>
+                    <td class="item-price">₱{{ number_format($item->unit_price, 2) }}</td>
+                    <td class="item-comooe">{{ $item->co_mooe }}</td>
+                    <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
+                    <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
                     <td>
                         <div class="d-flex gap-1">
                             <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
@@ -163,45 +163,80 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    document.querySelectorAll('form[action*="inventory.update"]').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            let formData = new FormData(form);
+    // Handle edit form submissions
+    $('.edit-inventory-form').on('submit', function(e) {
+        e.preventDefault();
+        let form = $(this);
+        let itemId = form.attr('id').split('-').pop();
+        let formData = new FormData(form[0]);
 
-            fetch(form.action, {
-                method: 'POST', 
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: data.message,
-                        timer: 1800,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.reload(); 
-                    });
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                console.log('Response:', response); // Debug log
+                
+                if (response.success && response.item) {
+                    let item = response.item;
+                    let row = $(`tr[data-item-id="${itemId}"]`);
+                    
+                    if (row.length) {
+                        row.find('.badge-division').text(item.division);
+                        row.find('.item-enduser').text(item.enduser);
+                        row.find('.item-classification').text(item.classification);
+                        row.find('.item-description').text(
+                            item.description.length > 40 ? item.description.substring(0, 40) + '...' : item.description
+                        );
+                        row.find('.item-serial').text(item.serial_number || 'N/A');
+                        row.find('.item-property').text(item.property_number);
+                        row.find('.item-price').text('₱' + parseFloat(item.unit_price).toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }));
+                        row.find('.item-comooe').text(item.co_mooe);
+                        row.find('.item-date').text(new Date(item.date_acquired).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        }));
+                        row.find('.item-remarks').text(
+                            item.remarks ? (item.remarks.length > 20 ? item.remarks.substring(0, 20) + '...' : item.remarks) : 'N/A'
+                        );
+
+                        // Close modal and show success message
+                        $(`#editInventoryModal${itemId}`).modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            timer: 1800,
+                            showConfirmButton: false
+                        });
+                    }
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Failed to update item.',
-                    });
+                    throw new Error('Invalid response format');
                 }
-            })
-            .catch(error => {
+            },
+            error: function(xhr) {
+                console.error('Error:', xhr); // Debug log
+                let errorMessage = 'An error occurred';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred: ' + error.message,
+                    text: errorMessage
                 });
-            });
+            }
         });
     });
 

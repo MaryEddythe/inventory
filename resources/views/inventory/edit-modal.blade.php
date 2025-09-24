@@ -7,9 +7,10 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('inventory.update', $item->no) }}" method="POST" id="edit-inventory-form-{{ $item->no }}">
+<form action="{{ route('inventory.update', $item->no) }}" method="POST" id="edit-inventory-form-{{ $item->no }}" class="edit-inventory-form">
     @csrf
     @method('PUT')
+    <input type="hidden" name="_method" value="PUT">
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="division-{{ $item->no }}" class="form-label">Division</label>

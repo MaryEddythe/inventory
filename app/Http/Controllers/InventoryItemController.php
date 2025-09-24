@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InventoryItem;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class InventoryItemController extends Controller
 {
@@ -20,43 +21,26 @@ class InventoryItemController extends Controller
 
     public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'division' => 'required|string|max:100',
-                'enduser' => 'required|string|max:100',
-                'classification' => 'required|string|max:100',
-                'description' => 'required|string',
-                'serial_number' => 'nullable|string|unique:inventory_items',
-                'property_number' => 'required|string|unique:inventory_items',
-                'unit_price' => 'required|numeric|min:0',
-                'co_mooe' => 'required|string|max:50',
-                'date_acquired' => 'required|date',
-                'remarks' => 'nullable|string'
-            ]);
+        $validated = $request->validate([
+            'division' => 'required|string|max:255',
+            'enduser' => 'required|string|max:255',
+            'classification' => 'required|string|max:255',
+            'property_number' => 'required|string|max:255|unique:inventory_items,property_number',
+            'description' => 'required|string',
+            'serial_number' => 'nullable|string|max:255|unique:inventory_items,serial_number',
+            'unit_price' => 'required|numeric|min:0',
+            'co_mooe' => 'required|string|max:255',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
 
-            $item = InventoryItem::create($validated);
+        $item = InventoryItem::create($validated);
 
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Inventory item added successfully!'
-                ]);
-            }
-
-            return redirect()->route('inventory.index')
-                           ->with('success', 'Inventory item added successfully!');
-        } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error creating item: ' . $e->getMessage()
-                ], 422);
-            }
-
-            return redirect()->back()
-                           ->withInput()
-                           ->withErrors(['error' => 'Error creating item: ' . $e->getMessage()]);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Item created successfully',
+            'item'    => $item,
+        ], 201);
     }
 
     public function show(InventoryItem $inventoryItem)
@@ -66,44 +50,52 @@ class InventoryItemController extends Controller
 
     public function edit(InventoryItem $inventoryItem)
     {
-        return view('inventory.edit', compact('inventoryItem'));
+        return view('inventory.edit-modal', compact('inventoryItem'));
     }
 
-    public function update(Request $request, InventoryItem $inventoryItem)
+    public function update(Request $request, $id)
     {
-        try {
-            $validated = $request->validate([
-                'division' => 'required|string|max:100',
-                'enduser' => 'required|string|max:100',
-                'classification' => 'required|string|max:100',
-                'description' => 'required|string',
-                'serial_number' => 'nullable|string|unique:inventory_items,serial_number,' . $inventoryItem->no . ',no',
-                'property_number' => 'required|string|unique:inventory_items,property_number,' . $inventoryItem->no . ',no',
-                'unit_price' => 'required|numeric|min:0',
-                'co_mooe' => 'required|string|max:50',
-                'date_acquired' => 'required|date',
-                'remarks' => 'nullable|string'
-            ]);
+        $item = InventoryItem::findOrFail($id);
 
-            $updated = $inventoryItem->update($validated);
+        $validated = $request->validate([
+            'division' => 'required|string|max:255',
+            'enduser' => 'required|string|max:255',
+            'classification' => 'required|string|max:255',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('inventory_items')->ignore($item->no, 'no'),
+            ],
+            'description' => 'required|string',
+            'serial_number' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('inventory_items')->ignore($item->no, 'no'),
+            ],
+            'unit_price' => 'required|numeric|min:0',
+            'co_mooe' => 'required|string|max:255',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
 
-            if (!$updated) {
-                throw new \Exception('Failed to update inventory item');
-            }
+        $item->update($validated);
 
-            return redirect()->route('inventory.index')
-                           ->with('success', 'Inventory item updated successfully!');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                           ->withInput()
-                           ->withErrors(['error' => 'Error updating item: ' . $e->getMessage()]);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Item updated successfully',
+            'item'    => $item,
+        ], 200);
     }
 
     public function destroy(InventoryItem $inventoryItem)
     {
         $inventoryItem->delete();
 
-        return redirect()->route('inventory.index');
+        return response()->json([
+            'success' => true,
+            'message' => 'Item deleted successfully'
+        ]);
     }
 }

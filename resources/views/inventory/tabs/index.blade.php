@@ -28,8 +28,8 @@
             
             <!-- Export Dropdown -->
             <div class="dropdown">
-                <button class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-box-arrow-up"></i> Export
+                <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download me-1"></i> Export
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item export-option" href="#" data-type="pdf"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export as PDF</a></li>
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Live Search with debounce
     let searchTimer;
     const searchInput = document.querySelector('input[name="search"]');
-    
+
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
@@ -182,14 +182,249 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Handle Add Inventory Form Submission
+    const addInventoryForm = document.getElementById('add-inventory-form');
+    if (addInventoryForm) {
+        addInventoryForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Add form submitted, preventing default');
+
+            const formData = new FormData(this);
+
+            // Show loading indicator
+            Swal.fire({
+                title: 'Adding Item...',
+                text: 'Please wait while we add the item',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                console.error('CSRF token not found!');
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'CSRF token not found. Please refresh the page.'
+                });
+                return;
+            }
+            console.log('CSRF token found:', csrfToken.getAttribute('content'));
+
+            fetch('{{ route("inventory.store") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                Swal.close();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Close modal and refresh page
+                        $('#addInventoryModal').modal('hide');
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message || 'An error occurred while adding the item'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                console.error('Fetch error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error!',
+                    text: 'An error occurred while adding the item. Check console for details.'
+                });
+            });
+        });
+    }
+
+    // Handle Edit Inventory Form Submissions
+    document.querySelectorAll('.edit-inventory-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Edit form submitted, preventing default for ID:', this.id);
+
+            const itemId = this.id.split('-').pop();
+            const formData = new FormData(this);
+
+            // Show loading indicator
+            Swal.fire({
+                title: 'Updating Item...',
+                text: 'Please wait while we update the item',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                console.error('CSRF token not found!');
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'CSRF token not found. Please refresh the page.'
+                });
+                return;
+            }
+            console.log('CSRF token found:', csrfToken.getAttribute('content'));
+
+            fetch(`{{ route("inventory.update", ":id") }}`.replace(':id', itemId), {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('Update response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Update response data:', data);
+                Swal.close();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Close modal and refresh page
+                        $(`#editInventoryModal${itemId}`).modal('hide');
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message || 'An error occurred while updating the item'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                console.error('Update fetch error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error!',
+                    text: 'An error occurred while updating the item. Check console for details.'
+                });
+            });
+        });
+    });
+
+    // Handle Delete Form Submissions
+    document.querySelectorAll('.delete-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You won\'t be able to revert this!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData(this);
+
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                    if (!csrfToken) {
+                        console.error('CSRF token not found!');
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'CSRF token not found. Please refresh the page.'
+                        });
+                        return;
+                    }
+                    console.log('CSRF token found:', csrfToken.getAttribute('content'));
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'An error occurred while deleting the item'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the item'
+                        });
+                    });
+                }
+            });
+        });
+    });
+
     function updateResults() {
         const searchParams = new URLSearchParams();
-        
+
         // Add search term
         if (searchInput.value) {
             searchParams.append('search', searchInput.value);
         }
-        
+
         // Add filters
         const formData = new FormData(filterForm);
         for (let pair of formData.entries()) {
@@ -216,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function exportData(type) {
         const searchParams = new URLSearchParams(window.location.search);
-        
+
         // Add filters from filter form
         const formData = new FormData(filterForm);
         for (let pair of formData.entries()) {

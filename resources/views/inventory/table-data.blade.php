@@ -60,6 +60,3 @@
 <div class="d-flex justify-content-end mt-4">
     {{ $items->links('vendor.pagination.bootstrap-5') }}
 </div>
-        {{ $items->links('vendor.pagination.bootstrap-5') }}
-    </div>
-</div>

@@ -243,9 +243,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.delete-form').forEach(function(form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            const row = form.closest('tr');
+            const division = row.querySelector('.badge-division').textContent.trim();
+            const enduser = row.querySelector('.item-enduser').textContent.trim();
+            
             Swal.fire({
                 title: 'Are you sure?',
-                text: 'This item will be deleted!',
+                html: `Are you sure you want to delete <b>${division} - ${enduser}</b> inventory?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -263,14 +267,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            row.remove();
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Deleted',
                                 text: data.message,
                                 timer: 1800,
                                 showConfirmButton: false
-                            }).then(() => {
-                                window.location.reload();
                             });
                         } else {
                             Swal.fire({

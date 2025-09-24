@@ -34,9 +34,6 @@
                 <li class="nav-item mb-2">
                     <a href="#" class="nav-link text-dark"><i class="bi bi-people me-2"></i><span class="sidebar-label">User Management</span></a>
                 </li>
-                <li class="nav-item mb-2">
-                    <a href="#" class="nav-link text-dark"><i class="bi bi-gear me-2"></i><span class="sidebar-label">Settings</span></a>
-                </li>
             </ul>
             <div class="mt-auto pt-3 border-top">
                 <a href="#" class="nav-link text-dark"><i class="bi bi-moon me-2"></i><span class="sidebar-label">Dark mode</span></a>
@@ -54,9 +51,6 @@
                     <span class="fw-semibold text-muted">Dashboard / Inventory</span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <form class="d-none d-md-block">
-                        <input type="text" class="form-control form-control-sm" placeholder="Search anything here" style="width: 220px;">
-                    </form>
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="user" width="32" height="32" class="rounded-circle me-2">

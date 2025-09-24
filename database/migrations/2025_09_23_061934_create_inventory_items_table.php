@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('co_mooe', 50);
             $table->date('date_acquired');
             $table->text('remarks')->nullable();
+            $table->enum('status', ['NEW', 'FOR REPLACEMENT'])->default('NEW');
+            $table->enum('x', ['active', 'inactive'])->default('active');
             $table->timestamps(); 
         });
     }

@@ -10,7 +10,7 @@ class InventoryItemController extends Controller
 {
     public function index()
     {
-        $items = InventoryItem::orderBy('no', 'desc')->paginate(10);
+        $items = InventoryItem::active()->orderBy('no', 'desc')->paginate(10);
         return view('inventory.index', compact('items'));
     }
 
@@ -91,7 +91,7 @@ class InventoryItemController extends Controller
 
     public function destroy(InventoryItem $inventoryItem)
     {
-        $inventoryItem->delete();
+        $inventoryItem->update(['x' => 'inactive']);
 
         return response()->json([
             'success' => true,

@@ -36,6 +36,7 @@
                     <th>CO/MOOE</th>
                     <th>Date Acquired</th>
                     <th>Remarks</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -57,6 +58,11 @@
                     <td class="item-comooe">{{ $item->co_mooe }}</td>
                     <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
                     <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
+                    <td>
+                        <span class="badge {{ $item->status === 'NEW' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
+                            {{ $item->status }}
+                        </span>
+                    </td>
                     <td>
                         <div class="d-flex gap-1">
                             <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
@@ -84,7 +90,7 @@
                 </div>
                 @empty
                 <tr>
-                    <td colspan="12" class="text-center py-4">No items found.</td>
+                    <td colspan="13" class="text-center py-4">No items found.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -210,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         row.find('.item-remarks').text(
                             item.remarks ? (item.remarks.length > 20 ? item.remarks.substring(0, 20) + '...' : item.remarks) : 'N/A'
                         );
+                        row.find('.badge').removeClass('bg-success bg-warning text-dark').addClass(item.status === 'NEW' ? 'bg-success' : 'bg-warning text-dark').text(item.status);
 
                         // Close modal and show success message
                         $(`#editInventoryModal${itemId}`).modal('hide');

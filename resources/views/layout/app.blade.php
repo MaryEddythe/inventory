@@ -4,19 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory System</title>
-    <!-- Poppins font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('styles.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        body { font-family: 'Poppins', Arial, sans-serif; background: #f8f9fa; }
-    </style>
+    @stack('scripts')
 </head>
 <body>
     <div class="d-flex min-vh-100">
-        <!-- Sidebar -->
         <nav id="sidebar" class="sidebar bg-white shadow-sm p-3 d-flex flex-column sidebar-collapsible" style="width: 250px; transition: width 0.2s, min-width 0.2s;">
             <div class="mb-4 d-flex align-items-center justify-content-between">
                 <a class="navbar-brand fw-bold d-flex align-items-center gap-2 text-primary" href="{{ route('inventory.index') }}" style="font-size: 1.4rem;">
@@ -84,7 +81,6 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    @stack('scripts')
     <script>
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');

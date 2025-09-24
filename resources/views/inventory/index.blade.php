@@ -2,6 +2,13 @@
 
 @section('content')
 <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
         <h1 class="h4 fw-bold mb-0">Inventory</h1>
         <div class="d-flex gap-2 align-items-center">
@@ -52,15 +59,29 @@
                     <td>{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
                     <td>
                         <div class="d-flex gap-1">
-                            <a href="{{ route('inventory.edit', $item->no) }}" class="btn btn-outline-primary btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
-                            <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline">
+                            <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
+                            <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline delete-form">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete" onclick="return confirm('Are you sure you want to delete this item?')"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete"><i class="bi bi-trash"></i></button>
                             </form>
                         </div>
                     </td>
                 </tr>
+                <!-- Edit Inventory Modal -->
+                <div class="modal fade" id="editInventoryModal{{ $item->no }}" tabindex="-1" aria-labelledby="editInventoryModalLabel{{ $item->no }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editInventoryModalLabel{{ $item->no }}">Edit Inventory Item</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                @include('inventory.edit-modal', ['item' => $item])
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 @empty
                 <tr>
                     <td colspan="12" class="text-center py-4">No items found.</td>
@@ -95,34 +116,144 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-@if(session('success'))
-    Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: @json(session('success')),
-        timer: 1800,
-        showConfirmButton: false
+document.addEventListener('DOMContentLoaded', function() {
+    // Add CSRF token to all AJAX requests
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
     });
-@endif
 
-// Intercept delete form submit
-document.querySelectorAll('form[action*="inventory.destroy"]').forEach(function(form) {
-    form.addEventListener('submit', function(e) {
+    document.querySelector('#addInventoryModal form').addEventListener('submit', function(e) {
         e.preventDefault();
-        Swal.fire({
-            title: 'Are you sure?',
-            text: 'This item will be deleted!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
+        let form = this;
+        let formData = new FormData(form);
+
+        $.ajax({
+            url: form.action,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 1800,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
             }
+        });
+    });
+
+    document.querySelectorAll('form[action*="inventory.update"]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            let formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST', 
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message,
+                        timer: 1800,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload(); 
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to update item.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred: ' + error.message,
+                });
+            });
+        });
+    });
+
+    document.querySelectorAll('.delete-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This item will be deleted!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted',
+                                text: data.message,
+                                timer: 1800,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to delete item.',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred: ' + error.message,
+                        });
+                    });
+                }
+            });
         });
     });
 });

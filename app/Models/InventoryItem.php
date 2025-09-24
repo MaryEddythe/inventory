@@ -11,6 +11,8 @@ class InventoryItem extends Model
 
     protected $table = 'inventory_items';
     protected $primaryKey = 'no';
+    public $timestamps = true;
+    public $incrementing = true;
 
     protected $fillable = [
         'division',

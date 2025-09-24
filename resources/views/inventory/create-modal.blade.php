@@ -3,7 +3,15 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="division" class="form-label">Division</label>
-            <input type="text" class="form-control" id="division" name="division" required>
+            <select class="form-select" id="division" name="division" required>
+                <option value="" disabled selected>Select Division</option>
+                <option value="MMD">MMD</option>
+                <option value="MSESDD">MSESDD</option>
+                <option value="GSD">GSD</option>
+                <option value="GSS">GSS</option>
+                <option value="ORD">ORD</option>
+                <option value="FAD">FAD</option>
+            </select>
         </div>
         <div class="col-md-6 mb-3">
             <label for="enduser" class="form-label">End User</label>

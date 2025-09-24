@@ -1,3 +1,27 @@
+.badge-division-MMD {
+    background: #007B83 !important;
+    color: #fff !important;
+}
+.badge-division-MSESDD {
+    background: #FF6B6B !important;
+    color: #fff !important;
+}
+.badge-division-GSD {
+    background: #FFC145 !important;
+    color: #222 !important;
+}
+.badge-division-GSS {
+    background: #7BC950 !important;
+    color: #fff !important;
+}
+.badge-division-ORD {
+    background: #8E7CC3 !important;
+    color: #fff !important;
+}
+.badge-division-FAD {
+    background: #3A3D46 !important;
+    color: #fff !important;
+}
 .sidebar-collapsible.collapsed {
     width: 0 !important;
     min-width: 0 !important;

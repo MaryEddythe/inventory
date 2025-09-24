@@ -35,8 +35,7 @@ class InventoryItemController extends Controller
 
         InventoryItem::create($request->all());
 
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventory item created successfully.');
+        return redirect()->route('inventory.index');
     }
 
     public function show(InventoryItem $inventoryItem)
@@ -66,15 +65,13 @@ class InventoryItemController extends Controller
 
         $inventoryItem->update($request->all());
 
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventory item updated successfully.');
+        return redirect()->route('inventory.index');
     }
 
     public function destroy(InventoryItem $inventoryItem)
     {
         $inventoryItem->delete();
 
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventory item deleted successfully.');
+        return redirect()->route('inventory.index');
     }
 }

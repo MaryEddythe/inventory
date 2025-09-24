@@ -36,7 +36,11 @@
                 @forelse($items as $item)
                 <tr>
                     <td class="fw-semibold text-muted">{{ $item->no }}</td>
-                    <td><span class="badge bg-light text-dark fw-normal">{{ $item->division }}</span></td>
+                    <td>
+                        <span class="badge fw-normal badge-division-{{ $item->division }}">
+                            {{ $item->division }}
+                        </span>
+                    </td>
                     <td>{{ $item->enduser }}</td>
                     <td><span class="badge bg-secondary-subtle text-dark fw-normal">{{ $item->classification }}</span></td>
                     <td>{{ Str::limit($item->description, 40) }}</td>
@@ -89,3 +93,38 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+@if(session('success'))
+    Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: @json(session('success')),
+        timer: 1800,
+        showConfirmButton: false
+    });
+@endif
+
+// Intercept delete form submit
+document.querySelectorAll('form[action*="inventory.destroy"]').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This item will be deleted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+@endpush

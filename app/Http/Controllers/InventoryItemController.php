@@ -234,7 +234,6 @@ class InventoryItemController extends Controller
 
     public function dashboard()
     {
-        // Summary statistics
         $totalItems = InventoryItem::active()->count();
         $totalValue = InventoryItem::active()->sum('unit_price');
         $itemsThisMonth = InventoryItem::active()
@@ -243,7 +242,6 @@ class InventoryItemController extends Controller
             ->count();
         $totalDivisions = InventoryItem::active()->distinct('division')->count('division');
 
-        // Items by division
         $divisionData = InventoryItem::active()
             ->selectRaw('division, count(*) as count')
             ->groupBy('division')
@@ -280,11 +278,6 @@ class InventoryItemController extends Controller
             'statusData'
         ));
     }
-
-    public function userManagement()
-{
-    return view('inventory.tabs.user-management');
-}
 
     public function show(InventoryItem $inventoryItem)
     {

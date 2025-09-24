@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\InventoryItem;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Barryvdh\DomPDF\Facade\Pdf;
+use League\Csv\Writer;
+use Illuminate\Support\Facades\Response;
 
 class InventoryItemController extends Controller
 {
@@ -140,6 +143,98 @@ class InventoryItemController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Item deleted successfully'
+        ]);
+    }
+
+    public function export(Request $request, $type)
+    {
+        $query = InventoryItem::active();
+
+        // Apply filters if present
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchTerms = array_filter(explode(' ', $search));
+            
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function($subQuery) use ($term) {
+                        $subQuery->where('division', 'LIKE', "%{$term}%")
+                                ->orWhere('enduser', 'LIKE', "%{$term}%")
+                                ->orWhere('classification', 'LIKE', "%{$term}%")
+                                ->orWhere('description', 'LIKE', "%{$term}%")
+                                ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                                ->orWhere('property_number', 'LIKE', "%{$term}%");
+                    });
+                }
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('division')) {
+            $query->where('division', $request->division);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date_acquired', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date_acquired', '<=', $request->date_to);
+        }
+
+        $items = $query->orderBy('no', 'desc')->get();
+
+        $fileName = 'inventory_' . now()->format('Y-m-d_H-i-s');
+
+        if ($type === 'pdf') {
+            return $this->exportPDF($items, $fileName);
+        } elseif ($type === 'csv') {
+            return $this->exportCSV($items, $fileName);
+        }
+
+        return redirect()->back()->with('error', 'Invalid export type.');
+    }
+
+    private function exportPDF($items, $fileName)
+    {
+        $pdf = Pdf::loadView('inventory.export-pdf', compact('items'));
+        return $pdf->download($fileName . '.pdf');
+    }
+
+    private function exportCSV($items, $fileName)
+    {
+        $csv = Writer::createFromString('');
+        
+        // Add CSV headers
+        $csv->insertOne([
+            'No', 'Division', 'End User', 'Classification', 'Description', 
+            'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE', 
+            'Date Acquired', 'Remarks', 'Status'
+        ]);
+
+        // Add data rows
+        foreach ($items as $item) {
+            $csv->insertOne([
+                $item->no,
+                $item->division,
+                $item->enduser,
+                $item->classification,
+                $item->description,
+                $item->serial_number ?? 'N/A',
+                $item->property_number,
+                '₱' . number_format($item->unit_price, 2),
+                $item->co_mooe,
+                $item->date_acquired->format('M d, Y'),
+                $item->remarks ?? 'N/A',
+                $item->status
+            ]);
+        }
+
+        return Response::make($csv->toString(), 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '.csv"',
         ]);
     }
 }

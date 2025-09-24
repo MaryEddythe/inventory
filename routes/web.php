@@ -8,3 +8,4 @@ Route::get('/', function () {
 });
 
 Route::resource('inventory', InventoryItemController::class);
+Route::get('/inventory/export/{type}', [InventoryItemController::class, 'export'])->name('inventory.export');

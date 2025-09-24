@@ -9,6 +9,13 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
         <h1 class="h4 fw-bold mb-0">Inventory</h1>
         <div class="d-flex gap-2 align-items-center">
@@ -18,9 +25,18 @@
             <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
                 <i class="bi bi-funnel"></i> Filter
             </button>
-            <a href="#" class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1">
-                <i class="bi bi-box-arrow-up"></i> Export
-            </a>
+            
+            <!-- Export Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-box-arrow-up"></i> Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item export-option" href="#" data-type="pdf"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export as PDF</a></li>
+                    <li><a class="dropdown-item export-option" href="#" data-type="csv"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</a></li>
+                </ul>
+            </div>
+            
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
                 <i class="bi bi-plus-circle"></i> Add Inventory
             </button>
@@ -157,6 +173,15 @@ document.addEventListener('DOMContentLoaded', function() {
         updateResults();
     });
 
+    // Export functionality
+    document.querySelectorAll('.export-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const exportType = this.getAttribute('data-type');
+            exportData(exportType);
+        });
+    });
+
     function updateResults() {
         const searchParams = new URLSearchParams();
         
@@ -187,6 +212,37 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(html => {
             document.querySelector('.table-responsive').innerHTML = html;
         });
+    }
+
+    function exportData(type) {
+        const searchParams = new URLSearchParams(window.location.search);
+        
+        // Add filters from filter form
+        const formData = new FormData(filterForm);
+        for (let pair of formData.entries()) {
+            if (pair[1]) {
+                searchParams.append(pair[0], pair[1]);
+            }
+        }
+
+        // Show loading indicator
+        Swal.fire({
+            title: 'Exporting...',
+            text: 'Please wait while we prepare your file',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Trigger download
+        const exportUrl = `{{ route('inventory.export', ':type') }}?${searchParams.toString()}`.replace(':type', type);
+        window.location.href = exportUrl;
+
+        // Close loading indicator after a delay
+        setTimeout(() => {
+            Swal.close();
+        }, 2000);
     }
 });
 </script>

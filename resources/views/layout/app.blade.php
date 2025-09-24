@@ -28,8 +28,8 @@
                             <span class="fw-medium">SampleUser</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </div>
                 </div>
@@ -39,9 +39,9 @@
         <!-- Navigation Tabs -->
         <div class="bg-white border-bottom">
             <div class="container-fluid px-4">
-                <ul class="nav nav-tabs border-0 py-2 gap-2">
+                <ul class="nav nav-tabs">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('dashboard.*') ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('inventory.tabs.dashboard') }}">
                             <i class="bi bi-speedometer2 me-2"></i>Dashboard
                         </a>
                     </li>
@@ -51,7 +51,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ request()->routeIs('user.management') ? 'active' : '' }}" href="{{ route('user.management') }}">
                             <i class="bi bi-people me-2"></i>User Management
                         </a>
                     </li>
@@ -68,10 +68,38 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
+                
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+                
                 @yield('content')
             </div>
         </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle tab active state
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+            
+            tabs.forEach(tab => {
+                // Remove active class from all tabs first
+                tab.classList.remove('active');
+                
+                // Check if this tab's href matches current path
+                const tabHref = tab.getAttribute('href');
+                if (tabHref === currentPath || 
+                    (currentPath === '/' && tabHref.includes('inventory')) ||
+                    (currentPath.includes('inventory') && tabHref.includes('inventory'))) {
+                    tab.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -238,6 +238,100 @@ header {
 }
 
 /* ==========================================================================
+   TAB NAVIGATION STYLES - MAROON ACTIVE TABS
+   ========================================================================== */
+
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 0;
+}
+
+.nav-tabs .nav-item {
+    margin-bottom: -2px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa; /* Gray background for inactive tabs */
+    border-radius: 8px 8px 0 0;
+    margin-right: 4px;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #800000; /* Maroon color on hover */
+    background-color: #e9ecef; /* Slightly darker gray on hover */
+    border-bottom-color: #800000;
+}
+
+.nav-tabs .nav-link.active {
+    color: #ffffff; /* White text for active tab */
+    background-color: #800000; /* Maroon background for active tab */
+    border-bottom-color: #800000;
+    font-weight: 600;
+}
+
+.nav-tabs .nav-link:not(.active) {
+    background-color: #f8f9fa; /* Gray background for inactive tabs */
+    color: #6c757d; /* Gray text for inactive tabs */
+}
+
+.nav-tabs .nav-link i {
+    font-size: 1.1rem;
+    margin-right: 0.5rem;
+}
+
+/* Tab content area */
+.tab-content {
+    background: #fff;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Responsive Tab Styles */
+@media (max-width: 768px) {
+    .nav-tabs .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .nav-tabs .nav-link i {
+        font-size: 1rem;
+        margin-right: 0.3rem;
+    }
+}
+
+/* Container fluid padding adjustment */
+.container-fluid {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Main content area adjustment */
+main.container-fluid {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+@media (max-width: 768px) {
+    main.container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* ==========================================================================
    PDF EXPORT STYLES
    ========================================================================== */
 
@@ -639,55 +733,4 @@ header {
     .pdf-d-print-table { display: table; }
     .pdf-d-print-table-row { display: table-row; }
     .pdf-d-print-table-cell { display: table-cell; }
-}
-
-/* Custom Tab Styles */
-.nav-tabs {
-    border-bottom: none;
-}
-
-.nav-tabs .nav-link {
-    border: none;
-    padding: 0.7rem 1.5rem;
-    font-weight: 500;
-    color: #6c757d;
-    border-radius: 8px;
-    transition: all 0.2s;
-}
-
-.nav-tabs .nav-link:hover {
-    color: #0d6efd;
-    background: #f3f4f6;
-}
-
-.nav-tabs .nav-link.active {
-    color: #0d6efd;
-    background: #e7f0ff;
-    border: none;
-}
-
-.nav-tabs .nav-link i {
-    font-size: 1.1rem;
-}
-
-/* Remove old sidebar styles */
-.sidebar-collapsible,
-#sidebar {
-    display: none;
-}
-
-/* Header adjustments */
-header {
-    border-bottom: 1px solid #ececec;
-    background: #fff;
-}
-
-.navbar-brand {
-    font-size: 1.4rem;
-    letter-spacing: 0.5px;
-}
-
-/* Main content adjustments */
-main {
-    background: #f8f9fa;
 }

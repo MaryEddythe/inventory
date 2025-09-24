@@ -58,12 +58,12 @@ class InventoryItemController extends Controller
             return view('inventory.table-data', compact('items'))->render();
         }
 
-        return view('inventory.index', compact('items'));
+        return view('inventory.tabs.index', compact('items'));
     }
 
     public function create()
     {
-        return view('inventory.create-modal');
+        return view('inventory.modals.create-modal');
     }
 
     public function store(Request $request)
@@ -97,7 +97,7 @@ class InventoryItemController extends Controller
 
     public function edit(InventoryItem $inventoryItem)
     {
-        return view('inventory.edit-modal', compact('inventoryItem'));
+        return view('inventory.modals.edit-modal', compact('inventoryItem'));
     }
 
     public function update(Request $request, $id)
@@ -150,7 +150,6 @@ class InventoryItemController extends Controller
     {
         $query = InventoryItem::active();
 
-        // Apply filters if present
         if ($request->filled('search')) {
             $search = $request->search;
             $searchTerms = array_filter(explode(' ', $search));
@@ -237,4 +236,16 @@ class InventoryItemController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $fileName . '.csv"',
         ]);
     }
+
+    public function dashboard()
+    {
+        return view('inventory.tabs.dashboard');
+    }
+
+    public function userManagement()
+{
+    return view('inventory.tabs.user-management');
+}
+
+
 }

@@ -16,12 +16,9 @@
             <label for="division-{{ $item->no }}" class="form-label">Division</label>
             <select class="form-select" id="division-{{ $item->no }}" name="division" required>
                 <option value="" disabled>Select Division</option>
-                <option value="MMD" {{ $item->division == 'MMD' ? 'selected' : '' }}>MMD</option>
-                <option value="MSESDD" {{ $item->division == 'MSESDD' ? 'selected' : '' }}>MSESDD</option>
-                <option value="GSD" {{ $item->division == 'GSD' ? 'selected' : '' }}>GSD</option>
-                <option value="GSS" {{ $item->division == 'GSS' ? 'selected' : '' }}>GSS</option>
-                <option value="ORD" {{ $item->division == 'ORD' ? 'selected' : '' }}>ORD</option>
-                <option value="FAD" {{ $item->division == 'FAD' ? 'selected' : '' }}>FAD</option>
+                @foreach($departments as $dept)
+                    <option value="{{ $dept->department }}" {{ old('division', $item->division) == $dept->department ? 'selected' : '' }}>{{ $dept->department }}</option>
+                @endforeach
             </select>
         </div>
         <div class="col-md-6 mb-3">

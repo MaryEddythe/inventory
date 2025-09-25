@@ -105,7 +105,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                @include('inventory.modals.edit-modal', ['item' => $item])
+                                @include('inventory.modals.edit-modal', ['item' => $item, 'departments' => $departments])
                             </div>
                         </div>
                     </div>
@@ -136,7 +136,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                @include('inventory.modals.create-modal')
+                @include('inventory.modals.create-modal', ['departments' => $departments])
             </div>
         </div>
     </div>

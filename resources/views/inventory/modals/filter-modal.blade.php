@@ -19,12 +19,9 @@
                         <label class="form-label">Division</label>
                         <select class="form-select" name="division">
                             <option value="">All Divisions</option>
-                            <option value="MMD">MMD</option>
-                            <option value="MSESDD">MSESDD</option>
-                            <option value="GSD">GSD</option>
-                            <option value="GSS">GSS</option>
-                            <option value="ORD">ORD</option>
-                            <option value="FAD">FAD</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->department }}">{{ $dept->department }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="mb-3">

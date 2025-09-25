@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InventoryItem;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -19,7 +20,7 @@ class InventoryItemController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $searchTerms = array_filter(explode(' ', $search));
-            
+
             $query->where(function($q) use ($searchTerms) {
                 foreach ($searchTerms as $term) {
                     $q->where(function($subQuery) use ($term) {
@@ -53,17 +54,19 @@ class InventoryItemController extends Controller
         }
 
         $items = $query->orderBy('no', 'desc')->paginate(10)->withQueryString();
-        
+        $departments = Department::orderBy('department')->get();
+
         if ($request->ajax()) {
             return view('inventory.table-data', compact('items'))->render();
         }
 
-        return view('inventory.tabs.index', compact('items'));
+        return view('inventory.tabs.index', compact('items', 'departments'));
     }
 
     public function create()
     {
-        return view('inventory.modals.create-modal');
+        $departments = Department::orderBy('department')->get();
+        return view('inventory.modals.create-modal', compact('departments'));
     }
 
     public function store(Request $request)
@@ -92,7 +95,8 @@ class InventoryItemController extends Controller
 
     public function edit(InventoryItem $inventoryItem)
     {
-        return view('inventory.modals.edit-modal', compact('inventoryItem'));
+        $departments = Department::orderBy('department')->get();
+        return view('inventory.modals.edit-modal', compact('inventoryItem', 'departments'));
     }
 
     public function update(Request $request, $id)
@@ -208,7 +212,6 @@ class InventoryItemController extends Controller
             'Date Acquired', 'Remarks', 'Status'
         ]);
 
-        // Add data rows
         foreach ($items as $item) {
             $csv->insertOne([
                 $item->no,

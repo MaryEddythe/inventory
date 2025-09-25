@@ -13,8 +13,7 @@ class Department extends Model
     protected $table = 'departments';
     protected $fillable = ['dept_no', 'department', 'description', 'last_updated', 'updated_by'];
 
-    public $timestamps = false; // Since last_updated is used, but assuming no created_at
+    public $timestamps = false;
 
-    // If you want to use last_updated as updated_at
     const UPDATED_AT = 'last_updated';
 }

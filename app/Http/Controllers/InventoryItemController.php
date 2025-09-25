@@ -239,40 +239,80 @@ class InventoryItemController extends Controller
         ]);
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $totalItems = InventoryItem::active()->count();
-        $totalValue = InventoryItem::active()->sum('unit_price');
-        $itemsThisMonth = InventoryItem::active()
-            ->whereMonth('date_acquired', now()->month)
+        $query = InventoryItem::active();
+
+        // Apply date filter if provided
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $query->whereBetween('date_acquired', [$request->date_from, $request->date_to]);
+        } elseif ($request->filled('date_from')) {
+            $query->where('date_acquired', '>=', $request->date_from);
+        } elseif ($request->filled('date_to')) {
+            $query->where('date_acquired', '<=', $request->date_to);
+        }
+
+        $totalItems = $query->count();
+        $totalValue = $query->sum('unit_price');
+        $itemsThisMonth = $query->whereMonth('date_acquired', now()->month)
             ->whereYear('date_acquired', now()->year)
             ->count();
-        $totalDivisions = InventoryItem::active()->distinct('division')->count('division');
+        $totalDivisions = $query->distinct('division')->count('division');
 
-        $divisionData = InventoryItem::active()
-            ->selectRaw('division, count(*) as count')
+        $divisionData = $query->selectRaw('division, count(*) as count')
             ->groupBy('division')
             ->get();
 
-        // Monthly acquisitions for the last 6 months
-        $monthlyAcquisitions = InventoryItem::active()
+        // Monthly acquisitions - adjust range based on filter
+        $acquisitionQuery = InventoryItem::active();
+        if ($request->filled('date_from') || $request->filled('date_to')) {
+            $startDate = $request->date_from ?: now()->subMonths(6)->startOfMonth();
+            $endDate = $request->date_to ?: now();
+            $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
+        } else {
+            $acquisitionQuery->where('date_acquired', '>=', now()->subMonths(6));
+        }
+
+        $monthlyAcquisitions = $acquisitionQuery
             ->selectRaw('DATE_FORMAT(date_acquired, "%b %Y") as month, count(*) as count')
-            ->where('date_acquired', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('date_acquired')
             ->get();
 
         // Value by classification
-        $classificationData = InventoryItem::active()
-            ->selectRaw('classification, sum(unit_price) as total_value')
+        $classificationData = $query->selectRaw('classification, sum(unit_price) as total_value')
             ->groupBy('classification')
             ->get();
 
         // Status distribution
-        $statusData = InventoryItem::active()
-            ->selectRaw('status, count(*) as count')
+        $statusData = $query->selectRaw('status, count(*) as count')
             ->groupBy('status')
             ->get();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'totalItems' => $totalItems,
+                'totalValue' => $totalValue,
+                'itemsThisMonth' => $itemsThisMonth,
+                'totalDivisions' => $totalDivisions,
+                'divisionData' => [
+                    'labels' => $divisionData->pluck('division'),
+                    'counts' => $divisionData->pluck('count')
+                ],
+                'monthlyAcquisitions' => [
+                    'labels' => $monthlyAcquisitions->pluck('month'),
+                    'counts' => $monthlyAcquisitions->pluck('count')
+                ],
+                'classificationData' => [
+                    'labels' => $classificationData->pluck('classification'),
+                    'values' => $classificationData->pluck('total_value')
+                ],
+                'statusData' => [
+                    'labels' => $statusData->pluck('status'),
+                    'counts' => $statusData->pluck('count')
+                ]
+            ]);
+        }
 
         return view('inventory.tabs.dashboard', compact(
             'totalItems',

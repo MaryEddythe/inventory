@@ -71,9 +71,21 @@
                             {{ $item->division }}
                         </span>
                     </td>
-                    <td class="item-enduser">{{ $item->enduser }}</td>
+                    <td class="item-enduser">
+                        @if(request('search'))
+                            {!! preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->enduser) !!}
+                        @else
+                            {{ $item->enduser }}
+                        @endif
+                    </td>
                     <td><span class="badge bg-secondary-subtle text-dark fw-normal item-classification">{{ $item->classification }}</span></td>
-                    <td class="item-description">{{ Str::limit($item->description, 40) }}</td>
+                    <td class="item-description">
+                        @if(request('search'))
+                            {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 40) !!}
+                        @else
+                            {{ Str::limit($item->description, 40) }}
+                        @endif
+                    </td>
                     <td class="item-serial">{{ $item->serial_number ?? 'N/A' }}</td>
                     <td class="item-property">{{ $item->property_number }}</td>
                     <td class="item-price">₱{{ number_format($item->unit_price, 2) }}</td>

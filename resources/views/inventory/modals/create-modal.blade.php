@@ -21,7 +21,8 @@
         </div>
         <div class="col-md-6 mb-3">
             <label for="enduser" class="form-label">End User</label>
-            <input type="text" class="form-control" id="enduser" name="enduser" value="{{ old('enduser') }}" required>
+            <input type="text" class="form-control" id="enduser" name="enduser" value="{{ old('enduser') }}" oninput="filterEmployees()" required>
+            <div id="employee-suggestions" class="suggestions-list"></div>
         </div>
     </div>
     <div class="row">
@@ -67,3 +68,56 @@
         <button type="submit" class="btn btn-primary">Save Item</button>
     </div>
 </form>
+
+<script>
+    var employees = [
+        @foreach($employees as $employee)
+            {name: '{{ $employee->firstname }} {{ $employee->lastname }}'},
+        @endforeach
+    ];
+
+    function filterEmployees() {
+        var input = document.getElementById('enduser');
+        var filter = input.value.toLowerCase();
+        var suggestions = document.getElementById('employee-suggestions');
+        suggestions.innerHTML = '';
+
+        if (filter.length === 0) {
+            suggestions.style.display = 'none';
+            return;
+        }
+
+        var filtered = employees.filter(function(emp) {
+            return emp.name.toLowerCase().includes(filter);
+        });
+
+        if (filtered.length > 0) {
+            suggestions.style.display = 'block';
+            filtered.forEach(function(emp) {
+                var div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = highlightMatch(emp.name, filter);
+                div.onclick = function() {
+                    input.value = emp.name;
+                    suggestions.style.display = 'none';
+                };
+                suggestions.appendChild(div);
+            });
+        } else {
+            suggestions.style.display = 'none';
+        }
+    }
+
+    function highlightMatch(text, filter) {
+        var regex = new RegExp('(' + filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    }
+
+    document.addEventListener('click', function(e) {
+        var suggestions = document.getElementById('employee-suggestions');
+        var input = document.getElementById('enduser');
+        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+            suggestions.style.display = 'none';
+        }
+    });
+</script>

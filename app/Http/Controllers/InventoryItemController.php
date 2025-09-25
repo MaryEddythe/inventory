@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InventoryItem;
 use App\Models\Department;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -55,18 +56,20 @@ class InventoryItemController extends Controller
 
         $items = $query->orderBy('no', 'desc')->paginate(10)->withQueryString();
         $departments = Department::orderBy('department')->get();
+        $employees = Employee::orderBy('firstname')->get();
 
         if ($request->ajax()) {
             return view('inventory.table-data', compact('items'))->render();
         }
 
-        return view('inventory.tabs.index', compact('items', 'departments'));
+        return view('inventory.tabs.index', compact('items', 'departments', 'employees'));
     }
 
     public function create()
     {
         $departments = Department::orderBy('department')->get();
-        return view('inventory.modals.create-modal', compact('departments'));
+        $employees = Employee::orderBy('firstname')->get();
+        return view('inventory.modals.create-modal', compact('departments', 'employees'));
     }
 
     public function store(Request $request)
@@ -96,7 +99,8 @@ class InventoryItemController extends Controller
     public function edit(InventoryItem $inventoryItem)
     {
         $departments = Department::orderBy('department')->get();
-        return view('inventory.modals.edit-modal', compact('inventoryItem', 'departments'));
+        $employees = Employee::orderBy('firstname')->get();
+        return view('inventory.modals.edit-modal', compact('inventoryItem', 'departments', 'employees'));
     }
 
     public function update(Request $request, $id)

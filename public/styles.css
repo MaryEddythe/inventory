@@ -738,3 +738,27 @@ main.container-fluid {
     background-color: #800000 !important;
     color: #ffffff !important;
 }
+
+/* Employee Autocomplete Styles */
+.suggestions-list {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 50%;
+    box-sizing: border-box;
+    z-index: 1000;
+    display: none;
+}
+.suggestion-item {
+    padding: 8px;
+    cursor: pointer;
+}
+.suggestion-item:hover {
+    background: #f0f0f0;
+}
+mark {
+    background: lightblue;
+}

@@ -280,71 +280,107 @@ class InventoryItemController extends Controller
 
     public function dashboard(Request $request)
     {
-        $query = InventoryItem::active();
-
-        // Apply filters if provided
-        if ($request->filled('filter')) {
-            switch ($request->filter) {
-                case 'today':
-                    $query->whereDate('date_acquired', now()->toDateString());
-                    break;
-                case 'week':
-                    $query->whereBetween('date_acquired', [now()->startOfWeek(), now()->endOfWeek()]);
-                    break;
-                case 'month':
-                    $query->whereMonth('date_acquired', now()->month)
-                          ->whereYear('date_acquired', now()->year);
-                    break;
-                case 'year':
-                    $query->whereYear('date_acquired', now()->year);
-                    break;
-            }
-        }
-
-        $totalItems = $query->count();
-        $totalValue = $query->sum('unit_price');
+        // 1. Initial Query for Filterable Data (Summary Cards and Division/Classification Charts)
+        $filterableQuery = InventoryItem::active();
         $itemsThisMonth = InventoryItem::active()
             ->whereMonth('date_acquired', now()->month)
             ->whereYear('date_acquired', now()->year)
             ->count();
-        $totalDivisions = $query->distinct('division')->count('division');
+        
+        // 2. Apply general filters
+        if ($request->filled('filter') && $request->filter !== 'none') {
+            switch ($request->filter) {
+                case 'today':
+                    $filterableQuery->whereDate('date_acquired', now()->toDateString());
+                    break;
+                case 'week':
+                    $filterableQuery->whereBetween('date_acquired', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $filterableQuery->whereMonth('date_acquired', now()->month)
+                          ->whereYear('date_acquired', now()->year);
+                    break;
+                case 'year':
+                    $filterableQuery->whereYear('date_acquired', now()->year);
+                    break;
+                // 'none' case is implicitly handled by not adding a where clause
+            }
+        }
 
-        $divisionData = $query->selectRaw('division, count(*) as count')
+        // 3. Get Filtered Summary Data
+        $totalItems = $filterableQuery->count();
+        $totalValue = $filterableQuery->sum('unit_price');
+        $totalDivisions = $filterableQuery->distinct('division')->count('division');
+
+        // 4. Get Filtered Chart Data (Division, Classification)
+        $divisionData = $filterableQuery->selectRaw('division, count(*) as count')
             ->groupBy('division')
             ->get();
 
-        // Monthly acquisitions - show all data unless filtered
-        $acquisitionQuery = InventoryItem::active();
-        if ($request->filled('date_from') || $request->filled('date_to')) {
-            $startDate = $request->date_from ?: now()->subYears(5)->startOfYear();
-            $endDate = $request->date_to ?: now();
-            $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
-        }
-
-        $monthlyAcquisitions = $acquisitionQuery
-            ->selectRaw('DATE_FORMAT(date_acquired, "%b %Y") as month, count(*) as count')
-            ->groupBy('month')
-            ->orderBy('date_acquired')
-            ->get();
-
-        // Value by classification
-        $classificationData = $query->selectRaw('classification, sum(unit_price) as total_value')
+        $classificationData = $filterableQuery->selectRaw('classification, sum(unit_price) as total_value')
             ->groupBy('classification')
             ->get();
 
-        // Status distribution - always show all inventory data
-        $statusData = InventoryItem::active()
-            ->selectRaw('status, count(*) as count')
-            ->whereIn('status', ['NEW', 'FOR REPLACEMENT'])
-            ->groupBy('status')
+        // 5. Monthly acquisitions (Line Chart - generally shows ALL data, not just filtered date range)
+        // If a filter is applied, we only filter the acquisitions chart if it makes sense (e.g., 'This Year')
+        // For simplicity, we'll keep the monthly acquisitions chart showing a broader range (like the last 12 months)
+        // unless a specific date range is implemented for it.
+        // For now, let's make it show data *up to* the filtered range's end date for clarity, if a filter is active.
+        $acquisitionQuery = InventoryItem::active();
+        
+        if ($request->filled('filter') && $request->filter !== 'none') {
+             $endDate = now();
+             switch ($request->filter) {
+                case 'today':
+                    $startDate = now()->subMonth();
+                    $endDate = now()->endOfDay();
+                    $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
+                    break;
+                case 'week':
+                    $startDate = now()->subMonths(2);
+                    $endDate = now()->endOfWeek();
+                    $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
+                    break;
+                case 'month':
+                    $startDate = now()->startOfYear();
+                    $endDate = now()->endOfMonth();
+                    $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
+                    break;
+                case 'year':
+                    $startDate = now()->startOfYear(); // Only current year's acquisitions
+                    $endDate = now()->endOfYear();
+                    $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
+                    break;
+            }
+        } else {
+            // Default to last 12 months for 'All Time' filter
+            $startDate = now()->subMonths(11)->startOfMonth();
+            $acquisitionQuery->where('date_acquired', '>=', $startDate);
+        }
+
+        $monthlyAcquisitions = $acquisitionQuery
+            ->selectRaw('DATE_FORMAT(date_acquired, "%b %Y") as month, MONTH(date_acquired) as month_num, YEAR(date_acquired) as year, count(*) as count')
+            ->groupBy('month', 'month_num', 'year')
+            ->orderBy('year', 'asc')
+            ->orderBy('month_num', 'asc')
             ->get();
+
+        // 6. Status distribution (Doughnut Chart - always show ALL inventory data)
+        $newCount = InventoryItem::active()->whereRaw('TRIM(UPPER(status)) = "NEW"')->count();
+        $forReplacementCount = InventoryItem::active()->whereRaw('TRIM(UPPER(status)) = "FOR REPLACEMENT"')->count();
+
+        $statusData = collect([
+            (object)['status' => 'NEW', 'count' => $newCount],
+            (object)['status' => 'FOR REPLACEMENT', 'count' => $forReplacementCount],
+        ]);
+
 
         if ($request->ajax()) {
             return response()->json([
-                'totalItems' => $totalItems,
-                'totalValue' => $totalValue,
-                'itemsThisMonth' => $itemsThisMonth,
-                'totalDivisions' => $totalDivisions,
+                'totalItems' => (int)$totalItems, // Ensure integer for JS
+                'totalValue' => (float)$totalValue, // Ensure float for JS
+                'itemsThisMonth' => (int)$itemsThisMonth,
+                'totalDivisions' => (int)$totalDivisions,
                 'divisionData' => [
                     'labels' => $divisionData->pluck('division'),
                     'counts' => $divisionData->pluck('count')
@@ -363,7 +399,8 @@ class InventoryItemController extends Controller
                 ]
             ]);
         }
-
+        
+        // This is for the initial page load without AJAX
         return view('inventory.tabs.dashboard', compact(
             'totalItems',
             'totalValue',

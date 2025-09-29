@@ -233,6 +233,45 @@ class InventoryItemController extends Controller
             ]);
         }
 
+        // Signature section for CSV
+        $csv->insertOne(array_fill(0, 12, '')); // Empty row
+        $csv->insertOne(array_fill(0, 12, '')); // Empty row
+
+        $signature1 = array_fill(0, 12, '');
+        $signature1[0] = 'Prepared by:';
+        $signature1[6] = 'Reviewed by:';
+        $csv->insertOne($signature1);
+
+        $signature2 = array_fill(0, 12, '');
+        $signature2[0] = '_______________________________';
+        $signature2[6] = '_______________________________';
+        $csv->insertOne($signature2);
+
+        $signature3 = array_fill(0, 12, '');
+        $signature3[0] = 'HERO JOHN E. LAPORGA';
+        $signature3[6] = 'MAY FLORENCE A. PABELONIO';
+        $csv->insertOne($signature3);
+
+        $signature4 = array_fill(0, 12, '');
+        $signature4[0] = 'Senior IT Support Specialist';
+        $signature4[6] = 'ICT Focal Person';
+        $csv->insertOne($signature4);
+
+        $csv->insertOne(array_fill(0, 12, '')); // Empty row
+        $csv->insertOne(array_fill(0, 12, '')); // Empty row
+
+        $signature5 = array_fill(0, 12, '');
+        $signature5[5] = '_______________________________';
+        $csv->insertOne($signature5);
+
+        $signature6 = array_fill(0, 12, '');
+        $signature6[5] = 'CECILIA L. OCHAVO-SAYCON';
+        $csv->insertOne($signature6);
+
+        $signature7 = array_fill(0, 12, '');
+        $signature7[5] = 'Regional Director';
+        $csv->insertOne($signature7);
+
         return Response::make($csv->toString(), 200, [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $fileName . '.csv"',

@@ -97,11 +97,11 @@
                     <h5 class="card-title mb-0">Items by Division</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="divisionChart"></canvas>
+                    <canvas id="divisionChart" style="height: 60px;"></canvas>
                     <div class="mt-3">
                         <button class="btn btn-sm btn-outline-primary" onclick="toggleDataTable('divisionTable')">Show Data Table</button>
                         <div id="divisionTable" class="mt-2" style="display: none;">
-                            <table class="table table-sm">
+                            <table class="table table-sm table-bordered">
                                 <thead>
                                     <tr>
                                         <th>Division</th>
@@ -121,11 +121,11 @@
                     <h5 class="card-title mb-0">Monthly Acquisitions</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="acquisitionChart"></canvas>
+                    <canvas id="acquisitionChart" style="height: 200px;"></canvas>
                     <div class="mt-3">
                         <button class="btn btn-sm btn-outline-primary" onclick="toggleDataTable('acquisitionTable')">Show Data Table</button>
                         <div id="acquisitionTable" class="mt-2" style="display: none;">
-                            <table class="table table-sm">
+                            <table class="table table-sm table-bordered">
                                 <thead>
                                     <tr>
                                         <th>Month</th>
@@ -139,25 +139,21 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Second Row of Charts -->
-    <div class="row g-3 mt-3">
-        <div class="col-md-8">
+        <div class="col-md-6">
             <div class="card chart-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Value Distribution by Classification</h5>
+                    <h5 class="card-title mb-0">Value by Classification</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="classificationChart"></canvas>
+                    <canvas id="classificationChart" style="height: 200px;"></canvas>
                     <div class="mt-3">
                         <button class="btn btn-sm btn-outline-primary" onclick="toggleDataTable('classificationTable')">Show Data Table</button>
                         <div id="classificationTable" class="mt-2" style="display: none;">
-                            <table class="table table-sm">
+                            <table class="table table-sm table-bordered">
                                 <thead>
                                     <tr>
                                         <th>Classification</th>
-                                        <th>Total Value</th>
+                                        <th>Value (₱)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="classificationTableBody"></tbody>
@@ -167,17 +163,17 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card chart-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Status Distribution</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="statusChart"></canvas>
+                    <canvas id="statusChart" style="height: 60px;"></canvas>
                     <div class="mt-3">
                         <button class="btn btn-sm btn-outline-primary" onclick="toggleDataTable('statusTable')">Show Data Table</button>
                         <div id="statusTable" class="mt-2" style="display: none;">
-                            <table class="table table-sm">
+                            <table class="table table-sm table-bordered">
                                 <thead>
                                     <tr>
                                         <th>Status</th>
@@ -192,125 +188,74 @@
             </div>
         </div>
     </div>
-
-    <!-- Progress Indicators -->
-    <div class="row g-3 mt-3">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Storage Utilization</h5>
-                </div>
-                <div class="card-body">
-                    <div class="progress mb-3">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                            75% Used
-                        </div>
-                    </div>
-                    <small class="text-muted">Total capacity: 1000 items</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Monthly Goal Progress</h5>
-                </div>
-                <div class="card-body">
-                    <div class="progress mb-3">
-                        <div class="progress-bar bg-info" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
-                            60% Complete
-                        </div>
-                    </div>
-                    <small class="text-muted">Goal: 50 new items this month</small>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Count-up animation for summary cards
-    function animateCountUp() {
-        const counters = document.querySelectorAll('.count-up');
-        counters.forEach(counter => {
-            const target = parseFloat(counter.getAttribute('data-target'));
-            const text = counter.textContent;
-            const isCurrency = text.includes('₱');
-            const duration = 2000;
-            const step = target / (duration / 16);
-            let current = 0;
-
-            const timer = setInterval(() => {
-                current += step;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
-                if (isCurrency) {
-                    counter.textContent = '₱' + current.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                } else {
-                    counter.textContent = Math.floor(current).toLocaleString();
-                }
-            }, 16);
-        });
+    // Count-up animation
+    function animateCountUp(el) {
+        const target = parseFloat(el.getAttribute('data-target'));
+        let count = 0;
+        const increment = target / 100;
+        const interval = setInterval(() => {
+            count += increment;
+            if (count >= target) {
+                count = target;
+                clearInterval(interval);
+            }
+            el.textContent = Math.round(count).toLocaleString();
+        }, 10);
     }
 
-    // Call count-up animation
-    animateCountUp();
+    document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
 
-    // Charts with enhanced options
+    // Division Colors Map (based on division full names)
+    function getDivisionColor(label) {
+        const colorMap = {
+            'Mine Management Division': '#007B83',
+            'Mine Safety, Environment and Social Development Division': '#FF6B6B',
+            'Geosciences Division': '#FFC145',
+            'General Support Services': '#7BC950',
+            'Office of the Regional Director': '#8E7CC3',
+            'Finance and Administrative Division': '#4DA9FF',
+            'Unknown Division': '#6c757d'
+        };
+        return colorMap[label] || '#6c757d'; // Default to gray if not found
+    }
+
+    // Division Chart (Pie)
     const divisionLabels = {!! json_encode($divisionData->pluck('division')) !!};
-    const divisionData = {!! json_encode($divisionData->pluck('count')) !!};
-
-    // Division Chart
+    const divisionDataCounts = {!! json_encode($divisionData->pluck('count')) !!};
     new Chart(document.getElementById('divisionChart'), {
-        type: 'bar',
+        type: 'pie',
         data: {
             labels: divisionLabels,
             datasets: [{
-                label: 'Number of Items',
-                data: divisionData,
-                backgroundColor: ['#4DA9FF', '#FF6B6B', '#7BC950', '#FFC145', '#8E7CC3', '#007B83'],
+                data: divisionDataCounts,
+                backgroundColor: divisionLabels.map(label => getDivisionColor(label)),
             }]
         },
         options: {
             responsive: true,
             plugins: {
+                legend: {
+                    position: 'bottom'
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.dataset.label + ': ' + context.parsed.y;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            },
-            onClick: function(event, elements) {
-                if (elements.length > 0) {
-                    const index = elements[0].index;
-                    drillDown('division', divisionLabels[index]);
                 }
             }
         }
     });
 
-    // Monthly Acquisitions Chart
+    // Acquisition Chart (Line)
     new Chart(document.getElementById('acquisitionChart'), {
         type: 'line',
         data: {
@@ -318,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Items Acquired',
                 data: {!! json_encode($monthlyAcquisitions->pluck('count')) !!},
-                borderColor: '#0d6efd',
+                borderColor: '#007bff',
                 tension: 0.1,
                 fill: false
             }]
@@ -345,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Classification Chart
+    // Classification Chart (Bar)
     new Chart(document.getElementById('classificationChart'), {
         type: 'bar',
         data: {
@@ -380,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Status Chart
+    // Status Chart (Doughnut)
     new Chart(document.getElementById('statusChart'), {
         type: 'doughnut',
         data: {
@@ -410,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Populate data tables
-    populateDataTable('divisionTableBody', divisionLabels, divisionData);
+    populateDataTable('divisionTableBody', divisionLabels, divisionDataCounts);
     populateDataTable('acquisitionTableBody', {!! json_encode($monthlyAcquisitions->pluck('month')) !!}, {!! json_encode($monthlyAcquisitions->pluck('count')) !!});
     populateDataTable('classificationTableBody', {!! json_encode($classificationData->pluck('classification')) !!}, {!! json_encode($classificationData->pluck('total_value')) !!});
     populateDataTable('statusTableBody', {!! json_encode($statusData->pluck('status')) !!}, {!! json_encode($statusData->pluck('count')) !!});
@@ -441,15 +386,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Implement custom date range picker
         alert('Custom range picker not implemented yet');
     });
-
-    // View options
-    document.getElementById('view-compact').addEventListener('click', function() {
-        document.body.classList.add('compact-view');
-    });
-
-    document.getElementById('view-detailed').addEventListener('click', function() {
-        document.body.classList.remove('compact-view');
-    });
 });
 
 // Helper functions
@@ -468,14 +404,44 @@ function toggleDataTable(tableId) {
     table.style.display = table.style.display === 'none' ? 'block' : 'none';
 }
 
-function drillDown(chartType, label) {
-    // Implement drill-down functionality
-    alert(`Drilling down into ${chartType}: ${label}`);
+function applyFilter(filterType) {
+    // Implement filter functionality via AJAX
+    fetch(`/dashboard?filter=${filterType}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update summary cards
+        document.querySelector('.count-up[data-target="{{ $totalItems }}"]').setAttribute('data-target', data.totalItems);
+        document.querySelector('.count-up[data-target="{{ $totalValue }}"]').setAttribute('data-target', data.totalValue);
+        document.querySelector('.count-up[data-target="{{ $itemsThisMonth }}"]').setAttribute('data-target', data.itemsThisMonth);
+        document.querySelector('.count-up[data-target="{{ $totalDivisions }}"]').setAttribute('data-target', data.totalDivisions);
+        document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
+
+        // Update charts
+        updateChart('divisionChart', data.divisionData.labels, data.divisionData.counts);
+        updateChart('acquisitionChart', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
+        updateChart('classificationChart', data.classificationData.labels, data.classificationData.values);
+        updateChart('statusChart', data.statusData.labels, data.statusData.counts);
+
+        // Update data tables
+        populateDataTable('divisionTableBody', data.divisionData.labels, data.divisionData.counts);
+        populateDataTable('acquisitionTableBody', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
+        populateDataTable('classificationTableBody', data.classificationData.labels, data.classificationData.values);
+        populateDataTable('statusTableBody', data.statusData.labels, data.statusData.counts);
+    });
 }
 
-function applyFilter(filterType) {
-    // Implement filter functionality
-    console.log('Applying filter:', filterType);
+function updateChart(chartId, labels, data) {
+    const chart = Chart.getChart(chartId);
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data;
+    if (chartId === 'divisionChart') {
+        chart.data.datasets[0].backgroundColor = labels.map(label => getDivisionColor(label));
+    }
+    chart.update();
 }
 </script>
 @endpush

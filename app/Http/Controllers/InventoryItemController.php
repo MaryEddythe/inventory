@@ -282,18 +282,29 @@ class InventoryItemController extends Controller
     {
         $query = InventoryItem::active();
 
-        // Apply date filter if provided
-        if ($request->filled('date_from') && $request->filled('date_to')) {
-            $query->whereBetween('date_acquired', [$request->date_from, $request->date_to]);
-        } elseif ($request->filled('date_from')) {
-            $query->where('date_acquired', '>=', $request->date_from);
-        } elseif ($request->filled('date_to')) {
-            $query->where('date_acquired', '<=', $request->date_to);
+        // Apply filters if provided
+        if ($request->filled('filter')) {
+            switch ($request->filter) {
+                case 'today':
+                    $query->whereDate('date_acquired', now()->toDateString());
+                    break;
+                case 'week':
+                    $query->whereBetween('date_acquired', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('date_acquired', now()->month)
+                          ->whereYear('date_acquired', now()->year);
+                    break;
+                case 'year':
+                    $query->whereYear('date_acquired', now()->year);
+                    break;
+            }
         }
 
         $totalItems = $query->count();
         $totalValue = $query->sum('unit_price');
-        $itemsThisMonth = $query->whereMonth('date_acquired', now()->month)
+        $itemsThisMonth = InventoryItem::active()
+            ->whereMonth('date_acquired', now()->month)
             ->whereYear('date_acquired', now()->year)
             ->count();
         $totalDivisions = $query->distinct('division')->count('division');
@@ -302,14 +313,12 @@ class InventoryItemController extends Controller
             ->groupBy('division')
             ->get();
 
-        // Monthly acquisitions - adjust range based on filter
+        // Monthly acquisitions - show all data unless filtered
         $acquisitionQuery = InventoryItem::active();
         if ($request->filled('date_from') || $request->filled('date_to')) {
-            $startDate = $request->date_from ?: now()->subMonths(6)->startOfMonth();
+            $startDate = $request->date_from ?: now()->subYears(5)->startOfYear();
             $endDate = $request->date_to ?: now();
             $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
-        } else {
-            $acquisitionQuery->where('date_acquired', '>=', now()->subMonths(6));
         }
 
         $monthlyAcquisitions = $acquisitionQuery
@@ -368,6 +377,4 @@ class InventoryItemController extends Controller
     public function show(InventoryItem $inventoryItem)
     {
     }
-
-
 }

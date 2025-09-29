@@ -210,15 +210,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
 
-    // Division Colors Map (based on division full names)
+    // Division Colors Map (matching badge colors)
     function getDivisionColor(label) {
         const colorMap = {
-            'Mine Management Division': '#007B83',
-            'Mine Safety, Environment and Social Development Division': '#FF6B6B',
-            'Geosciences Division': '#FFC145',
-            'General Support Services': '#7BC950',
-            'Office of the Regional Director': '#8E7CC3',
-            'Finance and Administrative Division': '#4DA9FF',
+            'MMD': '#007B83',
+            'MSESDD': '#FF6B6B',
+            'GD': '#FFC145',
+            'GSS': '#7BC950',
+            'ORD': '#8E7CC3',
+            'FAD': '#4DA9FF',
             'Unknown Division': '#6c757d'
         };
         return colorMap[label] || '#6c757d'; // Default to gray if not found
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: {!! json_encode($statusData->pluck('status')) !!},
             datasets: [{
                 data: {!! json_encode($statusData->pluck('count')) !!},
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                backgroundColor: ['#28a745', '#ffc107'],
             }]
         },
         options: {

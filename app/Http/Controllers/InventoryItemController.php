@@ -332,8 +332,10 @@ class InventoryItemController extends Controller
             ->groupBy('classification')
             ->get();
 
-        // Status distribution
-        $statusData = $query->selectRaw('status, count(*) as count')
+        // Status distribution - always show all inventory data
+        $statusData = InventoryItem::active()
+            ->selectRaw('status, count(*) as count')
+            ->whereIn('status', ['NEW', 'FOR REPLACEMENT'])
             ->groupBy('status')
             ->get();
 

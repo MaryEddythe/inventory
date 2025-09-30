@@ -98,7 +98,6 @@
                 <div class="card-body">
                     <canvas id="divisionChart" style="height: 60px;"></canvas>
                     <div class="mt-3">
-                        <button class="btn btn-sm btn-outline-primary" onclick="toggleDataTable('divisionTable')">Show Data Table</button>
                         <div id="divisionTable" class="mt-2" style="display: none;">
                             <table class="table table-sm table-bordered">
                                 <thead>
@@ -122,7 +121,6 @@
                 <div class="card-body">
                     <canvas id="acquisitionChart" style="height: 200px;"></canvas>
                     <div class="mt-3">
-                        <button class="btn btn-sm btn-outline-primary" onclick="toggleDataTable('acquisitionTable')">Show Data Table</button>
                         <div id="acquisitionTable" class="mt-2" style="display: none;">
                             <table class="table table-sm table-bordered">
                                 <thead>
@@ -146,7 +144,6 @@
                 <div class="card-body">
                     <canvas id="classificationChart" style="height: 200px;"></canvas>
                     <div class="mt-3">
-                        <button class="btn btn-sm btn-outline-primary" onclick="toggleDataTable('classificationTable')">Show Data Table</button>
                         <div id="classificationTable" class="mt-2" style="display: none;">
                             <table class="table table-sm table-bordered">
                                 <thead>
@@ -170,7 +167,6 @@
                 <div class="card-body">
                     <canvas id="statusChart" style="height: 60px;"></canvas>
                     <div class="mt-3">
-                        <button class="btn btn-sm btn-outline-primary" onclick="toggleDataTable('statusTable')">Show Data Table</button>
                         <div id="statusTable" class="mt-2" style="display: none;">
                             <table class="table table-sm table-bordered">
                                 <thead>

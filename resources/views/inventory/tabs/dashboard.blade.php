@@ -185,6 +185,34 @@
     </div>
 </div>
 
+<!-- Custom Range Modal -->
+<div class="modal fade" id="customRangeModal" tabindex="-1" aria-labelledby="customRangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customRangeModalLabel">Select Custom Date Range</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="apply-custom-range">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     // Global variable to store chart instances
@@ -219,8 +247,74 @@
         });
 
         document.getElementById('custom-range').addEventListener('click', function() {
-            // Implement custom date range picker
-            alert('Custom range picker not implemented yet');
+            // Show custom date range modal
+            var customRangeModal = new bootstrap.Modal(document.getElementById('customRangeModal'));
+            customRangeModal.show();
+        });
+
+        document.getElementById('apply-custom-range').addEventListener('click', function() {
+            var startDate = document.getElementById('start_date').value;
+            var endDate = document.getElementById('end_date').value;
+
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+
+            if (startDate > endDate) {
+                alert('Start date cannot be after end date.');
+                return;
+            }
+
+            // Hide modal
+            var customRangeModalEl = document.getElementById('customRangeModal');
+            var customRangeModal = bootstrap.Modal.getInstance(customRangeModalEl);
+            customRangeModal.hide();
+
+            // Update filter text
+            document.getElementById('current-filter-text').textContent = `Custom: ${startDate} to ${endDate}`;
+
+            // Fetch filtered data with custom date range
+            fetch(`/dashboard?filter=custom&date_from=${startDate}&date_to=${endDate}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update summary cards
+                const totalItemsEl = document.getElementById('totalItemsCount');
+                totalItemsEl.setAttribute('data-target', data.totalItems);
+                animateCountUp(totalItemsEl, data.totalItems);
+
+                const totalValueEl = document.getElementById('totalValueCount');
+                totalValueEl.setAttribute('data-target', data.totalValue);
+                animateCountUp(totalValueEl, data.totalValue);
+
+                const itemsThisMonthEl = document.getElementById('itemsThisMonthCount');
+                itemsThisMonthEl.setAttribute('data-target', data.itemsThisMonth);
+                animateCountUp(itemsThisMonthEl, data.itemsThisMonth);
+
+                const totalDivisionsEl = document.getElementById('totalDivisionsCount');
+                totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
+                animateCountUp(totalDivisionsEl, data.totalDivisions);
+
+                // Update charts
+                updateChart('divisionChart', data.divisionData.labels, data.divisionData.counts);
+                updateChart('acquisitionChart', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
+                updateChart('classificationChart', data.classificationData.labels, data.classificationData.values);
+                updateChart('statusChart', data.statusData.labels, data.statusData.counts);
+
+                // Update data tables
+                populateDataTable('divisionTableBody', data.divisionData.labels, data.divisionData.counts);
+                populateDataTable('acquisitionTableBody', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
+                populateDataTable('classificationTableBody', data.classificationData.labels, data.classificationData.values, 'currency');
+                populateDataTable('statusTableBody', data.statusData.labels, data.statusData.counts);
+            })
+            .catch(error => {
+                console.error('Error fetching dashboard data:', error);
+                alert('Failed to apply custom date range filter. Check console for details.');
+            });
         });
     });
 

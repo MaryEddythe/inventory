@@ -308,6 +308,14 @@ class InventoryItemController extends Controller
                 case 'year':
                     $filterableQuery->whereYear('date_acquired', now()->year);
                     break;
+                case 'custom':
+                    if ($request->filled('date_from')) {
+                        $filterableQuery->whereDate('date_acquired', '>=', $request->date_from);
+                    }
+                    if ($request->filled('date_to')) {
+                        $filterableQuery->whereDate('date_acquired', '<=', $request->date_to);
+                    }
+                    break;
                 // 'none' case is implicitly handled by not adding a where clause
             }
         }
@@ -370,9 +378,9 @@ class InventoryItemController extends Controller
             ->orderBy('month_num', 'asc')
             ->get();
 
-        // 6. Status distribution (Doughnut Chart - always show ALL inventory data)
-        $newCount = InventoryItem::active()->whereRaw('TRIM(UPPER(status)) = "NEW"')->count();
-        $forReplacementCount = InventoryItem::active()->whereRaw('TRIM(UPPER(status)) = "FOR REPLACEMENT"')->count();
+        // 6. Status distribution (Doughnut Chart - reflect applied filters)
+        $newCount = (clone $filterableQuery)->whereRaw('TRIM(UPPER(status)) = "NEW"')->count();
+        $forReplacementCount = (clone $filterableQuery)->whereRaw('TRIM(UPPER(status)) = "FOR REPLACEMENT"')->count();
 
         $statusData = collect([
             (object)['status' => 'NEW', 'count' => $newCount],

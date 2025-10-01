@@ -87,16 +87,13 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Handle tab active state
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname;
             const tabs = document.querySelectorAll('.nav-tabs .nav-link');
             
             tabs.forEach(tab => {
-                // Remove active class from all tabs first
                 tab.classList.remove('active');
                 
-                // Check if this tab's href matches current path
                 const tabHref = tab.getAttribute('href');
                 if (tabHref === currentPath || 
                     (currentPath === '/' && tabHref.includes('inventory')) ||

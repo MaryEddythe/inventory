@@ -215,28 +215,20 @@
 
 @push('scripts')
 <script>
-    // Global variable to store chart instances
     const chartInstances = {};
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Initial Count-up animation
         document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
-
-        // Initialize all charts
         initializeCharts();
-
-        // Populate data tables
         populateDataTable('divisionTableBody', {!! json_encode($divisionData->pluck('division')) !!}, {!! json_encode($divisionData->pluck('count')) !!});
         populateDataTable('acquisitionTableBody', {!! json_encode($monthlyAcquisitions->pluck('month')) !!}, {!! json_encode($monthlyAcquisitions->pluck('count')) !!});
         populateDataTable('classificationTableBody', {!! json_encode($classificationData->pluck('classification')) !!}, {!! json_encode($classificationData->pluck('total_value')) !!}, 'currency');
         populateDataTable('statusTableBody', {!! json_encode($statusData->pluck('status')) !!}, {!! json_encode($statusData->pluck('count')) !!});
 
-        // Event listeners
         document.getElementById('refresh-btn').addEventListener('click', function() {
             location.reload();
         });
 
-        // Filter functionality using event delegation for all filter options
         document.querySelectorAll('.filter-option').forEach(item => {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -247,7 +239,6 @@
         });
 
         document.getElementById('custom-range').addEventListener('click', function() {
-            // Show custom date range modal
             var customRangeModal = new bootstrap.Modal(document.getElementById('customRangeModal'));
             customRangeModal.show();
         });
@@ -266,15 +257,12 @@
                 return;
             }
 
-            // Hide modal
             var customRangeModalEl = document.getElementById('customRangeModal');
             var customRangeModal = bootstrap.Modal.getInstance(customRangeModalEl);
             customRangeModal.hide();
 
-            // Update filter text
             document.getElementById('current-filter-text').textContent = `Custom: ${startDate} to ${endDate}`;
 
-            // Fetch filtered data with custom date range
             fetch(`/dashboard?filter=custom&date_from=${startDate}&date_to=${endDate}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -282,7 +270,6 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Update summary cards
                 const totalItemsEl = document.getElementById('totalItemsCount');
                 totalItemsEl.setAttribute('data-target', data.totalItems);
                 animateCountUp(totalItemsEl, data.totalItems);
@@ -299,13 +286,11 @@
                 totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
                 animateCountUp(totalDivisionsEl, data.totalDivisions);
 
-                // Update charts
                 updateChart('divisionChart', data.divisionData.labels, data.divisionData.counts);
                 updateChart('acquisitionChart', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
                 updateChart('classificationChart', data.classificationData.labels, data.classificationData.values);
                 updateChart('statusChart', data.statusData.labels, data.statusData.counts);
 
-                // Update data tables
                 populateDataTable('divisionTableBody', data.divisionData.labels, data.divisionData.counts);
                 populateDataTable('acquisitionTableBody', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
                 populateDataTable('classificationTableBody', data.classificationData.labels, data.classificationData.values, 'currency');
@@ -318,21 +303,16 @@
         });
     });
 
-    // Helper functions
-
     function animateCountUp(el, targetValue) {
-        // Use the data-target attribute as a fallback if targetValue is not provided
         const target = targetValue !== undefined ? parseFloat(targetValue) : parseFloat(el.getAttribute('data-target'));
         const isCurrency = el.closest('#totalValueCount') !== null;
         let start = 0;
-        
-        // Try to get the current visible value to start the animation from
-        const currentText = el.textContent.replace(/[^0-9.]/g, '');
+                const currentText = el.textContent.replace(/[^0-9.]/g, '');
         if (currentText && !isNaN(parseFloat(currentText))) {
             start = parseFloat(currentText);
         }
 
-        const duration = 1000; // 1 second
+        const duration = 1000; 
         let startTime;
 
         function step(timestamp) {
@@ -342,10 +322,8 @@
             const currentValue = start + (target - start) * ratio;
 
             if (isCurrency) {
-                // For currency, format with 2 decimal places and commas
                 el.textContent = currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             } else {
-                // For counts, round and format with commas
                 el.textContent = Math.round(currentValue).toLocaleString();
             }
 
@@ -367,11 +345,10 @@
             'FAD': '#4DA9FF',
             'Unknown Division': '#6c757d'
         };
-        return colorMap[label] || '#6c757d'; // Default to gray if not found
+        return colorMap[label] || '#6c757d'; 
     }
 
     function initializeCharts() {
-        // Division Chart (Pie)
         const divisionLabels = {!! json_encode($divisionData->pluck('division')) !!};
         const divisionDataCounts = {!! json_encode($divisionData->pluck('count')) !!};
         chartInstances['divisionChart'] = new Chart(document.getElementById('divisionChart'), {
@@ -402,7 +379,6 @@
             }
         });
 
-        // Acquisition Chart (Line)
         chartInstances['acquisitionChart'] = new Chart(document.getElementById('acquisitionChart'), {
             type: 'line',
             data: {
@@ -439,7 +415,6 @@
             }
         });
 
-        // Classification Chart (Bar)
         chartInstances['classificationChart'] = new Chart(document.getElementById('classificationChart'), {
             type: 'bar',
             data: {
@@ -474,7 +449,6 @@
             }
         });
 
-        // Status Chart (Doughnut)
         const statusLabels = {!! json_encode($statusData->pluck('status')) !!};
         const statusDataCounts = {!! json_encode($statusData->pluck('count')) !!};
         chartInstances['statusChart'] = new Chart(document.getElementById('statusChart'), {
@@ -528,10 +502,8 @@
     }
 
     function applyFilter(filterType, filterText) {
-        // Update the dropdown text to reflect the applied filter
         document.getElementById('current-filter-text').textContent = filterText === 'All Time (Clear Filter)' ? 'Filters' : filterText;
         
-        // Start the fetch with the filter parameter
         fetch(`/dashboard?filter=${filterType}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -539,37 +511,26 @@
         })
         .then(response => response.json())
         .then(data => {
-            // Update summary cards
-            // 1. Total Items
             const totalItemsEl = document.getElementById('totalItemsCount');
             totalItemsEl.setAttribute('data-target', data.totalItems);
             animateCountUp(totalItemsEl, data.totalItems);
-
-            // 2. Total Value
             const totalValueEl = document.getElementById('totalValueCount');
             totalValueEl.setAttribute('data-target', data.totalValue);
             animateCountUp(totalValueEl, data.totalValue);
 
-            // 3. Items Added This Month (Note: This card's data doesn't get filtered by time range in the controller, 
-            // but we'll update it for completeness if the controller changes it)
             const itemsThisMonthEl = document.getElementById('itemsThisMonthCount');
             itemsThisMonthEl.setAttribute('data-target', data.itemsThisMonth);
             animateCountUp(itemsThisMonthEl, data.itemsThisMonth);
 
-            // 4. Active Divisions
             const totalDivisionsEl = document.getElementById('totalDivisionsCount');
             totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
             animateCountUp(totalDivisionsEl, data.totalDivisions);
 
-
-            // Update charts
             updateChart('divisionChart', data.divisionData.labels, data.divisionData.counts);
             updateChart('acquisitionChart', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
             updateChart('classificationChart', data.classificationData.labels, data.classificationData.values);
-            // Note: Status chart data is currently *not* filtered in the controller, but updated for consistency
             updateChart('statusChart', data.statusData.labels, data.statusData.counts); 
 
-            // Update data tables
             populateDataTable('divisionTableBody', data.divisionData.labels, data.divisionData.counts);
             populateDataTable('acquisitionTableBody', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
             populateDataTable('classificationTableBody', data.classificationData.labels, data.classificationData.values, 'currency');

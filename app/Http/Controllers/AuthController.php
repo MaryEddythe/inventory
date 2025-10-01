@@ -77,7 +77,6 @@ class AuthController extends Controller
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Handle profile image upload
         if ($request->hasFile('profile_image')) {
             $imagePath = $request->file('profile_image')->store('profile_images', 'public');
             $validated['profile_image'] = $imagePath;
@@ -85,7 +84,6 @@ class AuthController extends Controller
 
         $user->update($validated);
 
-        // Refresh the authenticated user instance to reflect changes in the session
         Auth::setUser($user->fresh());
 
         return redirect()->route('profile')->with('success', 'Profile updated successfully!');

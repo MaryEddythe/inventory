@@ -1,7 +1,3 @@
-/* ==========================================================================
-   MAIN APPLICATION STYLES
-   ========================================================================== */
-
 .badge-division-MMD {
     background: #007B83 !important;
     color: #fff !important;
@@ -236,11 +232,6 @@ header {
     font-size: 1rem;
     margin-right: 0;
 }
-
-/* ==========================================================================
-   TAB NAVIGATION STYLES - MAROON ACTIVE TABS
-   ========================================================================== */
-
 .nav-tabs {
     border-bottom: 2px solid #dee2e6;
     margin-bottom: 0;
@@ -257,14 +248,14 @@ header {
     font-weight: 500;
     color: #6c757d;
     transition: all 0.3s ease;
-    background-color: #f8f9fa; /* Gray background for inactive tabs */
+    background-color: #f8f9fa; 
     border-radius: 8px 8px 0 0;
     margin-right: 4px;
 }
 
 .nav-tabs .nav-link:hover {
-    color: #800000; /* Maroon color on hover */
-    background-color: #e9ecef; /* Slightly darker gray on hover */
+    color: #800000; 
+    background-color: #e9ecef;
     border-bottom-color: #800000;
 }
 
@@ -275,8 +266,8 @@ header {
 }
 
 .nav-tabs .nav-link:not(.active) {
-    background-color: #f8f9fa; /* Gray background for inactive tabs */
-    color: #6c757d; /* Gray text for inactive tabs */
+    background-color: #f8f9fa;
+    color: #6c757d; 
 }
 
 .nav-tabs .nav-link i {
@@ -303,8 +294,6 @@ header {
         margin-right: 0.3rem;
     }
 }
-
-/* Container fluid padding adjustment */
 .container-fluid {
     padding-left: 2rem;
     padding-right: 2rem;
@@ -329,12 +318,6 @@ main.container-fluid {
         padding-right: 1rem;
     }
 }
-
-/* ==========================================================================
-   PDF EXPORT STYLES
-   ========================================================================== */
-
-/* PDF Page Settings */
 .pdf-page {
     margin: 15px;
     size: landscape;
@@ -480,7 +463,6 @@ main.container-fluid {
     text-align: center;
 }
 
-/* PDF Column Width Helpers */
 .pdf-col-4 { width: 4%; }
 .pdf-col-5 { width: 5%; }
 .pdf-col-7 { width: 7%; }
@@ -493,7 +475,6 @@ main.container-fluid {
 .pdf-col-20 { width: 20%; }
 .pdf-col-25 { width: 25%; }
 
-/* PDF Print Optimizations */
 @media print {
     .pdf-table {
         font-size: 8px;
@@ -507,9 +488,7 @@ main.container-fluid {
     .pdf-table td {
         padding: 2px;
     }
-    
-    /* Ensure proper page breaks */
-    .pdf-table thead {
+        .pdf-table thead {
         display: table-header-group;
     }
     
@@ -521,13 +500,11 @@ main.container-fluid {
         page-break-inside: avoid;
     }
     
-    /* Hide non-essential elements during print */
     .no-print {
         display: none !important;
     }
 }
 
-/* PDF Export Button Styles */
 .export-dropdown .dropdown-menu {
     min-width: 180px;
 }
@@ -556,7 +533,6 @@ main.container-fluid {
     color: #198754;
 }
 
-/* Loading indicator for export */
 .export-loading {
     display: inline-block;
     width: 1rem;
@@ -573,7 +549,6 @@ main.container-fluid {
     100% { transform: rotate(360deg); }
 }
 
-/* Export Success/Error Messages */
 .export-success {
     background-color: #d1edff;
     border: 1px solid #b6d7ff;
@@ -592,7 +567,6 @@ main.container-fluid {
     margin: 10px 0;
 }
 
-/* Responsive PDF styles */
 @media (max-width: 768px) {
     .pdf-table {
         font-size: 7px;
@@ -608,7 +582,6 @@ main.container-fluid {
     }
 }
 
-/* PDF Table Striping */
 .pdf-table-striped tbody tr:nth-child(odd) {
     background-color: #f9f9f9;
 }
@@ -617,7 +590,6 @@ main.container-fluid {
     background-color: #ffffff;
 }
 
-/* PDF Text Utilities */
 .pdf-text-uppercase {
     text-transform: uppercase;
 }
@@ -642,7 +614,6 @@ main.container-fluid {
     font-weight: lighter;
 }
 
-/* PDF Border Utilities */
 .pdf-border {
     border: 1px solid #dee2e6;
 }
@@ -663,7 +634,6 @@ main.container-fluid {
     border-right: 1px solid #dee2e6;
 }
 
-/* PDF Spacing Utilities */
 .pdf-mt-1 { margin-top: 4px; }
 .pdf-mt-2 { margin-top: 8px; }
 .pdf-mt-3 { margin-top: 12px; }
@@ -693,7 +663,6 @@ main.container-fluid {
 .pdf-pr-2 { padding-right: 8px; }
 .pdf-pr-3 { padding-right: 12px; }
 
-/* PDF Color Utilities */
 .pdf-text-primary { color: #007bff; }
 .pdf-text-success { color: #28a745; }
 .pdf-text-danger { color: #dc3545; }
@@ -709,13 +678,11 @@ main.container-fluid {
 .pdf-bg-light { background-color: #f8f9fa; color: black; }
 .pdf-bg-dark { background-color: #343a40; color: white; }
 
-/* PDF Alignment Utilities */
 .pdf-text-left { text-align: left; }
 .pdf-text-right { text-align: right; }
 .pdf-text-center { text-align: center; }
 .pdf-text-justify { text-align: justify; }
 
-/* PDF Display Utilities */
 .pdf-d-none { display: none; }
 .pdf-d-inline { display: inline; }
 .pdf-d-inline-block { display: inline-block; }
@@ -739,7 +706,6 @@ main.container-fluid {
     color: #ffffff !important;
 }
 
-/* Employee Autocomplete Styles */
 .suggestions-list {
     position: absolute;
     background: white;
@@ -762,14 +728,6 @@ main.container-fluid {
 mark {
     background: lightblue;
 }
-
-/* ==========================================================================
-   DASHBOARD STYLES
-   ========================================================================== */
-
-/* Enhanced Dashboard Styles */
-
-/* Summary Cards */
 .summary-card {
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     border: none;
@@ -804,13 +762,11 @@ mark {
     border-radius: 10px 10px 0 0;
 }
 
-/* Count-up Animation */
 .count-up {
     font-weight: bold;
     color: #495057;
 }
 
-/* Progress Bars */
 .progress {
     height: 10px;
     border-radius: 5px;
@@ -820,7 +776,6 @@ mark {
     transition: width 1s ease-in-out;
 }
 
-/* Buttons */
 .btn {
     transition: all 0.2s ease-in-out;
     border-radius: 6px;
@@ -835,7 +790,6 @@ mark {
     opacity: 0.6;
 }
 
-/* Data Tables */
 .table {
     margin-bottom: 0;
 }
@@ -851,7 +805,6 @@ mark {
     border-color: #dee2e6;
 }
 
-/* Alerts */
 .alert {
     border-radius: 8px;
     border: none;
@@ -872,7 +825,6 @@ mark {
     color: #155724;
 }
 
-/* Dropdowns */
 .dropdown-menu {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -960,7 +912,6 @@ mark {
     color: #a3d9b1;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .d-flex.gap-2 {
         flex-wrap: wrap;
@@ -998,7 +949,6 @@ mark {
     animation: fadeInUp 0.5s ease-out;
 }
 
-/* Tooltip Enhancements */
 .tooltip-inner {
     background-color: #495057;
     color: #fff;
@@ -1012,7 +962,6 @@ mark {
     border-bottom-color: #495057;
 }
 
-/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
     .summary-card,
     .chart-card,
@@ -1024,10 +973,127 @@ mark {
     }
 }
 
-/* Focus Styles */
 .btn:focus,
 .form-control:focus,
 .dropdown-toggle:focus {
     outline: 2px solid #007bff;
     outline-offset: 2px;
+}
+@page {
+    margin: 15px;
+    size: landscape;
+}
+body {
+    font-family: "DejaVu Sans", Arial, sans-serif;
+    font-size: 9px;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
+.header {
+    text-align: center;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 6px;
+}
+.header h1 {
+    margin: 0;
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+}
+.header p {
+    margin: 2px 0;
+    color: #666;
+    font-size: 10px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+    page-break-inside: auto;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 3px;
+    text-align: left;
+    font-size: 8px;
+    word-wrap: break-word;
+}
+th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    font-size: 9px;
+}
+tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+}
+.text-right {
+    text-align: right;
+}
+.text-center {
+    text-align: center;
+}
+.summary-section {
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+.summary-table {
+    width: 100%;
+    margin-bottom: 8px;
+}
+.summary-table th {
+    background-color: #e9ecef;
+    font-size: 9px;
+}
+.overall-summary {
+    background-color: #f8f9fa;
+    padding: 6px;
+    border: 1px solid #dee2e6;
+    margin-top: 8px;
+    border-radius: 3px;
+}
+.page-break {
+    page-break-after: always;
+}
+.footer {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 8px;
+    color: #666;
+    border-top: 1px solid #ddd;
+    padding-top: 4px;
+}
+.nowrap {
+    white-space: nowrap;
+}
+.signature-section table {
+    border: none;
+    margin-top: 20px;
+}
+.signature-section td {
+    border: none;
+    padding: 10px;
+    vertical-align: top;
+    font-size: 9px;
+}
+.signature-section .signature-label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+}
+.signature-section .signature-name {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+.signature-section .signature-title {
+    font-weight: normal;
+    color: #333;
+}
+.signature-section .signature-line {
+    border-top: 1px solid #333;
+    margin-bottom: 5px;
+    width: 200px;
 }

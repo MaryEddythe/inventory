@@ -17,7 +17,6 @@ class InventoryItemController extends Controller
     {
         $query = InventoryItem::active();
 
-        // Search functionality with debounce and optimization
         if ($request->filled('search')) {
             $search = $request->search;
             $searchTerms = array_filter(explode(' ', $search));
@@ -37,17 +36,14 @@ class InventoryItemController extends Controller
             });
         }
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by division
         if ($request->filled('division')) {
             $query->where('division', $request->division);
         }
 
-        // Filter by date range
         if ($request->filled('date_from')) {
             $query->whereDate('date_acquired', '>=', $request->date_from);
         }
@@ -213,7 +209,6 @@ class InventoryItemController extends Controller
     {
         $csv = Writer::createFromString('');
         
-        // Add CSV headers
         $csv->insertOne([
             'No', 'Division', 'End User', 'Employee No', 'Classification', 'Description', 
             'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE', 
@@ -238,9 +233,8 @@ class InventoryItemController extends Controller
             ]);
         }
 
-        // Signature section for CSV
-        $csv->insertOne(array_fill(0, 13, '')); // Empty row
-        $csv->insertOne(array_fill(0, 13, '')); // Empty row
+        $csv->insertOne(array_fill(0, 13, '')); 
+        $csv->insertOne(array_fill(0, 13, '')); 
 
         $signature1 = array_fill(0, 13, '');
         $signature1[0] = 'Prepared by:';
@@ -262,8 +256,8 @@ class InventoryItemController extends Controller
         $signature4[7] = 'ICT Focal Person';
         $csv->insertOne($signature4);
 
-        $csv->insertOne(array_fill(0, 13, '')); // Empty row
-        $csv->insertOne(array_fill(0, 13, '')); // Empty row
+        $csv->insertOne(array_fill(0, 13, '')); 
+        $csv->insertOne(array_fill(0, 13, ''));
 
         $signature5 = array_fill(0, 13, '');
         $signature5[6] = '_______________________________';
@@ -285,14 +279,12 @@ class InventoryItemController extends Controller
 
     public function dashboard(Request $request)
     {
-        // 1. Initial Query for Filterable Data (Summary Cards and Division/Classification Charts)
         $filterableQuery = InventoryItem::active();
         $itemsThisMonth = InventoryItem::active()
             ->whereMonth('date_acquired', now()->month)
             ->whereYear('date_acquired', now()->year)
             ->count();
         
-        // 2. Apply general filters
         if ($request->filled('filter') && $request->filter !== 'none') {
             switch ($request->filter) {
                 case 'today':
@@ -316,16 +308,13 @@ class InventoryItemController extends Controller
                         $filterableQuery->whereDate('date_acquired', '<=', $request->date_to);
                     }
                     break;
-                // 'none' case is implicitly handled by not adding a where clause
             }
         }
 
-        // 3. Get Filtered Summary Data
         $totalItems = $filterableQuery->count();
         $totalValue = $filterableQuery->sum('unit_price');
         $totalDivisions = $filterableQuery->distinct('division')->count('division');
 
-        // 4. Get Filtered Chart Data (Division, Classification)
         $divisionData = $filterableQuery->selectRaw('division, count(*) as count')
             ->groupBy('division')
             ->get();
@@ -333,13 +322,6 @@ class InventoryItemController extends Controller
         $classificationData = $filterableQuery->selectRaw('classification, sum(unit_price) as total_value')
             ->groupBy('classification')
             ->get();
-
-        // 5. Monthly acquisitions (Line Chart - generally shows ALL data, not just filtered date range)
-        // If a filter is applied, we only filter the acquisitions chart if it makes sense (e.g., 'This Year')
-        // For simplicity, we'll keep the monthly acquisitions chart showing a broader range (like the last 12 months)
-        // unless a specific date range is implemented for it.
-        // For now, let's make it show data *up to* the filtered range's end date for clarity, if a filter is active.
-        $acquisitionQuery = InventoryItem::active();
         
         if ($request->filled('filter') && $request->filter !== 'none') {
              $endDate = now();
@@ -360,13 +342,12 @@ class InventoryItemController extends Controller
                     $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
                     break;
                 case 'year':
-                    $startDate = now()->startOfYear(); // Only current year's acquisitions
+                    $startDate = now()->startOfYear();
                     $endDate = now()->endOfYear();
                     $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
                     break;
             }
         } else {
-            // Default to last 12 months for 'All Time' filter
             $startDate = now()->subMonths(11)->startOfMonth();
             $acquisitionQuery->where('date_acquired', '>=', $startDate);
         }
@@ -378,7 +359,6 @@ class InventoryItemController extends Controller
             ->orderBy('month_num', 'asc')
             ->get();
 
-        // 6. Status distribution (Doughnut Chart - reflect applied filters)
         $newCount = (clone $filterableQuery)->whereRaw('TRIM(UPPER(status)) = "NEW"')->count();
         $forReplacementCount = (clone $filterableQuery)->whereRaw('TRIM(UPPER(status)) = "FOR REPLACEMENT"')->count();
 
@@ -389,8 +369,8 @@ class InventoryItemController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'totalItems' => (int)$totalItems, // Ensure integer for JS
-                'totalValue' => (float)$totalValue, // Ensure float for JS
+                'totalItems' => (int)$totalItems, 
+                'totalValue' => (float)$totalValue, 
                 'itemsThisMonth' => (int)$itemsThisMonth,
                 'totalDivisions' => (int)$totalDivisions,
                 'divisionData' => [
@@ -412,7 +392,6 @@ class InventoryItemController extends Controller
             ]);
         }
         
-        // This is for the initial page load without AJAX
         return view('inventory.tabs.dashboard', compact(
             'totalItems',
             'totalValue',

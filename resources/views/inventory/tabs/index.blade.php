@@ -26,7 +26,6 @@
                 <i class="bi bi-funnel"></i> Filter
             </button>
             
-            <!-- Export Dropdown -->
             <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-download me-1"></i> Export
@@ -160,7 +159,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Live Search with debounce
     let searchTimer;
     const searchInput = document.querySelector('input[name="search"]');
 
@@ -168,10 +166,9 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             updateResults();
-        }, 300); // 300ms delay
+        }, 300); 
     });
 
-    // Filter form handling
     const filterForm = document.getElementById('filterForm');
     filterForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -179,13 +176,11 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#filterModal').modal('hide');
     });
 
-    // Clear filters
     document.getElementById('clearFilters').addEventListener('click', function() {
         filterForm.reset();
         updateResults();
     });
 
-    // Export functionality
     document.querySelectorAll('.export-option').forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
@@ -194,7 +189,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Handle Add Inventory Form Submission
     const addInventoryForm = document.getElementById('add-inventory-form');
     if (addInventoryForm) {
         addInventoryForm.addEventListener('submit', function(e) {
@@ -203,7 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const formData = new FormData(this);
 
-            // Show loading indicator
             Swal.fire({
                 title: 'Adding Item...',
                 text: 'Please wait while we add the item',
@@ -252,7 +245,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        // Close modal and refresh page
                         $('#addInventoryModal').modal('hide');
                         location.reload();
                     });
@@ -276,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle Edit Inventory Form Submissions
     document.querySelectorAll('.edit-inventory-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -285,7 +276,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemId = this.id.split('-').pop();
             const formData = new FormData(this);
 
-            // Show loading indicator
             Swal.fire({
                 title: 'Updating Item...',
                 text: 'Please wait while we update the item',
@@ -333,7 +323,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        // Close modal and refresh page
                         $(`#editInventoryModal${itemId}`).modal('hide');
                         location.reload();
                     });
@@ -357,7 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Handle Delete Form Submissions
     document.querySelectorAll('.delete-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -432,12 +420,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateResults() {
         const searchParams = new URLSearchParams();
 
-        // Add search term
         if (searchInput.value) {
             searchParams.append('search', searchInput.value);
         }
 
-        // Add filters
         const formData = new FormData(filterForm);
         for (let pair of formData.entries()) {
             if (pair[1]) {
@@ -445,11 +431,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Update URL with filters
         const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
         window.history.pushState({}, '', newUrl);
 
-        // Fetch filtered results
         fetch(`${window.location.pathname}?${searchParams.toString()}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -464,7 +448,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function exportData(type) {
         const searchParams = new URLSearchParams(window.location.search);
 
-        // Add filters from filter form
         const formData = new FormData(filterForm);
         for (let pair of formData.entries()) {
             if (pair[1]) {
@@ -472,7 +455,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Show loading indicator
         Swal.fire({
             title: 'Exporting...',
             text: 'Please wait while we prepare your file',
@@ -482,11 +464,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Trigger download
         const exportUrl = `{{ route('inventory.export', ':type') }}?${searchParams.toString()}`.replace(':type', type);
         window.location.href = exportUrl;
 
-        // Close loading indicator after a delay
         setTimeout(() => {
             Swal.close();
         }, 2000);

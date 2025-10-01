@@ -30,7 +30,8 @@ class InventoryItemController extends Controller
                                 ->orWhere('classification', 'LIKE', "%{$term}%")
                                 ->orWhere('description', 'LIKE', "%{$term}%")
                                 ->orWhere('serial_number', 'LIKE', "%{$term}%")
-                                ->orWhere('property_number', 'LIKE', "%{$term}%");
+                                ->orWhere('property_number', 'LIKE', "%{$term}%")
+                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
                     });
                 }
             });
@@ -68,7 +69,7 @@ class InventoryItemController extends Controller
     public function create()
     {
         $departments = Department::orderBy('department')->get();
-        $employees = Employee::orderBy('firstname')->get();
+        $employees = Employee::orderBy('firstname')->get(['emp_no', 'firstname', 'lastname']);
         return view('inventory.modals.create-modal', compact('departments', 'employees'));
     }
 
@@ -77,6 +78,7 @@ class InventoryItemController extends Controller
         $validated = $request->validate([
             'division' => 'required|string|max:255',
             'enduser' => 'required|string|max:255',
+            'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
             'classification' => 'required|string|max:255',
             'property_number' => 'required|string|max:255|unique:inventory_items,property_number',
             'description' => 'required|string',
@@ -99,7 +101,7 @@ class InventoryItemController extends Controller
     public function edit(InventoryItem $inventoryItem)
     {
         $departments = Department::orderBy('department')->get();
-        $employees = Employee::orderBy('firstname')->get();
+        $employees = Employee::orderBy('firstname')->get(['emp_no', 'firstname', 'lastname']);
         return view('inventory.modals.edit-modal', compact('inventoryItem', 'departments', 'employees'));
     }
 
@@ -110,6 +112,7 @@ class InventoryItemController extends Controller
         $validated = $request->validate([
             'division' => 'required|string|max:255',
             'enduser' => 'required|string|max:255',
+            'emp_no' => 'required|string|max:255|exists:employees,emp_no',
             'classification' => 'required|string|max:255',
             'property_number' => [
                 'required',
@@ -165,7 +168,8 @@ class InventoryItemController extends Controller
                                 ->orWhere('classification', 'LIKE', "%{$term}%")
                                 ->orWhere('description', 'LIKE', "%{$term}%")
                                 ->orWhere('serial_number', 'LIKE', "%{$term}%")
-                                ->orWhere('property_number', 'LIKE', "%{$term}%");
+                                ->orWhere('property_number', 'LIKE', "%{$term}%")
+                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
                     });
                 }
             });
@@ -211,7 +215,7 @@ class InventoryItemController extends Controller
         
         // Add CSV headers
         $csv->insertOne([
-            'No', 'Division', 'End User', 'Classification', 'Description', 
+            'No', 'Division', 'End User', 'Employee No', 'Classification', 'Description', 
             'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE', 
             'Date Acquired', 'Remarks', 'Status'
         ]);
@@ -221,6 +225,7 @@ class InventoryItemController extends Controller
                 $item->no,
                 $item->division,
                 $item->enduser,
+                $item->emp_no ?? 'N/A',
                 $item->classification,
                 $item->description,
                 $item->serial_number ?? 'N/A',
@@ -234,42 +239,42 @@ class InventoryItemController extends Controller
         }
 
         // Signature section for CSV
-        $csv->insertOne(array_fill(0, 12, '')); // Empty row
-        $csv->insertOne(array_fill(0, 12, '')); // Empty row
+        $csv->insertOne(array_fill(0, 13, '')); // Empty row
+        $csv->insertOne(array_fill(0, 13, '')); // Empty row
 
-        $signature1 = array_fill(0, 12, '');
+        $signature1 = array_fill(0, 13, '');
         $signature1[0] = 'Prepared by:';
-        $signature1[6] = 'Reviewed by:';
+        $signature1[7] = 'Reviewed by:';
         $csv->insertOne($signature1);
 
-        $signature2 = array_fill(0, 12, '');
+        $signature2 = array_fill(0, 13, '');
         $signature2[0] = '_______________________________';
-        $signature2[6] = '_______________________________';
+        $signature2[7] = '_______________________________';
         $csv->insertOne($signature2);
 
-        $signature3 = array_fill(0, 12, '');
+        $signature3 = array_fill(0, 13, '');
         $signature3[0] = 'HERO JOHN E. LAPORGA';
-        $signature3[6] = 'MAY FLORENCE A. PABELONIO';
+        $signature3[7] = 'MAY FLORENCE A. PABELONIO';
         $csv->insertOne($signature3);
 
-        $signature4 = array_fill(0, 12, '');
+        $signature4 = array_fill(0, 13, '');
         $signature4[0] = 'Senior IT Support Specialist';
-        $signature4[6] = 'ICT Focal Person';
+        $signature4[7] = 'ICT Focal Person';
         $csv->insertOne($signature4);
 
-        $csv->insertOne(array_fill(0, 12, '')); // Empty row
-        $csv->insertOne(array_fill(0, 12, '')); // Empty row
+        $csv->insertOne(array_fill(0, 13, '')); // Empty row
+        $csv->insertOne(array_fill(0, 13, '')); // Empty row
 
-        $signature5 = array_fill(0, 12, '');
-        $signature5[5] = '_______________________________';
+        $signature5 = array_fill(0, 13, '');
+        $signature5[6] = '_______________________________';
         $csv->insertOne($signature5);
 
-        $signature6 = array_fill(0, 12, '');
-        $signature6[5] = 'CECILIA L. OCHAVO-SAYCON';
+        $signature6 = array_fill(0, 13, '');
+        $signature6[6] = 'CECILIA L. OCHAVO-SAYCON';
         $csv->insertOne($signature6);
 
-        $signature7 = array_fill(0, 12, '');
-        $signature7[5] = 'Regional Director';
+        $signature7 = array_fill(0, 13, '');
+        $signature7[6] = 'Regional Director';
         $csv->insertOne($signature7);
 
         return Response::make($csv->toString(), 200, [
@@ -373,7 +378,6 @@ class InventoryItemController extends Controller
             (object)['status' => 'NEW', 'count' => $newCount],
             (object)['status' => 'FOR REPLACEMENT', 'count' => $forReplacementCount],
         ]);
-
 
         if ($request->ajax()) {
             return response()->json([

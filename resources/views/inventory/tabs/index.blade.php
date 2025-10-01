@@ -117,14 +117,14 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                @include('inventory.modals.edit-modal', ['item' => $item, 'departments' => $departments])
+                                @include('inventory.modals.edit-modal', ['item' => $item, 'departments' => $departments, 'employees' => $employees])
                             </div>
                         </div>
                     </div>
                 </div>
                 @empty
                 <tr>
-                    <td colspan="13" class="text-center py-4">No items found.</td>
+                    <td colspan="14" class="text-center py-4">No items found.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -148,7 +148,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                @include('inventory.modals.create-modal', ['departments' => $departments])
+                @include('inventory.modals.create-modal', ['departments' => $departments, 'employees' => $employees])
             </div>
         </div>
     </div>

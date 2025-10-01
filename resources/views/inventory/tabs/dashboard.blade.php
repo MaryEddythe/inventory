@@ -96,7 +96,7 @@
                     <h5 class="card-title mb-0">Items by Division</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="divisionChart" style="height: 60px;"></canvas>
+                    <canvas id="divisionChart" style="height: 30px;"></canvas>
                     <div class="mt-3">
                         <div id="divisionTable" class="mt-2" style="display: none;">
                             <table class="table table-sm table-bordered">
@@ -114,22 +114,22 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card chart-card">
+           <div class="card chart-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Monthly Acquisitions</h5>
+                    <h5 class="card-title mb-0">Status Distribution</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="acquisitionChart" style="height: 200px;"></canvas>
+                    <canvas id="statusChart" style="height: 30px;"></canvas>
                     <div class="mt-3">
-                        <div id="acquisitionTable" class="mt-2" style="display: none;">
+                        <div id="statusTable" class="mt-2" style="display: none;">
                             <table class="table table-sm table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Month</th>
+                                        <th>Status</th>
                                         <th>Count</th>
                                     </tr>
                                 </thead>
-                                <tbody id="acquisitionTableBody"></tbody>
+                                <tbody id="statusTableBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -162,20 +162,20 @@
         <div class="col-md-6">
             <div class="card chart-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Status Distribution</h5>
+                    <h5 class="card-title mb-0">Monthly Acquisitions</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="statusChart" style="height: 60px;"></canvas>
+                    <canvas id="acquisitionChart" style="height: 200px;"></canvas>
                     <div class="mt-3">
-                        <div id="statusTable" class="mt-2" style="display: none;">
+                        <div id="acquisitionTable" class="mt-2" style="display: none;">
                             <table class="table table-sm table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Status</th>
+                                        <th>Month</th>
                                         <th>Count</th>
                                     </tr>
                                 </thead>
-                                <tbody id="statusTableBody"></tbody>
+                                <tbody id="acquisitionTableBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -490,9 +490,8 @@
 
     function updateChart(chartId, labels, data) {
         const chart = chartInstances[chartId];
-        if (!chart) return; // Exit if chart is not initialized
+        if (!chart) return; 
 
-        // Remove duplicates from labels
         labels = [...new Set(labels)];
 
         chart.data.labels = labels;
@@ -502,10 +501,9 @@
             chart.data.datasets[0].backgroundColor = labels.map(label => getDivisionColor(label));
         }
 
-        // For the Acquisition Chart, the stepSize on the Y-axis might need re-evaluation
         if (chartId === 'acquisitionChart' && data.length > 0) {
             const maxCount = Math.max(...data);
-            chart.options.scales.y.ticks.stepSize = maxCount <= 5 ? 1 : null; // Set stepSize to 1 if max is small
+            chart.options.scales.y.ticks.stepSize = maxCount <= 5 ? 1 : null;
         }
 
         chart.update();

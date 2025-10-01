@@ -22,6 +22,7 @@
         <div class="col-md-6 mb-3">
             <label for="enduser" class="form-label">End User</label>
             <input type="text" class="form-control" id="enduser" name="enduser" value="{{ old('enduser') }}" oninput="filterEmployees()" required>
+            <input type="hidden" id="emp_no" name="emp_no" value="{{ old('emp_no') }}">
             <div id="employee-suggestions" class="suggestions-list"></div>
         </div>
     </div>
@@ -72,23 +73,25 @@
 <script>
     var employees = [
         @foreach($employees as $employee)
-            {name: '{{ $employee->firstname }} {{ $employee->lastname }}'},
+            {name: '{{ $employee->firstname }} {{ $employee->lastname }}', emp_no: '{{ $employee->emp_no }}'},
         @endforeach
     ];
 
     function filterEmployees() {
         var input = document.getElementById('enduser');
+        var empNoInput = document.getElementById('emp_no');
         var filter = input.value.toLowerCase();
         var suggestions = document.getElementById('employee-suggestions');
         suggestions.innerHTML = '';
 
         if (filter.length === 0) {
             suggestions.style.display = 'none';
+            empNoInput.value = '';
             return;
         }
 
         var filtered = employees.filter(function(emp) {
-            return emp.name.toLowerCase().includes(filter);
+            return emp.name.toLowerCase().includes(filter) || emp.emp_no.toLowerCase().includes(filter);
         });
 
         if (filtered.length > 0) {
@@ -96,15 +99,17 @@
             filtered.forEach(function(emp) {
                 var div = document.createElement('div');
                 div.className = 'suggestion-item';
-                div.innerHTML = highlightMatch(emp.name, filter);
+                div.innerHTML = highlightMatch(`${emp.name} (${emp.emp_no})`, filter);
                 div.onclick = function() {
                     input.value = emp.name;
+                    empNoInput.value = emp.emp_no;
                     suggestions.style.display = 'none';
                 };
                 suggestions.appendChild(div);
             });
         } else {
             suggestions.style.display = 'none';
+            empNoInput.value = '';
         }
     }
 

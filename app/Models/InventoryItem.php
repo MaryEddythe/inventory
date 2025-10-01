@@ -18,6 +18,7 @@ class InventoryItem extends Model
     protected $fillable = [
         'division',
         'enduser',
+        'emp_no',
         'classification',
         'description',
         'serial_number',

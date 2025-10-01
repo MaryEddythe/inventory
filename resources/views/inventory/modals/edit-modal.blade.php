@@ -23,7 +23,9 @@
         </div>
         <div class="col-md-6 mb-3">
             <label for="enduser-{{ $item->no }}" class="form-label">End User</label>
-            <input type="text" class="form-control" id="enduser-{{ $item->no }}" name="enduser" value="{{ old('enduser', $item->enduser) }}" required>
+            <input type="text" class="form-control" id="enduser-{{ $item->no }}" name="enduser" value="{{ old('enduser', $item->enduser) }}" oninput="filterEmployees('{{ $item->no }}')" required>
+            <input type="hidden" id="emp_no-{{ $item->no }}" name="emp_no" value="{{ old('emp_no', $item->emp_no) }}">
+            <div id="employee-suggestions-{{ $item->no }}" class="suggestions-list"></div>
         </div>
     </div>
     <div class="row">
@@ -69,3 +71,60 @@
         <button type="submit" class="btn btn-primary">Update Item</button>
     </div>
 </form>
+
+<script>
+    var employees = [
+        @foreach($employees as $employee)
+            {name: '{{ $employee->firstname }} {{ $employee->lastname }}', emp_no: '{{ $employee->emp_no }}'},
+        @endforeach
+    ];
+
+    function filterEmployees(itemId) {
+        var input = document.getElementById('enduser-' + itemId);
+        var empNoInput = document.getElementById('emp_no-' + itemId);
+        var filter = input.value.toLowerCase();
+        var suggestions = document.getElementById('employee-suggestions-' + itemId);
+        suggestions.innerHTML = '';
+
+        if (filter.length === 0) {
+            suggestions.style.display = 'none';
+            empNoInput.value = '';
+            return;
+        }
+
+        var filtered = employees.filter(function(emp) {
+            return emp.name.toLowerCase().includes(filter) || emp.emp_no.toLowerCase().includes(filter);
+        });
+
+        if (filtered.length > 0) {
+            suggestions.style.display = 'block';
+            filtered.forEach(function(emp) {
+                var div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = highlightMatch(`${emp.name} (${emp.emp_no})`, filter);
+                div.onclick = function() {
+                    input.value = emp.name;
+                    empNoInput.value = emp.emp_no;
+                    suggestions.style.display = 'none';
+                };
+                suggestions.appendChild(div);
+            });
+        } else {
+            suggestions.style.display = 'none';
+            empNoInput.value = '';
+        }
+    }
+
+    function highlightMatch(text, filter) {
+        var regex = new RegExp('(' + filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    }
+
+    document.addEventListener('click', function(e) {
+        var suggestions = document.getElementById('employee-suggestions-{{ $item->no }}');
+        var input = document.getElementById('enduser-{{ $item->no }}');
+        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+            suggestions.style.display = 'none';
+        }
+    });
+</script>

@@ -322,7 +322,9 @@ class InventoryItemController extends Controller
         $classificationData = $filterableQuery->selectRaw('classification, sum(unit_price) as total_value')
             ->groupBy('classification')
             ->get();
-        
+
+        $acquisitionQuery = InventoryItem::active();
+
         if ($request->filled('filter') && $request->filter !== 'none') {
              $endDate = now();
              switch ($request->filter) {

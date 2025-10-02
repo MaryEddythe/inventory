@@ -1,4 +1,4 @@
-<table class="table align-middle table-hover mb-0" style="font-size: 0.97rem;">
+<table class="table align-middle table-hover mb-0" style="font-size: 1.1rem;">
     <thead style="background: #f3f4f6;">
         <tr class="text-secondary">
             <th>No</th>

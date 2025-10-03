@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use League\Csv\Writer;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\File;
 
 class InventoryItemController extends Controller
 {
@@ -76,9 +77,9 @@ class InventoryItemController extends Controller
             'enduser' => 'required|string|max:255',
             'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
             'classification' => 'required|string|max:255',
-            'property_number' => 'required|string|max:255|unique:inventory_items,property_number',
+            'property_number' => 'required|string|max:255',
             'description' => 'required|string',
-            'serial_number' => 'nullable|string|max:255|unique:inventory_items,serial_number',
+            'serial_number' => 'nullable|string|max:255',
             'unit_price' => 'required|numeric|min:0',
             'co_mooe' => 'required|string|max:255',
             'date_acquired' => 'required|date',
@@ -110,19 +111,9 @@ class InventoryItemController extends Controller
             'enduser' => 'required|string|max:255',
             'emp_no' => 'required|string|max:255|exists:employees,emp_no',
             'classification' => 'required|string|max:255',
-            'property_number' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('inventory_items')->ignore($item->no, 'no'),
-            ],
+            'property_number' => 'required|string|max:255',
             'description' => 'required|string',
-            'serial_number' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('inventory_items')->ignore($item->no, 'no'),
-            ],
+            'serial_number' => 'nullable|string|max:255',
             'unit_price' => 'required|numeric|min:0',
             'co_mooe' => 'required|string|max:255',
             'date_acquired' => 'required|date',
@@ -201,7 +192,8 @@ class InventoryItemController extends Controller
 
     private function exportPDF($items, $fileName)
     {
-        $pdf = Pdf::loadView('inventory.export-pdf', compact('items'));
+        $css = File::get(public_path('pdf-styles.css'));
+        $pdf = Pdf::loadView('inventory.export-pdf', compact('items', 'css'))->setPaper('a4', 'landscape');
         return $pdf->download($fileName . '.pdf');
     }
 

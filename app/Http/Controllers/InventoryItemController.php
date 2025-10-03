@@ -8,8 +8,6 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
-use League\Csv\Writer;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\File;
 
 class InventoryItemController extends Controller
@@ -176,6 +174,9 @@ class InventoryItemController extends Controller
         if ($request->filled('date_to')) {
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
+
+        $query = $query->leftJoin('employee_db.departments', 'inventory_items.division', '=', 'employee_db.departments.dept_no')
+            ->select('inventory_items.*', 'employee_db.departments.department as division_name');
 
         $items = $query->orderBy('no', 'desc')->get();
 

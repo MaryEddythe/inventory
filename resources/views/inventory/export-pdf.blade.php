@@ -10,7 +10,7 @@
         <h2>Mines and Geosciences Bureau</h2>
         <h3>Regional Office VI</h3>
         <h1>INVENTORY REPORT SUMMARY</h1>
-        <p>Generated on: {{ now()->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
+        <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
     </div>
 
     <!-- Detailed Inventory -->
@@ -21,25 +21,25 @@
                     <th colspan="12" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
                 </tr>
                 <tr>
-                    <th class="pdf-col-5 pdf-text-center">No</th>
-                    <th class="pdf-col-10">Department</th>
-                    <th class="pdf-col-10">End User</th>
-                    <th class="pdf-col-10">Classification</th>
-                    <th class="pdf-col-20">Description</th>
-                    <th class="pdf-col-10">Serial No</th>
-                    <th class="pdf-col-10">Property No</th>
-                    <th class="pdf-col-10 pdf-text-right">Unit Price</th>
-                    <th class="pdf-col-6">CO/MOOE</th>
-                    <th class="pdf-col-6 pdf-text-center">Date Acquired</th>
-                    <th class="pdf-col-10">Remarks</th>
-                    <th class="pdf-col-5 pdf-text-center">Status</th>
+                    <th class="pdf-col-0 pdf-text-center">No</th>
+                    <th class="pdf-col-12">Department</th>
+                    <th class="pdf-col-12">End User</th>
+                    <th class="pdf-col-9">Classification</th>
+                    <th class="pdf-col-18">Description</th>
+                    <th class="pdf-col-9">Serial No</th>
+                    <th class="pdf-col-9">Property No</th>
+                    <th class="pdf-col-9 pdf-text-right">Unit Price</th>
+                    <th class="pdf-col-5">CO/MOOE</th>
+                    <th class="pdf-col-5 pdf-text-center">Date Acquired</th>
+                    <th class="pdf-col-9">Remarks</th>
+                    <th class="pdf-col-3 pdf-text-center">Status</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($items as $index => $item)
                 <tr>
                     <td class="pdf-text-center">{{ $loop->iteration }}</td>
-                    <td>{{ $item->division_name }}</td>
+                    <td>{{ $item->division_name ?? $item->division }}</td>
                     <td>{{ $item->enduser }}</td>
                     <td>{{ $item->classification }}</td>
                     <td>{{ $item->description }}</td>
@@ -57,7 +57,7 @@
                 </tr>
                 @endforeach
             </tbody>
-        </table>
+        </table>     
     </div>
 
     <!-- Executive Summary -->

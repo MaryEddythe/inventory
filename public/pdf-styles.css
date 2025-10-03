@@ -3,8 +3,16 @@
     size: A4 landscape;
 }
 
+.pdf-footer .pageNumber::before {
+    content: counter(page);
+}
+
+.pdf-footer .totalPages::before {
+    content: counter(pages);
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: "DejaVu Sans", Arial, sans-serif;
     font-size: 10pt;
     margin: 0;
     padding: 0;
@@ -18,8 +26,22 @@ body {
     padding-bottom: 5mm;
 }
 
-.pdf-header h1 {
+.pdf-header h2 {
     margin: 0;
+    font-size: 12pt;
+    font-weight: bold;
+    text-align: center;
+}
+
+.pdf-header h3 {
+    margin: 2mm 0 0 0;
+    font-size: 11pt;
+    font-weight: bold;
+    text-align: center;
+}
+
+.pdf-header h1 {
+    margin: 3mm 0 0 0;
     font-size: 14pt;
     font-weight: bold;
 }

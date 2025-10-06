@@ -39,7 +39,7 @@
                 @foreach($items as $index => $item)
                 <tr>
                     <td class="pdf-text-center">{{ $loop->iteration }}</td>
-                    <td>{{ $item->division_name ?? $item->division }}</td>
+                    <td>{{ $item->department_name ?? $item->division }}</td>
                     <td>{{ $item->enduser }}</td>
                     <td>{{ $item->classification }}</td>
                     <td>{{ $item->description }}</td>
@@ -76,35 +76,36 @@
             </thead>
             <tbody>
                 @php
-                    $departments = \App\Models\Department::pluck('dept_no')->toArray();
-                    $totalNew = 0;
-                    $totalReplacement = 0;
-                    $grandTotalItems = 0;
-                    $departmentData = [];
+                    $departmentSummaries = collect();
+                    $allDepts = \App\Models\Department::all();
+                    foreach ($allDepts as $dept) {
+                        $group = $items->filter(function ($item) use ($dept) {
+                            return $item->division == $dept->department;
+                        });
+                        $newCount = $group->filter(function ($item) {
+                            return $item->status == 'NEW';
+                        })->count();
+                        $replacementCount = $group->filter(function ($item) {
+                            return $item->status != 'NEW';
+                        })->count();
+                        $totalCount = $group->count();
+                        $departmentSummaries->push([
+                            'name' => $dept->department,
+                            'new' => $newCount,
+                            'replacement' => $replacementCount,
+                            'total' => $totalCount
+                        ]);
+                    }
+                    $totalNew = $departmentSummaries->sum('new');
+                    $totalReplacement = $departmentSummaries->sum('replacement');
+                    $grandTotalItems = $departmentSummaries->sum('total');
                 @endphp
-                @foreach($departments as $dept)
-                    @php
-                        $deptItems = $items->where('division', $dept);
-                        $newItems = $deptItems->where('status', 'NEW');
-                        $replacementItems = $deptItems->where('status', '!=', 'NEW');
-                        $deptTotal = $deptItems->count();
-                        
-                        $totalNew += $newItems->count();
-                        $totalReplacement += $replacementItems->count();
-                        $grandTotalItems += $deptTotal;
-                        
-                        $departmentData[$dept] = [
-                            'new' => $newItems->count(),
-                            'replacement' => $replacementItems->count(),
-                            'total' => $deptTotal,
-                            'name' => \App\Models\Department::where('dept_no', $dept)->first()->department ?? 'Unknown Department'
-                        ];
-                    @endphp
+                @foreach($departmentSummaries as $summary)
                     <tr>
-                        <td><strong>{{ $departmentData[$dept]['name'] }}</strong></td>
-                        <td class="pdf-text-center">{{ $newItems->count() }}</td>
-                        <td class="pdf-text-center">{{ $replacementItems->count() }}</td>
-                        <td class="pdf-text-center">{{ $deptTotal }}</td>
+                        <td><strong>{{ $summary['name'] }}</strong></td>
+                        <td class="pdf-text-center">{{ $summary['new'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['replacement'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>

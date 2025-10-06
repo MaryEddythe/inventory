@@ -175,8 +175,8 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
-        $query = $query->leftJoin('employee_db.departments', 'inventory_items.division', '=', 'employee_db.departments.dept_no')
-            ->select('inventory_items.*', 'employee_db.departments.department as division_name');
+        $query = $query->leftJoin('employee_db.departments', 'inventory_items.division', '=', 'employee_db.departments.department')
+            ->select('inventory_items.*', 'employee_db.departments.dept_no as dept_no', 'employee_db.departments.department as department_name');
 
         $items = $query->orderBy('no', 'desc')->get();
 

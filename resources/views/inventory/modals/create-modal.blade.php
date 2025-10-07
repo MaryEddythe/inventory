@@ -53,8 +53,12 @@
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="co_mooe" class="form-label">CO/MOOE</label>
-            <input type="text" class="form-control" id="co_mooe" name="co_mooe" value="{{ old('co_mooe') }}" required>
-        </div>  
+            <select class="form-select" id="co_mooe" name="co_mooe" required>
+                <option value="" disabled {{ old('co_mooe') ? '' : 'selected' }}>Select CO/MOOE</option>
+                <option value="CO" {{ old('co_mooe') == 'CO' ? 'selected' : '' }}>Capital Outlay</option>
+                <option value="MOOE" {{ old('co_mooe') == 'MOOE' ? 'selected' : '' }}>MOOE</option>
+            </select>
+        </div>
         <div class="col-md-6 mb-3">
             <label for="date_acquired" class="form-label">Date Acquired</label>
             <input type="date" class="form-control" id="date_acquired" name="date_acquired" value="{{ old('date_acquired') }}" required>

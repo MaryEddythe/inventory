@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\File;
+use League\Csv\Writer;
 
 class InventoryItemController extends Controller
 {
@@ -264,7 +265,7 @@ class InventoryItemController extends Controller
         $signature7[6] = 'Regional Director';
         $csv->insertOne($signature7);
 
-        return Response::make($csv->toString(), 200, [
+        return response($csv->toString(), 200, [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $fileName . '.csv"',
         ]);

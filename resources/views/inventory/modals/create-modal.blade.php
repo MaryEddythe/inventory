@@ -68,6 +68,62 @@
         <label for="remarks" class="form-label">Remarks</label>
         <textarea class="form-control" id="remarks" name="remarks" rows="2">{{ old('remarks') }}</textarea>
     </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="condition" class="form-label">Condition</label>
+            <select class="form-select" id="condition" name="condition" required>
+                <option value="NEW" {{ old('condition', 'NEW') == 'NEW' ? 'selected' : '' }}>NEW</option>
+                <option value="FOR REPLACEMENT" {{ old('condition') == 'FOR REPLACEMENT' ? 'selected' : '' }}>FOR REPLACEMENT</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="date_conducted" class="form-label">Date Conducted</label>
+            <input type="date" class="form-control" id="date_conducted" name="date_conducted" value="{{ old('date_conducted') }}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="time_started" class="form-label">Time Started</label>
+            <input type="time" class="form-control" id="time_started" name="time_started" value="{{ old('time_started') }}">
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="time_ended" class="form-label">Time Ended</label>
+            <input type="time" class="form-control" id="time_ended" name="time_ended" value="{{ old('time_ended') }}">
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="recommendation" class="form-label">Recommendation</label>
+        <textarea class="form-control" id="recommendation" name="recommendation" rows="2">{{ old('recommendation') }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Checks</label>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="system_boot_up" name="system_boot_up" value="1" {{ old('system_boot_up') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="system_boot_up">System Boot Up</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="hardware" name="hardware" value="1" {{ old('hardware') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="hardware">Hardware</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="performance" name="performance" value="1" {{ old('performance') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="performance">Performance</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cables_connections" name="cables_connections" value="1" {{ old('cables_connections') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="cables_connections">Cables and Connections</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="peripherals" name="peripherals" value="1" {{ old('peripherals') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="peripherals">Peripherals</label>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
         <button type="button" class="btn btn-secondary me-md-2" data-bs-dismiss="modal">Cancel</button>
         <button type="submit" class="btn btn-primary">Save Item</button>

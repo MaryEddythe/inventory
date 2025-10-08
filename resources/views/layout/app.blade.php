@@ -59,6 +59,11 @@
                             <i class="bi bi-archive"></i> Inventory
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('inventory.ipm') ? 'active' : '' }}" href="{{ route('inventory.ipm') }}">
+                            <i class="bi bi-clipboard-check"></i> IPM
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

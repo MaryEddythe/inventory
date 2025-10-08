@@ -1,2 +1,0 @@
-- [x] Update create-modal.blade.php to change CO/MOOE from text input to select dropdown with options CO and MOOE
-- [x] Update edit-modal.blade.php to change CO/MOOE from text input to select dropdown with options CO and MOOE

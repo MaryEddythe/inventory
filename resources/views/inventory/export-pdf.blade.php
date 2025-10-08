@@ -22,17 +22,26 @@
                 </tr>
                 <tr>
                     <th class="pdf-col-0 pdf-text-center">No</th>
-                    <th class="pdf-col-12">Department</th>
-                    <th class="pdf-col-12">End User</th>
-                    <th class="pdf-col-9">Classification</th>
-                    <th class="pdf-col-18">Description</th>
-                    <th class="pdf-col-9">Serial No</th>
-                    <th class="pdf-col-9">Property No</th>
-                    <th class="pdf-col-9 pdf-text-right">Unit Price</th>
-                    <th class="pdf-col-5">CO/MOOE</th>
-                    <th class="pdf-col-5 pdf-text-center">Date Acquired</th>
-                    <th class="pdf-col-9">Remarks</th>
+                    <th class="pdf-col-8">Department</th>
+                    <th class="pdf-col-8">End User</th>
+                    <th class="pdf-col-6">Classification</th>
+                    <th class="pdf-col-12">Description</th>
+                    <th class="pdf-col-6">Serial No</th>
+                    <th class="pdf-col-6">Property No</th>
+                    <th class="pdf-col-6 pdf-text-right">Unit Price</th>
+                    <th class="pdf-col-4">CO/MOOE</th>
+                    <th class="pdf-col-4 pdf-text-center">Date Acquired</th>
+                    <th class="pdf-col-6">Remarks</th>
                     <th class="pdf-col-3 pdf-text-center">Status</th>
+                    <th class="pdf-col-2 pdf-text-center">Sys Boot</th>
+                    <th class="pdf-col-2 pdf-text-center">HW</th>
+                    <th class="pdf-col-2 pdf-text-center">Perf</th>
+                    <th class="pdf-col-2 pdf-text-center">Cables</th>
+                    <th class="pdf-col-2 pdf-text-center">Periph</th>
+                    <th class="pdf-col-8">Recommendation</th>
+                    <th class="pdf-col-4 pdf-text-center">Date Cond</th>
+                    <th class="pdf-col-3 pdf-text-center">Time Start</th>
+                    <th class="pdf-col-3 pdf-text-center">Time End</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,10 +59,19 @@
                     <td class="pdf-text-center pdf-nowrap">{{ $item->date_acquired->format('m/d/Y') }}</td>
                     <td>{{ $item->remarks ?? 'N/A' }}</td>
                     <td class="pdf-text-center">
-                        <span class="{{ $item->status === 'NEW' ? 'pdf-status-new' : 'pdf-status-replace' }}">
-                            {{ $item->status === 'NEW' ? 'NEW' : 'REPL' }}
+                        <span class="{{ $item->status === 'Functional' ? 'pdf-status-new' : 'pdf-status-replace' }}">
+                            {{ $item->status === 'Functional' ? 'FUNC' : 'NONFUNC' }}
                         </span>
                     </td>
+                    <td class="pdf-text-center">{{ $item->system_boot_up ? '✓' : '✗' }}</td>
+                    <td class="pdf-text-center">{{ $item->hardware ? '✓' : '✗' }}</td>
+                    <td class="pdf-text-center">{{ $item->performance ? '✓' : '✗' }}</td>
+                    <td class="pdf-text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
+                    <td class="pdf-text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
+                    <td>{{ $item->recommendation ?? 'N/A' }}</td>
+                    <td class="pdf-text-center">{{ $item->date_conducted ? $item->date_conducted->format('m/d/Y') : 'N/A' }}</td>
+                    <td class="pdf-text-center">{{ $item->time_started ?? 'N/A' }}</td>
+                    <td class="pdf-text-center">{{ $item->time_ended ?? 'N/A' }}</td>
                 </tr>
                 @endforeach
             </tbody>

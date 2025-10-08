@@ -70,6 +70,7 @@
         <label for="remarks-{{ $item->no }}" class="form-label">Remarks</label>
         <textarea class="form-control" id="remarks-{{ $item->no }}" name="remarks" rows="2">{{ old('remarks', $item->remarks) }}</textarea>
     </div>
+
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
         <button type="button" class="btn btn-secondary me-md-2" data-bs-dismiss="modal">Cancel</button>
         <button type="submit" class="btn btn-primary">Update Item</button>

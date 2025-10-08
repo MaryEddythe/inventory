@@ -17,7 +17,7 @@
     @endif
 
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
-        <h1 class="h4 fw-bold mb-0">Inventory</h1>
+        <h1 class="h4 fw-bold mb-0">IPM</h1>
         <div class="d-flex gap-2 align-items-center">
             <form id="searchForm" class="d-flex align-items-center" style="min-width: 220px;">
                 <input type="text" class="form-control form-control-sm" name="search" placeholder="Search anything here" value="{{ request('search') }}">
@@ -25,7 +25,7 @@
             <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
                 <i class="bi bi-funnel"></i> Filter
             </button>
-            
+
             <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-download me-1"></i> Export
@@ -35,30 +35,51 @@
                     <li><a class="dropdown-item export-option" href="#" data-type="csv"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</a></li>
                 </ul>
             </div>
-            
-            <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
-                <i class="bi bi-plus-circle"></i> Add Inventory
-            </button>
         </div>
     </div>
 
+    <style>
+        .ipm-table {
+            font-size: 1.1rem;
+        }
+        @media (max-width: 768px) {
+            .ipm-table {
+                font-size: 0.9rem;
+            }
+            .ipm-table th, .ipm-table td {
+                padding: 0.5rem 0.25rem;
+            }
+        }
+        @media (max-width: 576px) {
+            .ipm-table {
+                font-size: 0.8rem;
+            }
+            .ipm-table th, .ipm-table td {
+                padding: 0.4rem 0.2rem;
+            }
+        }
+    </style>
     <div class="table-responsive">
-        <table class="table align-middle table-hover mb-0" style="font-size: 1.1rem;">
+        <table class="table align-middle table-hover mb-0 ipm-table">
             <thead style="background: #f3f4f6;">
                 <tr class="text-secondary">
-                    <th>No</th>
-                    <th>Division</th>
-                    <th>Enduser</th>
-                    <th>Classification</th>
-                    <th>Description</th>
-                    <th>Serial Number</th>
-                    <th>Property Number</th>
-                    <th>Unit Price</th>
-                    <th>CO/MOOE</th>
-                    <th>Date Acquired</th>
-                    <th>Remarks</th>
-                    <th>Condition</th>
-                    <th>Action</th>
+                    <th title="Number">No</th>
+                    <th title="Division">Div.</th>
+                    <th title="User">User</th>
+                    <th title="Type">Type</th>
+                    <th title="Description">Desc</th>
+                    <th title="Condition">Condition</th>
+                    <th title="System Boot Up">Boot Up</th>
+                    <th title="Hardware">HW</th>
+                    <th title="Performance">Perf</th>
+                    <th title="Cables and Connections">Cables/Conn</th>
+                    <th title="Peripherals">Periph</th>
+                    <th title="Remarks">Rem</th>
+                    <th title="Recommendation">Rec</th>
+                    <th title="Date Conducted">Date</th>
+                    <th title="Time Started">Start</th>
+                    <th title="Time Ended">End</th>
+                    <th title="Action">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -85,20 +106,25 @@
                             {{ Str::limit($item->description, 40) }}
                         @endif
                     </td>
-                    <td class="item-serial">{{ $item->serial_number ?? 'N/A' }}</td>
-                    <td class="item-property">{{ $item->property_number }}</td>
-                    <td class="item-price">₱{{ number_format($item->unit_price, 2) }}</td>
-                    <td class="item-comooe">{{ $item->co_mooe }}</td>
-                    <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
-                    <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
                     <td>
-                        <span class="badge {{ $item->condition === 'NEW' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
-                            {{ $item->condition }}
-                        </span>
+                        <select class="form-select form-select-sm condition-select" data-item-id="{{ $item->no }}">
+                            <option value="Functional" {{ $item->condition === 'Functional' ? 'selected' : '' }}>Functional</option>
+                            <option value="Nonfunctional" {{ $item->condition === 'Nonfunctional' ? 'selected' : '' }}>Nonfunctional</option>
+                        </select>
                     </td>
+                    <td><input type="checkbox" class="form-check-input" {{ $item->system_boot_up ? 'checked' : '' }} disabled></td>
+                    <td><input type="checkbox" class="form-check-input" {{ $item->hardware ? 'checked' : '' }} disabled></td>
+                    <td><input type="checkbox" class="form-check-input" {{ $item->performance ? 'checked' : '' }} disabled></td>
+                    <td><input type="checkbox" class="form-check-input" {{ $item->cables_connections ? 'checked' : '' }} disabled></td>
+                    <td><input type="checkbox" class="form-check-input" {{ $item->peripherals ? 'checked' : '' }} disabled></td>
+                    <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
+                    <td class="item-recommendation">{{ Str::limit($item->recommendation, 20) ?? 'N/A' }}</td>
+                    <td class="item-date-conducted">{{ $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A' }}</td>
+                    <td class="item-time-started">{{ $item->time_started ?? 'N/A' }}</td>
+                    <td class="item-time-ended">{{ $item->time_ended ?? 'N/A' }}</td>
                     <td>
                         <div class="d-flex gap-1">
-                            <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" title="Edit IPM" data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
                             <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline delete-form">
                                 @csrf
                                 @method('DELETE')
@@ -107,23 +133,23 @@
                         </div>
                     </td>
                 </tr>
-                <!-- Edit Inventory Modal -->
-                <div class="modal fade" id="editInventoryModal{{ $item->no }}" tabindex="-1" aria-labelledby="editInventoryModalLabel{{ $item->no }}" aria-hidden="true">
+                <!-- Edit IPM Modal -->
+                <div class="modal fade" id="editIpmModal{{ $item->no }}" tabindex="-1" aria-labelledby="editIpmModalLabel{{ $item->no }}" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="editInventoryModalLabel{{ $item->no }}">Edit Inventory Item</h5>
+                                <h5 class="modal-title" id="editIpmModalLabel{{ $item->no }}">Edit IPM</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                @include('inventory.modals.edit-modal', ['item' => $item, 'departments' => $departments, 'employees' => $employees])
+                                @include('inventory.modals.edit-ipm-modal', ['item' => $item])
                             </div>
                         </div>
                     </div>
                 </div>
                 @empty
                 <tr>
-                    <td colspan="14" class="text-center py-4">No items found.</td>
+                    <td colspan="17" class="text-center py-4">No items found.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -134,21 +160,6 @@
         <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
         <div>
             {{ $items->links('vendor.pagination.bootstrap-5') }}
-        </div>
-    </div>
-</div>
-
-<!-- Add Inventory Modal -->
-<div class="modal fade" id="addInventoryModal" tabindex="-1" aria-labelledby="addInventoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addInventoryModalLabel">Add New Inventory Item</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @include('inventory.modals.create-modal', ['departments' => $departments, 'employees' => $employees])
-            </div>
         </div>
     </div>
 </div>
@@ -166,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             updateResults();
-        }, 300); 
+        }, 300);
     });
 
     const filterForm = document.getElementById('filterForm');
@@ -189,96 +200,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    const addInventoryForm = document.getElementById('add-inventory-form');
-    if (addInventoryForm) {
-        addInventoryForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('Add form submitted, preventing default');
-
-            const formData = new FormData(this);
-
-            Swal.fire({
-                title: 'Adding Item...',
-                text: 'Please wait while we add the item',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (!csrfToken) {
-                console.error('CSRF token not found!');
-                Swal.close();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'CSRF token not found. Please refresh the page.'
-                });
-                return;
-            }
-            console.log('CSRF token found:', csrfToken.getAttribute('content'));
-
-            fetch('{{ route("inventory.store") }}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                Swal.close();
-
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: data.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        $('#addInventoryModal').modal('hide');
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: data.message || 'An error occurred while adding the item'
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                console.error('Fetch error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Network Error!',
-                    text: 'An error occurred while adding the item. Check console for details.'
-                });
-            });
+    // Condition update
+    document.querySelectorAll('.condition-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const condition = this.value;
+            updateField(itemId, 'condition', condition);
         });
-    }
+    });
 
-    document.querySelectorAll('.edit-inventory-form').forEach(form => {
+    // Checkbox updates
+    document.querySelectorAll('.checkbox-update').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const field = this.getAttribute('data-field');
+            const value = this.checked ? 1 : 0;
+            updateField(itemId, field, value);
+        });
+    });
+
+    document.querySelectorAll('.edit-ipm-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Edit form submitted, preventing default for ID:', this.id);
+            console.log('Edit IPM form submitted, preventing default for ID:', this.id);
 
             const itemId = this.id.split('-').pop();
             const formData = new FormData(this);
 
             Swal.fire({
-                title: 'Updating Item...',
-                text: 'Please wait while we update the item',
+                title: 'Updating IPM...',
+                text: 'Please wait while we update the IPM details',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
@@ -323,14 +274,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        $(`#editInventoryModal${itemId}`).modal('hide');
+                        $(`#editIpmModal${itemId}`).modal('hide');
                         location.reload();
                     });
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
-                        text: data.message || 'An error occurred while updating the item'
+                        text: data.message || 'An error occurred while updating the IPM'
                     });
                 }
             })
@@ -340,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Network Error!',
-                    text: 'An error occurred while updating the item. Check console for details.'
+                    text: 'An error occurred while updating the IPM. Check console for details.'
                 });
             });
         });
@@ -470,6 +421,31 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             Swal.close();
         }, 2000);
+    }
+
+    function updateField(itemId, field, value) {
+        fetch(`{{ route('inventory.update', ':id') }}`.replace(':id', itemId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                [field]: value,
+                _method: 'PUT'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error('Update failed:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Update error:', error);
+        });
     }
 });
 </script>

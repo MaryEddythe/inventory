@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -12,9 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inventory_items', function (Blueprint $table) {
-            if (!Schema::hasColumn('inventory_items', 'emp_no')) {
-                $table->string('emp_no')->after('enduser');
-            }
+            $table->enum('condition', ['Functional', 'Nonfunctional'])->default('Functional')->after('status');
         });
     }
 
@@ -24,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('inventory_items', function (Blueprint $table) {
-            $table->dropColumn('emp_no');
+            $table->dropColumn('condition');
         });
     }
 };

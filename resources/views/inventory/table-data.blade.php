@@ -12,7 +12,7 @@
             <th>CO/MOOE</th>
             <th>Date Acquired</th>
             <th>Remarks</th>
-            <th>Status</th>
+            <th>Condition</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -47,8 +47,8 @@
             <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
             <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
             <td>
-                <span class="badge {{ $item->status === 'NEW' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
-                    {{ $item->status }}
+                <span class="badge {{ $item->condition === 'NEW' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
+                    {{ $item->condition }}
                 </span>
             </td>
             <td>

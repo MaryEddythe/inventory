@@ -12,7 +12,7 @@ class InventoryItem extends Model
 
     protected $table = 'inventory_items';
     protected $primaryKey = 'no';
-    public $timestamps = true;
+    public $timestamps = false;
     public $incrementing = true;
 
     protected $fillable = [
@@ -27,38 +27,37 @@ class InventoryItem extends Model
         'co_mooe',
         'date_acquired',
         'remarks',
-        'status',
+        'condition',
+        'system_boot_up',
+        'hardware',
+        'performance',
+        'cables_connections',
+        'peripherals',
+        'recommendation',
+        'date_conducted',
+        'time_started',
+        'time_ended',
         'x'
     ];
 
     protected $dates = [
-        'date_acquired',
-        'created_at',
-        'updated_at'
+        'date_acquired'
     ];
 
     protected $casts = [
-        'date_acquired' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'unit_price' => 'decimal:2'
+        'date_acquired' => 'date',
+        'unit_price' => 'decimal:2',
+        'system_boot_up' => 'boolean',
+        'hardware' => 'boolean',
+        'performance' => 'boolean',
+        'cables_connections' => 'boolean',
+        'peripherals' => 'boolean',
+        'date_conducted' => 'date',
     ];
 
     protected static function boot()
     {
         parent::boot();
-        
-        static::saving(function ($item) {
-            $item->status = $item->calculateStatus();
-        });
-    }
-
-    public function calculateStatus()
-    {
-        $dateAcquired = Carbon::parse($this->date_acquired);
-        $yearsSinceAcquired = $dateAcquired->diffInYears(Carbon::now());
-        
-        return $yearsSinceAcquired <= 5 ? 'NEW' : 'FOR REPLACEMENT';
     }
 
     public function scopeActive($query)

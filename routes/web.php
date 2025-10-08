@@ -19,6 +19,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('inventory', InventoryItemController::class);
     Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])
         ->name('inventory.tabs.dashboard');
+    Route::get('/ipm', [InventoryItemController::class, 'ipm'])->name('inventory.ipm');
     Route::get('/inventory/export/{type}', [InventoryItemController::class, 'export'])->name('inventory.export');
 
     // Profile Routes

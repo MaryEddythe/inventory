@@ -83,6 +83,7 @@ class InventoryItemController extends Controller
             'co_mooe' => 'required|string|max:255',
             'date_acquired' => 'required|date',
             'remarks' => 'nullable|string',
+            'condition' => 'required|string|in:NEW,FOR REPLACEMENT',
         ]);
 
         $item = InventoryItem::create($validated);
@@ -105,25 +106,59 @@ class InventoryItemController extends Controller
     {
         $item = InventoryItem::findOrFail($id);
 
-        $validated = $request->validate([
-            'division' => 'required|string|max:255',
-            'enduser' => 'required|string|max:255',
-            'emp_no' => 'required|string|max:255|exists:employees,emp_no',
-            'classification' => 'required|string|max:255',
-            'property_number' => 'required|string|max:255',
-            'description' => 'required|string',
-            'serial_number' => 'nullable|string|max:255',
-            'unit_price' => 'required|numeric|min:0',
-            'co_mooe' => 'required|string|max:255',
-            'date_acquired' => 'required|date',
-            'remarks' => 'nullable|string',
-        ]);
+        // Check if this is an IPM update (has IPM-specific fields)
+        $isIpmUpdate = $request->hasAny(['system_boot_up', 'hardware', 'performance', 'cables_connections', 'peripherals', 'recommendation', 'date_conducted', 'time_started', 'time_ended']);
+
+        if ($isIpmUpdate) {
+            // IPM update validation
+            $validated = $request->validate([
+                'condition' => 'nullable|string|in:NEW,FOR REPLACEMENT,Functional,Nonfunctional',
+                'system_boot_up' => 'nullable|boolean',
+                'hardware' => 'nullable|boolean',
+                'performance' => 'nullable|boolean',
+                'cables_connections' => 'nullable|boolean',
+                'peripherals' => 'nullable|boolean',
+                'recommendation' => 'nullable|string',
+                'date_conducted' => 'nullable|date',
+                'time_started' => 'nullable|date_format:H:i',
+                'time_ended' => 'nullable|date_format:H:i',
+            ]);
+
+            $message = 'IPM details updated successfully';
+        } else {
+            // Full item update validation
+            $validated = $request->validate([
+                'division' => 'required|string|max:255',
+                'enduser' => 'required|string|max:255',
+                'emp_no' => 'required|string|max:255|exists:employees,emp_no',
+                'classification' => 'required|string|max:255',
+                'property_number' => 'required|string|max:255',
+                'description' => 'required|string',
+                'serial_number' => 'nullable|string|max:255',
+                'unit_price' => 'required|numeric|min:0',
+                'co_mooe' => 'required|string|max:255',
+                'date_acquired' => 'required|date',
+                'remarks' => 'nullable|string',
+                'condition' => 'nullable|string|in:Functional,Nonfunctional',
+                'system_boot_up' => 'nullable|boolean',
+                'hardware' => 'nullable|boolean',
+                'performance' => 'nullable|boolean',
+                'cables_connections' => 'nullable|boolean',
+                'peripherals' => 'nullable|boolean',
+                'recommendation' => 'nullable|string',
+                'date_conducted' => 'nullable|date',
+                'time_started' => 'nullable|date_format:H:i',
+                'time_ended' => 'nullable|date_format:H:i',
+            ]);
+
+            $message = 'Item updated successfully';
+        }
 
         $item->update($validated);
 
         return response()->json([
             'success' => true,
-            'message' => 'Item updated successfully',
+            'message' => $message,
             'item'    => $item,
         ], 200);
     }
@@ -161,8 +196,8 @@ class InventoryItemController extends Controller
             });
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('condition')) {
+            $query->where('condition', $request->condition);
         }
 
         if ($request->filled('division')) {
@@ -204,9 +239,10 @@ class InventoryItemController extends Controller
         $csv = Writer::createFromString('');
         
         $csv->insertOne([
-            'No', 'Division', 'End User', 'Employee No', 'Classification', 'Description', 
-            'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE', 
-            'Date Acquired', 'Remarks', 'Status'
+            'No', 'Division', 'End User', 'Employee No', 'Classification', 'Description',
+            'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
+            'Date Acquired', 'Remarks', 'Condition', 'System Boot Up', 'Hardware', 'Performance',
+            'Cables and Connections', 'Peripherals', 'Recommendation', 'Date Conducted', 'Time Started', 'Time Ended'
         ]);
 
         foreach ($items as $item) {
@@ -223,7 +259,16 @@ class InventoryItemController extends Controller
                 $item->co_mooe,
                 $item->date_acquired->format('M d, Y'),
                 $item->remarks ?? 'N/A',
-                $item->status
+                $item->condition,
+                $item->system_boot_up ? 'Yes' : 'No',
+                $item->hardware ? 'Yes' : 'No',
+                $item->performance ? 'Yes' : 'No',
+                $item->cables_connections ? 'Yes' : 'No',
+                $item->peripherals ? 'Yes' : 'No',
+                $item->recommendation ?? 'N/A',
+                $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A',
+                $item->time_started ?? 'N/A',
+                $item->time_ended ?? 'N/A'
             ]);
         }
 
@@ -382,7 +427,7 @@ class InventoryItemController extends Controller
                     'values' => $classificationData->pluck('total_value')
                 ],
                 'statusData' => [
-                    'labels' => $statusData->pluck('status'),
+                    'labels' => $statusData->pluck('condition'),
                     'counts' => $statusData->pluck('count')
                 ]
             ]);
@@ -398,6 +443,55 @@ class InventoryItemController extends Controller
             'classificationData',
             'statusData'
         ));
+    }
+
+    public function ipm(Request $request)
+    {
+        $query = InventoryItem::active();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchTerms = array_filter(explode(' ', $search));
+
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function($subQuery) use ($term) {
+                        $subQuery->where('division', 'LIKE', "%{$term}%")
+                                ->orWhere('enduser', 'LIKE', "%{$term}%")
+                                ->orWhere('classification', 'LIKE', "%{$term}%")
+                                ->orWhere('description', 'LIKE', "%{$term}%")
+                                ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                                ->orWhere('property_number', 'LIKE', "%{$term}%")
+                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
+                    });
+                }
+            });
+        }
+
+        if ($request->filled('condition')) {
+            $query->where('condition', $request->condition);
+        }
+
+        if ($request->filled('division')) {
+            $query->where('division', $request->division);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date_acquired', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date_acquired', '<=', $request->date_to);
+        }
+
+        $items = $query->orderBy('no', 'desc')->paginate(10)->withQueryString();
+        $departments = Department::orderBy('department')->get();
+        $employees = Employee::orderBy('firstname')->get();
+
+        if ($request->ajax()) {
+            return view('inventory.table-data-ipm', compact('items'))->render();
+        }
+
+        return view('inventory.tabs.ipm', compact('items', 'departments', 'employees'));
     }
 
     public function show(InventoryItem $inventoryItem)

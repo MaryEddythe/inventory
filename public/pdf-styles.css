@@ -2,7 +2,20 @@
     margin: 15mm;
     size: A4 landscape;
 }
+.badge-new {
+    background: #28a745 !important;
+    color: #fff !important;
+}
 
+.badge-age-new {
+    background: #28a745 !important; 
+    color: #fff !important;
+}
+
+.badge-age-old {
+    background: #ffc107 !important;
+    color: #222 !important;
+}
 .pdf-footer .pageNumber::before {
     content: counter(page);
 }
@@ -141,27 +154,26 @@ body {
 }
 
 .pdf-status-new {
-    background-color: #92d050;
-    color: black;
-    padding: 1mm;
-    font-size: 7pt;
+    background-color: #28a745; /* <CHANGE> Ensured green for NEW and 0-5 years */
+    color: white;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-size: 10px; /* Increased font size */
     display: inline-block;
-    min-width: 12mm;
+    min-width: 20px;
     text-align: center;
-    border: 1px solid #000;
 }
 
 .pdf-status-replace {
-    background-color: #ffc000;
+    background-color: #ffc107; /* <CHANGE> Yellow for 6+ years */
     color: black;
-    padding: 1mm;
-    font-size: 7pt;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-size: 10px; /* Increased font size */
     display: inline-block;
-    min-width: 12mm;
+    min-width: 20px;
     text-align: center;
-    border: 1px solid #000;
 }
-
 .pdf-col-5 { width: 5%; }
 .pdf-col-6 { width: 6%; }
 .pdf-col-8 { width: 8%; }

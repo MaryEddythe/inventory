@@ -57,12 +57,19 @@
                     <th>CO/MOOE</th>
                     <th>Date Acquired</th>
                     <th>Remarks</th>
-                    <th>Condition</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($items as $item)
+                @php
+                    // Calculate years since acquisition
+                    $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
+                    
+                    // Determine badge class based on age
+                    $ageBadgeClass = $yearsSinceAcquisition <= 5 ? 'badge-age-new' : 'badge-age-old';
+                @endphp
                 <tr data-item-id="{{ $item->no }}">
                     <td class="fw-semibold text-muted">{{ $item->no }}</td>
                     <td>
@@ -92,8 +99,8 @@
                     <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
                     <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
                     <td>
-                        <span class="badge {{ $item->condition === 'NEW' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
-                            {{ $item->condition }}
+                        <span class="badge {{ $ageBadgeClass }} fw-normal" title="{{ $yearsSinceAcquisition }} years old">
+                            {{ $yearsSinceAcquisition <= 5 ? 'NEW' : 'FOR REPLACEMENT' }}
                         </span>
                     </td>
                     <td>

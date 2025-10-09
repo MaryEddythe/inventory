@@ -2,23 +2,23 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Inventory Report</title>
+    <title>IPM Report</title>
     <style>:root { --total-records: "{{ $items->count() }}"; } {{ $css }}</style>
 </head>
 <body>
     <div class="pdf-header">
         <h2>Mines and Geosciences Bureau</h2>
         <h3>Regional Office VI</h3>
-        <h1>INVENTORY REPORT SUMMARY</h1>
+        <h1>IPM REPORT SUMMARY</h1>
         <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
     </div>
 
-    <!-- Detailed Inventory -->
+    <!-- Detailed IPM -->
     <div class="pdf-mt-3">
         <table class="pdf-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="12" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
+                    <th colspan="21" class="pdf-bg-dark">DETAILED IPM LISTING</th>
                 </tr>
                 <tr>
                     <th class="pdf-col-0 pdf-text-center">No</th>
@@ -32,22 +32,20 @@
                     <th class="pdf-col-4">CO/MOOE</th>
                     <th class="pdf-col-4 pdf-text-center">Date Acquired</th>
                     <th class="pdf-col-6">Remarks</th>
-                    <th class="pdf-col-3 pdf-text-center">Status</th>
+                    <th class="pdf-col-3 pdf-text-center">Condition</th>
+                    <th class="pdf-col-2 pdf-text-center">Sys Boot</th>
+                    <th class="pdf-col-2 pdf-text-center">HW</th>
+                    <th class="pdf-col-2 pdf-text-center">Perf</th>
+                    <th class="pdf-col-2 pdf-text-center">Cables</th>
+                    <th class="pdf-col-2 pdf-text-center">Periph</th>
+                    <th class="pdf-col-8">Recommendation</th>
+                    <th class="pdf-col-4 pdf-text-center">Date Cond</th>
+                    <th class="pdf-col-3 pdf-text-center">Time Start</th>
+                    <th class="pdf-col-3 pdf-text-center">Time End</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($items as $index => $item)
-                @php
-                    // <CHANGE> Calculate years since acquisition for PDF badge coloring
-                    $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
-                    
-                    // Determine PDF badge class: green for 0-5 years, yellow for 6+ years
-                    if ($yearsSinceAcquisition <= 5) {
-                        $pdfBadgeClass = 'pdf-status-new'; // Green
-                    } else {
-                        $pdfBadgeClass = 'pdf-status-replace'; // Yellow
-                    }
-                @endphp
                 <tr>
                     <td class="pdf-text-center">{{ $loop->iteration }}</td>
                     <td>{{ $item->department_name ?? $item->division }}</td>
@@ -61,15 +59,23 @@
                     <td class="pdf-text-center pdf-nowrap">{{ $item->date_acquired->format('m/d/Y') }}</td>
                     <td>{{ $item->remarks ?? 'N/A' }}</td>
                     <td class="pdf-text-center">
-                        {{-- <CHANGE> Updated to use age-based badge class --}}
-                        <span class="{{ $pdfBadgeClass }}">
-                            {{ $yearsSinceAcquisition <= 5 ? 'NEW' : 'REPL' }}
+                        <span class="{{ $item->condition === 'Functional' ? 'pdf-status-new' : 'pdf-status-replace' }}">
+                            {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
                         </span>
                     </td>
+                    <td class="pdf-text-center">{{ $item->system_boot_up ? '✓' : '✗' }}</td>
+                    <td class="pdf-text-center">{{ $item->hardware ? '✓' : '✗' }}</td>
+                    <td class="pdf-text-center">{{ $item->performance ? '✓' : '✗' }}</td>
+                    <td class="pdf-text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
+                    <td class="pdf-text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
+                    <td>{{ $item->recommendation ?? 'N/A' }}</td>
+                    <td class="pdf-text-center">{{ $item->date_conducted ? $item->date_conducted->format('m/d/Y') : 'N/A' }}</td>
+                    <td class="pdf-text-center">{{ $item->time_started ?? 'N/A' }}</td>
+                    <td class="pdf-text-center">{{ $item->time_ended ?? 'N/A' }}</td>
                 </tr>
                 @endforeach
             </tbody>
-        </table>     
+        </table>
     </div>
 
     <!-- Executive Summary -->
@@ -81,8 +87,8 @@
                 </tr>
                 <tr class="pdf-bg-primary">
                     <th class="pdf-col-40">Department</th>
-                    <th class="pdf-col-20 pdf-text-center">New Items</th>
-                    <th class="pdf-col-20 pdf-text-center">For Replacement</th>
+                    <th class="pdf-col-20 pdf-text-center">Functional Items</th>
+                    <th class="pdf-col-20 pdf-text-center">Nonfunctional Items</th>
                     <th class="pdf-col-20 pdf-text-center">Total Items</th>
                 </tr>
             </thead>
@@ -94,31 +100,29 @@
                         $group = $items->filter(function ($item) use ($dept) {
                             return $item->division == $dept->department;
                         });
-                        $newCount = $group->filter(function ($item) {
-                            $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
-                            return $yearsSinceAcquisition <= 5;
+                        $functionalCount = $group->filter(function ($item) {
+                            return $item->condition == 'Functional';
                         })->count();
-                        $replacementCount = $group->filter(function ($item) {
-                            $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
-                            return $yearsSinceAcquisition > 5;
+                        $nonfunctionalCount = $group->filter(function ($item) {
+                            return $item->condition == 'Nonfunctional';
                         })->count();
                         $totalCount = $group->count();
                         $departmentSummaries->push([
                             'name' => $dept->department,
-                            'new' => $newCount,
-                            'replacement' => $replacementCount,
+                            'functional' => $functionalCount,
+                            'nonfunctional' => $nonfunctionalCount,
                             'total' => $totalCount
                         ]);
                     }
-                    $totalNew = $departmentSummaries->sum('new');
-                    $totalReplacement = $departmentSummaries->sum('replacement');
+                    $totalFunctional = $departmentSummaries->sum('functional');
+                    $totalNonfunctional = $departmentSummaries->sum('nonfunctional');
                     $grandTotalItems = $departmentSummaries->sum('total');
                 @endphp
                 @foreach($departmentSummaries as $summary)
                     <tr>
                         <td><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center">{{ $summary['new'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['replacement'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['functional'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['nonfunctional'] }}</td>
                         <td class="pdf-text-center">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
@@ -126,8 +130,8 @@
             <tfoot>
                 <tr class="pdf-bg-gray pdf-font-bold">
                     <td><strong>TOTAL</strong></td>
-                    <td class="pdf-text-center">{{ $totalNew }}</td>
-                    <td class="pdf-text-center">{{ $totalReplacement }}</td>
+                    <td class="pdf-text-center">{{ $totalFunctional }}</td>
+                    <td class="pdf-text-center">{{ $totalNonfunctional }}</td>
                     <td class="pdf-text-center">{{ $grandTotalItems }}</td>
                 </tr>
             </tfoot>

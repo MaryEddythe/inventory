@@ -398,6 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function exportData(type) {
         const searchParams = new URLSearchParams(window.location.search);
+        searchParams.append('tab', 'ipm');
 
         const formData = new FormData(filterForm);
         for (let pair of formData.entries()) {

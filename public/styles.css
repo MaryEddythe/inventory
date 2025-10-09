@@ -191,6 +191,19 @@ header {
     font-weight: 500;
 }
 
+.badge-new {
+    background: #28a745 !important;
+    color: #fff !important;
+}
+.badge-age-new {
+    background: #28a745 !important; 
+    color: #fff !important;
+}
+
+.badge-age-old {
+    background: #ffc107 !important; 
+    color: #222 !important;
+}
 .pagination .page-link {
     border-radius: 8px;
     margin: 0 4px;
@@ -443,7 +456,7 @@ main.container-fluid {
 
 /* PDF Status Badges */
 .pdf-status-new {
-    background-color: #28a745;
+    background-color: #28a745; /* <CHANGE> Ensured green for NEW and 0-5 years */
     color: white;
     padding: 1px 3px;
     border-radius: 2px;
@@ -454,7 +467,7 @@ main.container-fluid {
 }
 
 .pdf-status-replace {
-    background-color: #ffc107;
+    background-color: #ffc107; /* <CHANGE> Yellow for 6+ years */
     color: black;
     padding: 1px 3px;
     border-radius: 2px;

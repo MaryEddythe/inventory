@@ -70,13 +70,6 @@
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="condition" class="form-label">Condition</label>
-            <select class="form-select" id="condition" name="condition" required>
-                <option value="NEW" {{ old('condition', 'NEW') == 'NEW' ? 'selected' : '' }}>NEW</option>
-                <option value="FOR REPLACEMENT" {{ old('condition') == 'FOR REPLACEMENT' ? 'selected' : '' }}>FOR REPLACEMENT</option>
-            </select>
-        </div>
-        <div class="col-md-6 mb-3">
             <label for="date_conducted" class="form-label">Date Conducted</label>
             <input type="date" class="form-control" id="date_conducted" name="date_conducted" value="{{ old('date_conducted') }}">
         </div>

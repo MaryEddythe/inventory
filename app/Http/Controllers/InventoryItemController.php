@@ -13,6 +13,15 @@ use League\Csv\Writer;
 
 class InventoryItemController extends Controller
 {
+    private function calculateStatus($dateAcquired)
+    {
+        if (!$dateAcquired) {
+            return 'NEW';
+        }
+
+        $years = now()->diffInYears($dateAcquired);
+        return $years <= 5 ? 'NEW' : 'FOR REPLACEMENT';
+    }
     public function index(Request $request)
     {
         $query = InventoryItem::active();
@@ -83,8 +92,9 @@ class InventoryItemController extends Controller
             'co_mooe' => 'required|string|max:255',
             'date_acquired' => 'required|date',
             'remarks' => 'nullable|string',
-            'condition' => 'required|string|in:NEW,FOR REPLACEMENT',
         ]);
+
+        $validated['condition'] = $this->calculateStatus($validated['date_acquired']);
 
         $item = InventoryItem::create($validated);
 
@@ -151,6 +161,9 @@ class InventoryItemController extends Controller
                 'time_ended' => 'nullable|date_format:H:i',
             ]);
 
+            // Recalculate status based on date_acquired
+            $validated['condition'] = $this->calculateStatus($validated['date_acquired']);
+
             $message = 'Item updated successfully';
         }
 
@@ -180,7 +193,7 @@ class InventoryItemController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $searchTerms = array_filter(explode(' ', $search));
-            
+
             $query->where(function($q) use ($searchTerms) {
                 foreach ($searchTerms as $term) {
                     $q->where(function($subQuery) use ($term) {
@@ -196,8 +209,8 @@ class InventoryItemController extends Controller
             });
         }
 
-        if ($request->filled('condition')) {
-            $query->where('condition', $request->condition);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         if ($request->filled('division')) {
@@ -216,21 +229,23 @@ class InventoryItemController extends Controller
 
         $items = $query->orderBy('no', 'desc')->get();
 
-        $fileName = 'inventory_' . now()->format('Y-m-d_H-i-s');
+        $isIpm = $request->tab === 'ipm';
+        $fileName = ($isIpm ? 'ipm_' : 'inventory_') . now()->format('Y-m-d_H-i-s');
 
         if ($type === 'pdf') {
-            return $this->exportPDF($items, $fileName);
+            return $this->exportPDF($items, $fileName, $isIpm);
         } elseif ($type === 'csv') {
-            return $this->exportCSV($items, $fileName);
+            return $this->exportCSV($items, $fileName, $isIpm);
         }
 
         return redirect()->back()->with('error', 'Invalid export type.');
     }
 
-    private function exportPDF($items, $fileName)
+    private function exportPDF($items, $fileName, $isIpm = false)
     {
         $css = File::get(public_path('pdf-styles.css'));
-        $pdf = Pdf::loadView('inventory.export-pdf', compact('items', 'css'))->setPaper('a4', 'landscape');
+        $view = $isIpm ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
+        $pdf = Pdf::loadView($view, compact('items', 'css'))->setPaper('a4', 'landscape');
         return $pdf->download($fileName . '.pdf');
     }
 
@@ -427,7 +442,7 @@ class InventoryItemController extends Controller
                     'values' => $classificationData->pluck('total_value')
                 ],
                 'statusData' => [
-                    'labels' => $statusData->pluck('condition'),
+                    'labels' => $statusData->pluck('status'),
                     'counts' => $statusData->pluck('count')
                 ]
             ]);

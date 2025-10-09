@@ -117,30 +117,14 @@
                     <td class="text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
                     <td class="text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
                     <td class="item-remarks">
-                        @php
-                            $remarks = $item->remarks;
-                            if (request('search') && $remarks) {
-                                $highlighted = preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $remarks);
-                                $display = Str::limit($highlighted, 20);
-                                echo $display;
-                            } else {
-                                $display = Str::limit($remarks, 20) ?: 'N/A';
-                                echo $display;
-                            }
-                        @endphp
+                        {!! request('search')
+                            ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->remarks ?? 'N/A')), 20)
+                            : e(Str::limit($item->remarks ?? 'N/A', 20)) !!}
                     </td>
                     <td class="item-recommendation">
-                        @php
-                            $recommendation = $item->recommendation;
-                            if (request('search') && $recommendation) {
-                                $highlighted = preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $recommendation);
-                                $display = Str::limit($highlighted, 20);
-                                echo $display;
-                            } else {
-                                $display = Str::limit($recommendation, 20) ?: 'N/A';
-                                echo $display;
-                            }
-                        @endphp
+                        {!! request('search')
+                            ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->recommendation ?? 'N/A')), 20)
+                            : e(Str::limit($item->recommendation ?? 'N/A', 20)) !!}
                     </td>
                     <td class="item-date-conducted">{{ $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A' }}</td>
                     <td class="item-time-started">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
@@ -156,20 +140,6 @@
                         </div>
                     </td>
                 </tr>
-                <!-- Edit IPM Modal -->
-                <div class="modal fade" id="editIpmModal{{ $item->no }}" tabindex="-1" aria-labelledby="editIpmModalLabel{{ $item->no }}" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editIpmModalLabel{{ $item->no }}">Edit IPM for Item {{ $item->no }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                @include('inventory.modals.edit-ipm-modal', ['item' => $item])
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 @empty
                 <tr>
                     <td colspan="17" class="text-center py-4">No items found.</td>
@@ -177,13 +147,28 @@
                 @endforelse
             </tbody>
         </table>
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
-        <div>
-            {{ $items->links('vendor.pagination.bootstrap-5') }}
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
+            <div>
+                {{ $items->links('vendor.pagination.bootstrap-5') }}
+            </div>
         </div>
+        @foreach($items as $item)
+            <!-- Edit IPM Modal -->
+            <div class="modal fade" id="editIpmModal{{ $item->no }}" tabindex="-1" aria-labelledby="editIpmModalLabel{{ $item->no }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editIpmModalLabel{{ $item->no }}">Edit IPM for Item {{ $item->no }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            @include('inventory.modals.edit-ipm-modal', ['item' => $item])
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
     </div>
 </div>
 

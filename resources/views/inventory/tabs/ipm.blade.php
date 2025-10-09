@@ -107,21 +107,20 @@
                         @endif
                     </td>
                     <td>
-                        <select class="form-select form-select-sm condition-select" data-item-id="{{ $item->no }}">
-                            <option value="Functional" {{ $item->condition === 'Functional' ? 'selected' : '' }}>Functional</option>
-                            <option value="Nonfunctional" {{ $item->condition === 'Nonfunctional' ? 'selected' : '' }}>Nonfunctional</option>
-                        </select>
+                        <span class="badge {{ $item->condition === 'Functional' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
+                            {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
+                        </span>
                     </td>
-                    <td><input type="checkbox" class="form-check-input" {{ $item->system_boot_up ? 'checked' : '' }} disabled></td>
-                    <td><input type="checkbox" class="form-check-input" {{ $item->hardware ? 'checked' : '' }} disabled></td>
-                    <td><input type="checkbox" class="form-check-input" {{ $item->performance ? 'checked' : '' }} disabled></td>
-                    <td><input type="checkbox" class="form-check-input" {{ $item->cables_connections ? 'checked' : '' }} disabled></td>
-                    <td><input type="checkbox" class="form-check-input" {{ $item->peripherals ? 'checked' : '' }} disabled></td>
+                    <td class="text-center">{{ $item->system_boot_up ? '✓' : '✗' }}</td>
+                    <td class="text-center">{{ $item->hardware ? '✓' : '✗' }}</td>
+                    <td class="text-center">{{ $item->performance ? '✓' : '✗' }}</td>
+                    <td class="text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
+                    <td class="text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
                     <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
                     <td class="item-recommendation">{{ Str::limit($item->recommendation, 20) ?? 'N/A' }}</td>
                     <td class="item-date-conducted">{{ $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A' }}</td>
-                    <td class="item-time-started">{{ $item->time_started ?? 'N/A' }}</td>
-                    <td class="item-time-ended">{{ $item->time_ended ?? 'N/A' }}</td>
+                    <td class="item-time-started">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
+                    <td class="item-time-ended">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
                     <td>
                         <div class="d-flex gap-1">
                             <button type="button" class="btn btn-outline-primary btn-sm" title="Edit IPM" data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
@@ -138,7 +137,7 @@
                     <div class="modal-dialog modal-lg modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="editIpmModalLabel{{ $item->no }}">Edit IPM</h5>
+                                <h5 class="modal-title" id="editIpmModalLabel{{ $item->no }}">Edit IPM for Item {{ $item->no }}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -177,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             updateResults();
-        }, 300);
+        }, 300); 
     });
 
     const filterForm = document.getElementById('filterForm');
@@ -200,36 +199,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Condition update
-    document.querySelectorAll('.condition-select').forEach(select => {
-        select.addEventListener('change', function() {
-            const itemId = this.getAttribute('data-item-id');
-            const condition = this.value;
-            updateField(itemId, 'condition', condition);
-        });
-    });
-
-    // Checkbox updates
-    document.querySelectorAll('.checkbox-update').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const itemId = this.getAttribute('data-item-id');
-            const field = this.getAttribute('data-field');
-            const value = this.checked ? 1 : 0;
-            updateField(itemId, field, value);
-        });
-    });
-
     document.querySelectorAll('.edit-ipm-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Edit IPM form submitted, preventing default for ID:', this.id);
+            console.log('Edit form submitted, preventing default for ID:', this.id);
 
             const itemId = this.id.split('-').pop();
             const formData = new FormData(this);
 
             Swal.fire({
                 title: 'Updating IPM...',
-                text: 'Please wait while we update the IPM details',
+                text: 'Please wait while we update the IPM',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
@@ -422,31 +402,6 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             Swal.close();
         }, 2000);
-    }
-
-    function updateField(itemId, field, value) {
-        fetch(`{{ route('inventory.update', ':id') }}`.replace(':id', itemId), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                [field]: value,
-                _method: 'PUT'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                console.error('Update failed:', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Update error:', error);
-        });
     }
 });
 </script>

@@ -203,7 +203,10 @@ class InventoryItemController extends Controller
                                 ->orWhere('description', 'LIKE', "%{$term}%")
                                 ->orWhere('serial_number', 'LIKE', "%{$term}%")
                                 ->orWhere('property_number', 'LIKE', "%{$term}%")
-                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
+                                ->orWhere('emp_no', 'LIKE', "%{$term}%")
+                                ->orWhere('remarks', 'LIKE', "%{$term}%")
+                                ->orWhere('recommendation', 'LIKE', "%{$term}%")
+                                ->orWhere('condition', 'LIKE', "%{$term}%");
                     });
                 }
             });
@@ -477,7 +480,10 @@ class InventoryItemController extends Controller
                                 ->orWhere('description', 'LIKE', "%{$term}%")
                                 ->orWhere('serial_number', 'LIKE', "%{$term}%")
                                 ->orWhere('property_number', 'LIKE', "%{$term}%")
-                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
+                                ->orWhere('emp_no', 'LIKE', "%{$term}%")
+                                ->orWhere('remarks', 'LIKE', "%{$term}%")
+                                ->orWhere('recommendation', 'LIKE', "%{$term}%")
+                                ->orWhere('condition', 'LIKE', "%{$term}%");
                     });
                 }
             });

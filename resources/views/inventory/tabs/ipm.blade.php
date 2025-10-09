@@ -116,8 +116,32 @@
                     <td class="text-center">{{ $item->performance ? '✓' : '✗' }}</td>
                     <td class="text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
                     <td class="text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
-                    <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
-                    <td class="item-recommendation">{{ Str::limit($item->recommendation, 20) ?? 'N/A' }}</td>
+                    <td class="item-remarks">
+                        @php
+                            $remarks = $item->remarks;
+                            if (request('search') && $remarks) {
+                                $highlighted = preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $remarks);
+                                $display = Str::limit($highlighted, 20);
+                                echo $display;
+                            } else {
+                                $display = Str::limit($remarks, 20) ?: 'N/A';
+                                echo $display;
+                            }
+                        @endphp
+                    </td>
+                    <td class="item-recommendation">
+                        @php
+                            $recommendation = $item->recommendation;
+                            if (request('search') && $recommendation) {
+                                $highlighted = preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $recommendation);
+                                $display = Str::limit($highlighted, 20);
+                                echo $display;
+                            } else {
+                                $display = Str::limit($recommendation, 20) ?: 'N/A';
+                                echo $display;
+                            }
+                        @endphp
+                    </td>
                     <td class="item-date-conducted">{{ $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A' }}</td>
                     <td class="item-time-started">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
                     <td class="item-time-ended">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>

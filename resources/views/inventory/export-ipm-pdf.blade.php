@@ -3,7 +3,20 @@
 <head>
     <meta charset="utf-8">
     <title>Inventory Report</title>
-    <style>:root { --total-records: "{{ $items->count() }}"; } {{ $css }}</style>
+    <style>
+        @charset "UTF-8";
+        :root { --total-records: "{{ $items->count() }}"; }
+        {{ $css }}
+        /* Fallback for checkmark and cross symbols */
+        .pdf-checkmark::before {
+            content: "✓";
+            font-family: "DejaVu Sans", Arial, sans-serif;
+        }
+        .pdf-cross::before {
+            content: "✗";
+            font-family: "DejaVu Sans", Arial, sans-serif;
+        }
+    </style>
 </head>
 <body>
     <div class="pdf-header">
@@ -52,11 +65,11 @@
                             {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
                         </span>
                     </td>
-                    <td class="pdf-text-center">{{ $item->system_boot_up ? 'Yes' : 'No' }}</td>
-                    <td class="pdf-text-center">{{ $item->hardware ? 'Yes' : 'No' }}</td>
-                    <td class="pdf-text-center">{{ $item->performance ? 'Yes' : 'No' }}</td>
-                    <td class="pdf-text-center">{{ $item->cables_connections ? 'Yes' : 'No' }}</td>
-                    <td class="pdf-text-center">{{ $item->peripherals ? 'Yes' : 'No' }}</td>
+                    <td class="pdf-text-center"><span class="{{ $item->system_boot_up ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                    <td class="pdf-text-center"><span class="{{ $item->hardware ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                    <td class="pdf-text-center"><span class="{{ $item->performance ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                    <td class="pdf-text-center"><span class="{{ $item->cables_connections ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                    <td class="pdf-text-center"><span class="{{ $item->peripherals ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
                     <td>{{ $item->remarks ?? 'N/A' }}</td>
                     <td>{{ $item->recommendation ?? 'N/A' }}</td>
                     <td class="pdf-text-center">{{ $item->date_conducted ? $item->date_conducted->format('m/d/Y') : 'N/A' }}</td>

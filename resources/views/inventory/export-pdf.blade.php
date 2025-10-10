@@ -6,12 +6,22 @@
     <style>:root { --total-records: "{{ $items->count() }}"; } {{ $css }}</style>
 </head>
 <body>
-    <div class="pdf-header">
-        <h2>Mines and Geosciences Bureau</h2>
-        <h3>Regional Office VI</h3>
-        <h1>INVENTORY REPORT SUMMARY</h1>
-        <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
-    </div>
+    <table class="pdf-header" style="width: 100%; border: none;">
+        <tr>
+            <td style="width: 20%; text-align: left; vertical-align: middle;">
+                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 100px;">
+            </td>
+            <td style="width: 60%; text-align: center; vertical-align: middle;">
+                <h2>Mines and Geosciences Bureau</h2>
+                <h3>Regional Office VI</h3>
+                <h1>INVENTORY REPORT SUMMARY</h1>
+                <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
+            </td>
+            <td style="width: 20%; text-align: right; vertical-align: middle;">
+                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 100px;">
+            </td>
+        </tr>
+    </table>
 
     <!-- Detailed Inventory -->
     <div class="pdf-mt-3">

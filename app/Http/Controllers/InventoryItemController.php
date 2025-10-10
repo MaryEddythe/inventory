@@ -218,9 +218,13 @@ class InventoryItemController extends Controller
         $tab = $request->tab ?? 'inventory';
         $css = File::get(public_path('pdf-styles.css'));
 
+        // Encode logos for PDF
+        $mgbLogo = base64_encode(file_get_contents(public_path('assets/mgb.jpg')));
+        $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
+
         if ($type === 'pdf') {
             $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
-            $pdf = Pdf::loadView($view, compact('items', 'tab', 'css'))
+            $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo'))
                 ->setPaper('a3', 'landscape');
             return $pdf->download('inventory.pdf');
         }

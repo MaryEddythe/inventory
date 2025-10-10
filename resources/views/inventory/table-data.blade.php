@@ -72,9 +72,9 @@
             <td>
                 <div class="d-flex gap-1">
                     <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
-                    <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline delete-form">
+                    <form action="{{ route('inventory.deactivate', $item->no) }}" method="POST" class="d-inline delete-form">
                         @csrf
-                        @method('DELETE')
+                        @method('PATCH')
                         <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete"><i class="bi bi-trash"></i></button>
                     </form>
                 </div>
@@ -87,6 +87,25 @@
         @endforelse
     </tbody>
 </table>
-<div class="d-flex justify-content-end mt-4">
-    {{ $items->links('vendor.pagination.bootstrap-5') }}
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
+    <div>
+        {{ $items->links('vendor.pagination.bootstrap-5') }}
+    </div>
 </div>
+
+@foreach($items as $item)
+    <div class="modal fade" id="editInventoryModal{{ $item->no }}" tabindex="-1" aria-labelledby="editInventoryModalLabel{{ $item->no }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editInventoryModalLabel{{ $item->no }}">Edit Inventory Item {{ $item->no }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @include('inventory.modals.edit-modal', ['inventoryItem' => $item])
+                </div>
+            </div>
+        </div>
+    </div>
+@endforeach

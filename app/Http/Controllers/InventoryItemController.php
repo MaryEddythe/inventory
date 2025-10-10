@@ -94,7 +94,7 @@ class InventoryItemController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
-        $validated['condition'] = $this->calculateStatus($validated['date_acquired']);
+        $validated['status'] = $this->calculateStatus($validated['date_acquired']);
 
         $item = InventoryItem::create($validated);
 
@@ -131,16 +131,14 @@ class InventoryItemController extends Controller
                 'recommendation' => 'nullable|string',
                 'date_conducted' => 'nullable|date',
                 'time_started' => 'nullable|date_format:H:i',
-                'time_ended' => 'nullable|date_format:H:i',
+                'time_ended' => 'nullable|date_format:H:i|after:time_started',
             ]);
-
-            $message = 'IPM details updated successfully';
         } else {
-            // Full item update validation
+            // Regular inventory update validation
             $validated = $request->validate([
                 'division' => 'required|string|max:255',
                 'enduser' => 'required|string|max:255',
-                'emp_no' => 'required|string|max:255|exists:employees,emp_no',
+                'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
                 'classification' => 'required|string|max:255',
                 'property_number' => 'required|string|max:255',
                 'description' => 'required|string',
@@ -149,36 +147,36 @@ class InventoryItemController extends Controller
                 'co_mooe' => 'required|string|max:255',
                 'date_acquired' => 'required|date',
                 'remarks' => 'nullable|string',
-                'condition' => 'nullable|string|in:Functional,Nonfunctional',
-                'system_boot_up' => 'nullable|boolean',
-                'hardware' => 'nullable|boolean',
-                'performance' => 'nullable|boolean',
-                'cables_connections' => 'nullable|boolean',
-                'peripherals' => 'nullable|boolean',
-                'recommendation' => 'nullable|string',
-                'date_conducted' => 'nullable|date',
-                'time_started' => 'nullable|date_format:H:i',
-                'time_ended' => 'nullable|date_format:H:i',
             ]);
 
-            // Recalculate status based on date_acquired
-            $validated['condition'] = $this->calculateStatus($validated['date_acquired']);
-
-            $message = 'Item updated successfully';
+            // Recalculate status based on possibly updated date_acquired
+            $validated['status'] = $this->calculateStatus($validated['date_acquired']);
         }
 
         $item->update($validated);
 
         return response()->json([
             'success' => true,
-            'message' => $message,
+            'message' => 'Item updated successfully',
             'item'    => $item,
-        ], 200);
+        ]);
     }
 
-    public function destroy(InventoryItem $inventoryItem)
+    public function deactivate($id)
     {
-        $inventoryItem->update(['x' => 'inactive']);
+        $item = InventoryItem::findOrFail($id);
+        $item->update(['x' => 'inactive']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Item deactivated successfully'
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $item = InventoryItem::findOrFail($id);
+        $item->delete();
 
         return response()->json([
             'success' => true,
@@ -203,10 +201,7 @@ class InventoryItemController extends Controller
                                 ->orWhere('description', 'LIKE', "%{$term}%")
                                 ->orWhere('serial_number', 'LIKE', "%{$term}%")
                                 ->orWhere('property_number', 'LIKE', "%{$term}%")
-                                ->orWhere('emp_no', 'LIKE', "%{$term}%")
-                                ->orWhere('remarks', 'LIKE', "%{$term}%")
-                                ->orWhere('recommendation', 'LIKE', "%{$term}%")
-                                ->orWhere('condition', 'LIKE', "%{$term}%");
+                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
                     });
                 }
             });
@@ -227,180 +222,81 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
-        $query = $query->leftJoin('employee_db.departments', 'inventory_items.division', '=', 'employee_db.departments.department')
-            ->select('inventory_items.*', 'employee_db.departments.dept_no as dept_no', 'employee_db.departments.department as department_name');
-
         $items = $query->orderBy('no', 'desc')->get();
 
-        $isIpm = $request->tab === 'ipm';
-        $fileName = ($isIpm ? 'ipm_' : 'inventory_') . now()->format('Y-m-d_H-i-s');
+        $tab = $request->tab ?? 'inventory';
 
         if ($type === 'pdf') {
-            return $this->exportPDF($items, $fileName, $isIpm);
-        } elseif ($type === 'csv') {
-            return $this->exportCSV($items, $fileName, $isIpm);
+            $pdf = PDF::loadView('inventory.export.pdf', compact('items', 'tab'))
+                ->setPaper('a3', 'landscape');
+            return $pdf->download('inventory.pdf');
         }
 
-        return redirect()->back()->with('error', 'Invalid export type.');
-    }
+        if ($type === 'csv') {
+            $csv = Writer::createFromString('');
+            $headers = [
+                'No', 'Division', 'Enduser', 'Classification', 'Description',
+                'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
+                'Date Acquired', 'Remarks', 'Status'
+            ];
+            $csv->insertOne($headers);
 
-    private function exportPDF($items, $fileName, $isIpm = false)
-    {
-        $css = File::get(public_path('pdf-styles.css'));
-        $view = $isIpm ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
-        $pdf = Pdf::loadView($view, compact('items', 'css'))->setPaper('a4', 'landscape');
-        return $pdf->download($fileName . '.pdf');
-    }
+            foreach ($items as $item) {
+                $row = [
+                    $item->no,
+                    $item->division,
+                    $item->enduser,
+                    $item->classification,
+                    $item->description,
+                    $item->serial_number ?? 'N/A',
+                    $item->property_number,
+                    number_format($item->unit_price, 2),
+                    $item->co_mooe,
+                    $item->date_acquired->format('M d, Y'),
+                    $item->remarks ?? 'N/A',
+                    $item->status,
+                ];
+                $csv->insertOne($row);
+            }
 
-    private function exportCSV($items, $fileName)
-    {
-        $csv = Writer::createFromString('');
-        
-        $csv->insertOne([
-            'No', 'Division', 'End User', 'Employee No', 'Classification', 'Description',
-            'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
-            'Date Acquired', 'Remarks', 'Condition', 'System Boot Up', 'Hardware', 'Performance',
-            'Cables and Connections', 'Peripherals', 'Recommendation', 'Date Conducted', 'Time Started', 'Time Ended'
-        ]);
-
-        foreach ($items as $item) {
-            $csv->insertOne([
-                $item->no,
-                $item->division,
-                $item->enduser,
-                $item->emp_no ?? 'N/A',
-                $item->classification,
-                $item->description,
-                $item->serial_number ?? 'N/A',
-                $item->property_number,
-                '₱' . number_format($item->unit_price, 2),
-                $item->co_mooe,
-                $item->date_acquired->format('M d, Y'),
-                $item->remarks ?? 'N/A',
-                $item->condition,
-                $item->system_boot_up ? 'Yes' : 'No',
-                $item->hardware ? 'Yes' : 'No',
-                $item->performance ? 'Yes' : 'No',
-                $item->cables_connections ? 'Yes' : 'No',
-                $item->peripherals ? 'Yes' : 'No',
-                $item->recommendation ?? 'N/A',
-                $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A',
-                $item->time_started ?? 'N/A',
-                $item->time_ended ?? 'N/A'
-            ]);
+            return response($csv->getContent(), 200)
+                ->header('Content-Type', 'text/csv')
+                ->header('Content-Disposition', 'attachment; filename="inventory.csv"');
         }
 
-        $csv->insertOne(array_fill(0, 13, '')); 
-        $csv->insertOne(array_fill(0, 13, '')); 
-
-        $signature1 = array_fill(0, 13, '');
-        $signature1[0] = 'Prepared by:';
-        $signature1[7] = 'Reviewed by:';
-        $csv->insertOne($signature1);
-
-        $signature2 = array_fill(0, 13, '');
-        $signature2[0] = '_______________________________';
-        $signature2[7] = '_______________________________';
-        $csv->insertOne($signature2);
-
-        $signature3 = array_fill(0, 13, '');
-        $signature3[0] = 'HERO JOHN E. LAPORGA';
-        $signature3[7] = 'MAY FLORENCE A. PABELONIO';
-        $csv->insertOne($signature3);
-
-        $signature4 = array_fill(0, 13, '');
-        $signature4[0] = 'Senior IT Support Specialist';
-        $signature4[7] = 'ICT Focal Person';
-        $csv->insertOne($signature4);
-
-        $csv->insertOne(array_fill(0, 13, '')); 
-        $csv->insertOne(array_fill(0, 13, ''));
-
-        $signature5 = array_fill(0, 13, '');
-        $signature5[6] = '_______________________________';
-        $csv->insertOne($signature5);
-
-        $signature6 = array_fill(0, 13, '');
-        $signature6[6] = 'CECILIA L. OCHAVO-SAYCON';
-        $csv->insertOne($signature6);
-
-        $signature7 = array_fill(0, 13, '');
-        $signature7[6] = 'Regional Director';
-        $csv->insertOne($signature7);
-
-        return response($csv->toString(), 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '.csv"',
-        ]);
+        return back()->with('error', 'Invalid export type');
     }
 
     public function dashboard(Request $request)
     {
         $filterableQuery = InventoryItem::active();
-        $itemsThisMonth = InventoryItem::active()
-            ->whereMonth('date_acquired', now()->month)
-            ->whereYear('date_acquired', now()->year)
-            ->count();
-        
-        if ($request->filled('filter') && $request->filter !== 'none') {
-            switch ($request->filter) {
-                case 'today':
-                    $filterableQuery->whereDate('date_acquired', now()->toDateString());
-                    break;
-                case 'week':
-                    $filterableQuery->whereBetween('date_acquired', [now()->startOfWeek(), now()->endOfWeek()]);
-                    break;
-                case 'month':
-                    $filterableQuery->whereMonth('date_acquired', now()->month)
-                          ->whereYear('date_acquired', now()->year);
-                    break;
-                case 'year':
-                    $filterableQuery->whereYear('date_acquired', now()->year);
-                    break;
-                case 'custom':
-                    if ($request->filled('date_from')) {
-                        $filterableQuery->whereDate('date_acquired', '>=', $request->date_from);
-                    }
-                    if ($request->filled('date_to')) {
-                        $filterableQuery->whereDate('date_acquired', '<=', $request->date_to);
-                    }
-                    break;
-            }
-        }
 
         $totalItems = $filterableQuery->count();
         $totalValue = $filterableQuery->sum('unit_price');
+        $itemsThisMonth = $filterableQuery->whereMonth('date_acquired', now()->month)
+            ->whereYear('date_acquired', now()->year)
+            ->count();
         $totalDivisions = $filterableQuery->distinct('division')->count('division');
 
-        $divisionData = $filterableQuery->selectRaw('division, count(*) as count')
+        $divisionData = $filterableQuery
+            ->select('division', \DB::raw('count(*) as count'))
             ->groupBy('division')
             ->get();
 
-        $classificationData = $filterableQuery->selectRaw('classification, sum(unit_price) as total_value')
+        $classificationData = $filterableQuery
+            ->select('classification', \DB::raw('sum(unit_price) as total_value'))
             ->groupBy('classification')
             ->get();
 
-        $acquisitionQuery = InventoryItem::active();
+        $acquisitionQuery = clone $filterableQuery;
 
-        if ($request->filled('filter') && $request->filter !== 'none') {
-             $endDate = now();
-             switch ($request->filter) {
-                case 'today':
-                    $startDate = now()->subMonth();
-                    $endDate = now()->endOfDay();
-                    $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
+        if ($request->filled('period')) {
+            switch ($request->period) {
+                case 'last_6_months':
+                    $startDate = now()->subMonths(5)->startOfMonth();
+                    $acquisitionQuery->where('date_acquired', '>=', $startDate);
                     break;
-                case 'week':
-                    $startDate = now()->subMonths(2);
-                    $endDate = now()->endOfWeek();
-                    $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
-                    break;
-                case 'month':
-                    $startDate = now()->startOfYear();
-                    $endDate = now()->endOfMonth();
-                    $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
-                    break;
-                case 'year':
+                case 'this_year':
                     $startDate = now()->startOfYear();
                     $endDate = now()->endOfYear();
                     $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);

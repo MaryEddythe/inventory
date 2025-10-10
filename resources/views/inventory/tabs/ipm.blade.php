@@ -19,12 +19,13 @@
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
         <h1 class="h4 fw-bold mb-0">IPM</h1>
         <div class="d-flex gap-2 align-items-center">
-            <form id="searchForm" class="d-flex align-items-center" style="min-width: 220px;">
-                <input type="text" class="form-control form-control-sm" name="search" placeholder="Search anything here" value="{{ request('search') }}">
-            </form>
-            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
-                <i class="bi bi-funnel"></i> Filter
-            </button>
+    <form id="searchForm" class="d-flex align-items-center" style="min-width: 220px;">
+        <input type="text" class="form-control form-control-sm" name="search" placeholder="Search anything here" value="{{ request('search') }}">
+    </form>
+    <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
+        <i class="bi bi-funnel"></i> Filter
+    </button>
+    <input type="hidden" name="tab" value="ipm" form="searchForm" />
 
             <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -132,11 +133,6 @@
                     <td>
                         <div class="d-flex gap-1">
                             <button type="button" class="btn btn-outline-primary btn-sm" title="Edit IPM" data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
-                            <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline delete-form">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete"><i class="bi bi-trash"></i></button>
-                            </form>
                         </div>
                     </td>
                 </tr>
@@ -208,154 +204,87 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    document.querySelectorAll('.edit-ipm-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('Edit form submitted, preventing default for ID:', this.id);
+    function attachEditFormListeners() {
+        document.querySelectorAll('.edit-ipm-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Edit form submitted, preventing default for ID:', this.id);
 
-            const itemId = this.id.split('-').pop();
-            const formData = new FormData(this);
+                const itemId = this.id.split('-').pop();
+                const formData = new FormData(this);
 
-            Swal.fire({
-                title: 'Updating IPM...',
-                text: 'Please wait while we update the IPM',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (!csrfToken) {
-                console.error('CSRF token not found!');
-                Swal.close();
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'CSRF token not found. Please refresh the page.'
+                    title: 'Updating IPM...',
+                    text: 'Please wait while we update the IPM',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
                 });
-                return;
-            }
-            console.log('CSRF token found:', csrfToken.getAttribute('content'));
 
-            fetch(`{{ route("inventory.update", ":id") }}`.replace(':id', itemId), {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                console.log('Update response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Update response data:', data);
-                Swal.close();
-
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: data.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        $(`#editIpmModal${itemId}`).modal('hide');
-                        location.reload();
-                    });
-                } else {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                if (!csrfToken) {
+                    console.error('CSRF token not found!');
+                    Swal.close();
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
-                        text: data.message || 'An error occurred while updating the IPM'
+                        text: 'CSRF token not found. Please refresh the page.'
                     });
+                    return;
                 }
-            })
-            .catch(error => {
-                Swal.close();
-                console.error('Update fetch error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Network Error!',
-                    text: 'An error occurred while updating the IPM. Check console for details.'
+                console.log('CSRF token found:', csrfToken.getAttribute('content'));
+
+                fetch(`{{ route("inventory.update", ":id") }}`.replace(':id', itemId), {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    console.log('Update response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Update response data:', data);
+                    Swal.close();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $(`#editIpmModal${itemId}`).modal('hide');
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: data.message || 'An error occurred while updating the IPM'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('Update fetch error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error!',
+                        text: 'An error occurred while updating the IPM. Check console for details.'
+                    });
                 });
             });
         });
-    });
+    }
 
-    document.querySelectorAll('.delete-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            Swal.fire({
-                title: 'Are you sure?',
-                text: 'You won\'t be able to revert this!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const formData = new FormData(this);
-
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                    if (!csrfToken) {
-                        console.error('CSRF token not found!');
-                        Swal.close();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'CSRF token not found. Please refresh the page.'
-                        });
-                        return;
-                    }
-                    console.log('CSRF token found:', csrfToken.getAttribute('content'));
-
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Deleted!',
-                                text: data.message,
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: data.message || 'An error occurred while deleting the item'
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while deleting the item'
-                        });
-                    });
-                }
-            });
-        });
-    });
+    attachEditFormListeners();
 
     function updateResults() {
         const searchParams = new URLSearchParams();
@@ -371,6 +300,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Add tab=ipm to ensure controller filters correctly
+        searchParams.set('tab', 'ipm');
+
         const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
         window.history.pushState({}, '', newUrl);
 
@@ -382,6 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.text())
         .then(html => {
             document.querySelector('.table-responsive').innerHTML = html;
+            attachEditFormListeners();
         });
     }
 

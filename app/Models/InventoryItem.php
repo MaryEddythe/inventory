@@ -27,6 +27,7 @@ class InventoryItem extends Model
         'co_mooe',
         'date_acquired',
         'remarks',
+        'status',
         'condition',
         'system_boot_up',
         'hardware',

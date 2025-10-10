@@ -162,21 +162,10 @@ class InventoryItemController extends Controller
         ]);
     }
 
-    public function deactivate($id)
-    {
-        $item = InventoryItem::findOrFail($id);
-        $item->update(['x' => 'inactive']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Item deactivated successfully'
-        ]);
-    }
-
     public function destroy($id)
     {
         $item = InventoryItem::findOrFail($id);
-        $item->delete();
+        $item->update(['x' => 'INACTIVE']);
 
         return response()->json([
             'success' => true,

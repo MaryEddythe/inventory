@@ -69,9 +69,9 @@
                                 data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->no }}">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <form action="{{ route('inventory.deactivate', $item->no) }}" method="POST" class="d-inline delete-form">
+                        <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline delete-form">
                             @csrf
-                            @method('PATCH')
+                            @method('DELETE')
                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
                                 <i class="bi bi-trash"></i>
                             </button>

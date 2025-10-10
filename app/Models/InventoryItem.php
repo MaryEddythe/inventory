@@ -63,6 +63,6 @@ class InventoryItem extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('x', 'active');
+        return $query->where('x', '!=', 'INACTIVE');
     }
 }

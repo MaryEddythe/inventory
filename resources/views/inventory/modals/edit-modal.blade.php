@@ -63,7 +63,7 @@
         </div>
         <div class="col-md-6 mb-3">
             <label for="date_acquired-{{ $item->no }}" class="form-label">Date Acquired</label>
-            <input type="date" class="form-control" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired->format('Y-m-d')) }}" required>
+            <input type="date" class="form-control" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" required>
         </div>
     </div>
     <div class="mb-3">

@@ -6,6 +6,7 @@ use App\Models\InventoryItem;
 use App\Models\Department;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\File;
@@ -22,6 +23,7 @@ class InventoryItemController extends Controller
         $years = now()->diffInYears($dateAcquired);
         return $years <= 5 ? 'NEW' : 'FOR REPLACEMENT';
     }
+
     public function index(Request $request)
     {
         $query = InventoryItem::active();
@@ -214,9 +216,11 @@ class InventoryItemController extends Controller
         $items = $query->orderBy('no', 'desc')->get();
 
         $tab = $request->tab ?? 'inventory';
+        $css = File::get(public_path('pdf-styles.css'));
 
         if ($type === 'pdf') {
-            $pdf = PDF::loadView('inventory.export.pdf', compact('items', 'tab'))
+            $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
+            $pdf = Pdf::loadView($view, compact('items', 'tab', 'css'))
                 ->setPaper('a3', 'landscape');
             return $pdf->download('inventory.pdf');
         }

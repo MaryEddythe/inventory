@@ -39,8 +39,8 @@
                 @foreach($items as $index => $item)
                 @php
                     // <CHANGE> Calculate years since acquisition for PDF badge coloring
-                    $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
-                    
+                    $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
+
                     // Determine PDF badge class: green for 0-5 years, yellow for 6+ years
                     if ($yearsSinceAcquisition <= 5) {
                         $pdfBadgeClass = 'pdf-status-new'; // Green
@@ -58,7 +58,7 @@
                     <td>{{ $item->property_number }}</td>
                     <td class="pdf-text-right">{{ number_format($item->unit_price, 2) }}</td>
                     <td>{{ $item->co_mooe }}</td>
-                    <td class="pdf-text-center pdf-nowrap">{{ $item->date_acquired->format('m/d/Y') }}</td>
+                    <td class="pdf-text-center pdf-nowrap">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
                     <td>{{ $item->remarks ?? 'N/A' }}</td>
                     <td class="pdf-text-center">
                         {{-- <CHANGE> Updated to use age-based badge class --}}
@@ -95,11 +95,11 @@
                             return $item->division == $dept->department;
                         });
                         $newCount = $group->filter(function ($item) {
-                            $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
+                            $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
                             return $yearsSinceAcquisition <= 5;
                         })->count();
                         $replacementCount = $group->filter(function ($item) {
-                            $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
+                            $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
                             return $yearsSinceAcquisition > 5;
                         })->count();
                         $totalCount = $group->count();

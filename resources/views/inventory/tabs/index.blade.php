@@ -65,8 +65,8 @@
                 @forelse($items as $item)
                 @php
                     // Calculate years since acquisition
-                    $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
-                    
+                    $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
+
                     // Determine badge class based on age
                     $ageBadgeClass = $yearsSinceAcquisition <= 5 ? 'badge-age-new' : 'badge-age-old';
                 @endphp
@@ -96,7 +96,7 @@
                     <td class="item-property">{{ $item->property_number }}</td>
                     <td class="item-price">₱{{ number_format($item->unit_price, 2) }}</td>
                     <td class="item-comooe">{{ $item->co_mooe }}</td>
-                    <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
+                    <td class="item-date">{{ $item->date_acquired ? $item->date_acquired->format('M d, Y') : 'N/A' }}</td>
                     <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
                     <td>
                         <span class="badge {{ $ageBadgeClass }} fw-normal" title="{{ $yearsSinceAcquisition }} years old">

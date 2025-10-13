@@ -175,12 +175,18 @@ document.addEventListener('DOMContentLoaded', function() {
             emailFeedback.textContent = '';
         }
 
-        updateBtn.disabled = !isValid;
-        return isValid;
+        // Check if any field has changed
+        const originalUsername = '{{ Auth::user()->username }}';
+        const originalEmail = '{{ Auth::user()->email }}';
+        const hasChanges = usernameInput.value !== originalUsername || emailInput.value !== originalEmail || profileImageInput.files.length > 0;
+
+        updateBtn.disabled = !isValid || !hasChanges;
+        return isValid && hasChanges;
     }
 
     usernameInput.addEventListener('input', validateProfileForm);
     emailInput.addEventListener('input', validateProfileForm);
+    profileImageInput.addEventListener('change', validateProfileForm);
 
     // Real-time validation for change password form
     const currentPasswordInput = document.getElementById('current_password');
@@ -264,15 +270,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!validateChangePasswordForm()) return;
 
-        changePasswordBtn.disabled = true;
-        changeSpinner.style.display = 'inline-block';
-
-        // Simulate form submission (replace with actual submission)
-        setTimeout(() => {
-            changePasswordBtn.disabled = false;
-            changeSpinner.style.display = 'none';
-            Swal.fire('Success!', 'Password changed successfully!', 'success');
-        }, 2000);
+        Swal.fire({
+            title: 'Change Password Confirmation',
+            text: 'Are you sure you want to change your password?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, change it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                changePasswordBtn.disabled = true;
+                changeSpinner.style.display = 'inline-block';
+                this.submit();
+            }
+        });
     });
 
     // Image preview functionality

@@ -75,7 +75,6 @@
                     <th title="Performance">Perf</th>
                     <th title="Cables and Connections">Cables/Conn</th>
                     <th title="Peripherals">Periph</th>
-                    <th title="Remarks">Rem</th>
                     <th title="Recommendation">Rec</th>
                     <th title="Date Conducted">Date</th>
                     <th title="Time Started">Start</th>
@@ -117,11 +116,6 @@
                     <td class="text-center">{{ $item->performance ? '✓' : '✗' }}</td>
                     <td class="text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
                     <td class="text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
-                    <td class="item-remarks">
-                        {!! request('search')
-                            ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->remarks ?? 'N/A')), 20)
-                            : e(Str::limit($item->remarks ?? 'N/A', 20)) !!}
-                    </td>
                     <td class="item-recommendation">
                         {!! request('search')
                             ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->recommendation ?? 'N/A')), 20)

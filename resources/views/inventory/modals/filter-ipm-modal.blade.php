@@ -1,4 +1,3 @@
-<!-- Filter Modal for IPM -->
 <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -24,6 +23,14 @@
                                 <option value="{{ $dept->department }}" {{ request('division') === $dept->department ? 'selected' : '' }}>{{ $dept->department }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_from" class="form-label">Date From</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_to" class="form-label">Date To</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}">
                     </div>
                 </form>
             </div>

@@ -55,7 +55,6 @@
                     <th class="pdf-col-5 pdf-text-center">Perf</th>
                     <th class="pdf-col-5 pdf-text-center">Cables/Conn</th>
                     <th class="pdf-col-5 pdf-text-center">Periph</th>
-                    <th class="pdf-col-6">Rem</th>
                     <th class="pdf-col-8">Rec</th>
                     <th class="pdf-col-6 pdf-text-center">Date</th>
                     <th class="pdf-col-6 pdf-text-center">Start</th>
@@ -80,7 +79,6 @@
                     <td class="pdf-text-center"><span class="{{ $item->performance ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
                     <td class="pdf-text-center"><span class="{{ $item->cables_connections ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
                     <td class="pdf-text-center"><span class="{{ $item->peripherals ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                    <td>{{ $item->remarks ?? 'N/A' }}</td>
                     <td>{{ $item->recommendation ?? 'N/A' }}</td>
                     <td class="pdf-text-center">{{ $item->date_conducted ? $item->date_conducted->format('m/d/Y') : 'N/A' }}</td>
                     <td class="pdf-text-center">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>

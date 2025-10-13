@@ -231,34 +231,85 @@ class InventoryItemController extends Controller
 
         if ($type === 'csv') {
             $csv = Writer::createFromString('');
-            $headers = [
-                'No', 'Division', 'Enduser', 'Classification', 'Description',
-                'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
-                'Date Acquired', 'Remarks', 'Status'
-            ];
-            $csv->insertOne($headers);
 
-            foreach ($items as $item) {
-                $row = [
-                    $item->no,
-                    $item->division,
-                    $item->enduser,
-                    $item->classification,
-                    $item->description,
-                    $item->serial_number ?? 'N/A',
-                    $item->property_number,
-                    number_format($item->unit_price, 2),
-                    $item->co_mooe,
-                    $item->date_acquired->format('M d, Y'),
-                    $item->remarks ?? 'N/A',
-                    $item->status,
+            if ($tab === 'ipm') {
+                // IPM-specific CSV headers and data
+                $headers = [
+                    'No',
+                    'Div.',
+                    'User',
+                    'Type',
+                    'Desc',
+                    'Condition',
+                    'Boot Up',
+                    'HW',
+                    'Perf',
+                    'Cables/Conn',
+                    'Periph',
+                    'Rem',
+                    'Rec',
+                    'Date',
+                    'Start',
+                    'End'
                 ];
-                $csv->insertOne($row);
+                $csv->insertOne($headers);
+
+                foreach ($items as $item) {
+                    $row = [
+                        $item->no,
+                        $item->division,
+                        $item->enduser,
+                        $item->classification,
+                        $item->description,
+                        $item->condition,
+                        $item->system_boot_up ? 'Yes' : 'No',
+                        $item->hardware ? 'Yes' : 'No',
+                        $item->performance ? 'Yes' : 'No',
+                        $item->cables_connections ? 'Yes' : 'No',
+                        $item->peripherals ? 'Yes' : 'No',
+                        $item->remarks ?? 'N/A',
+                        $item->recommendation ?? 'N/A',
+                        $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A',
+                        $item->time_started ?? 'N/A',
+                        $item->time_ended ?? 'N/A'
+                    ];
+                    $csv->insertOne($row);
+                }
+
+                $filename = 'ipm_inventory.csv';
+            } else {
+                // Regular inventory CSV
+                $headers = [
+                    'No', 'Division', 'Enduser', 'Classification', 'Description',
+                    'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
+                    'Date Acquired', 'Remarks', 'Status'
+                ];
+                $csv->insertOne($headers);
+
+                foreach ($items as $item) {
+                    $row = [
+                        $item->no,
+                        $item->division,
+                        $item->enduser,
+                        $item->classification,
+                        $item->description,
+                        $item->serial_number ?? 'N/A',
+                        $item->property_number,
+                        number_format($item->unit_price, 2),
+                        $item->co_mooe,
+                        $item->date_acquired->format('M d, Y'),
+                        $item->remarks ?? 'N/A',
+                        $item->status,
+                    ];
+                    $csv->insertOne($row);
+                }
+
+                $filename = 'inventory.csv';
             }
 
             return response($csv->getContent(), 200)
                 ->header('Content-Type', 'text/csv')
-                ->header('Content-Disposition', 'attachment; filename="inventory.csv"');
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
         }
 
         return back()->with('error', 'Invalid export type');

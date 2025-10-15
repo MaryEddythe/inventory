@@ -87,12 +87,7 @@
         @endforelse
     </tbody>
 </table>
-<div class="d-flex justify-content-between align-items-center mt-4">
-    <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
-    <div>
-        {{ $items->links('vendor.pagination.bootstrap-5') }}
-    </div>
-</div>
+
 
 @foreach($items as $item)
     <div class="modal fade" id="editInventoryModal{{ $item->no }}" tabindex="-1" aria-labelledby="editInventoryModalLabel{{ $item->no }}" aria-hidden="true">

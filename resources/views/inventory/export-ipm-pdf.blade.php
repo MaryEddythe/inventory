@@ -51,11 +51,11 @@
                     <th class="pdf-col-12">Desc</th>
                     <th class="pdf-col-6 pdf-text-center">Condition</th>
                     <th class="pdf-col-5 pdf-text-center">Boot Up</th>
-                    <th class="pdf-col-5 pdf-text-center">HW</th>
-                    <th class="pdf-col-5 pdf-text-center">Perf</th>
+                    <th class="pdf-col-5 pdf-text-center">Hardware</th>
+                    <th class="pdf-col-5 pdf-text-center">Performance</th>
                     <th class="pdf-col-5 pdf-text-center">Cables/Conn</th>
                     <th class="pdf-col-5 pdf-text-center">Periph</th>
-                    <th class="pdf-col-8">Rec</th>
+                    <th class="pdf-col-8">Recommendations</th>
                     <th class="pdf-col-6 pdf-text-center">Date</th>
                     <th class="pdf-col-6 pdf-text-center">Start</th>
                     <th class="pdf-col-6 pdf-text-center">End</th>

@@ -8,7 +8,7 @@
             <div class="modal-body">
                 <form id="filterForm">
                     <div class="mb-3">
-                        <label for="condition" class="form-label">Condition</label>
+                        <label for="condition" class="form-label">CONDITION</label>
                         <select class="form-select" id="condition" name="condition">
                             <option value="">All Conditions</option>
                             <option value="Functional" {{ request('condition') === 'Functional' ? 'selected' : '' }}>Functional</option>
@@ -16,20 +16,20 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="division" class="form-label">Department</label>
+                        <label for="division" class="form-label">DIVISIONS</label>
                         <select class="form-select" id="division" name="division">
-                            <option value="">All Departments</option>
+                            <option value="">All Divisions</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->department }}" {{ request('division') === $dept->department ? 'selected' : '' }}>{{ $dept->department }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="date_from" class="form-label">Date From</label>
+                        <label for="date_from" class="form-label">DATE RANGE</label>
                         <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
                     </div>
                     <div class="mb-3">
-                        <label for="date_to" class="form-label">Date To</label>
+                        <label for="date_to" class="form-label">DATE RANGE</label>
                         <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}">
                     </div>
                 </form>

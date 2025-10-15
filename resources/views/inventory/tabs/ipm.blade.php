@@ -71,11 +71,11 @@
                     <th title="Description">Desc</th>
                     <th title="Condition">Condition</th>
                     <th title="System Boot Up">Boot Up</th>
-                    <th title="Hardware">HW</th>
-                    <th title="Performance">Perf</th>
+                    <th title="Hardware">Hardware</th>
+                    <th title="Performance">Performance</th>
                     <th title="Cables and Connections">Cables/Conn</th>
                     <th title="Peripherals">Periph</th>
-                    <th title="Recommendation">Rec</th>
+                    <th title="Recommendation">Recommendations</th>
                     <th title="Date Conducted">Date</th>
                     <th title="Time Started">Start</th>
                     <th title="Time Ended">End</th>
@@ -162,7 +162,7 @@
     </div>
 </div>
 
-@include('inventory.modals.filter-modal')
+@include('inventory.modals.filter-ipm-modal')
 @endsection
 
 @push('scripts')

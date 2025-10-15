@@ -62,28 +62,41 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($items as $index => $item)
-                <tr>
-                    <td class="pdf-text-center">{{ $loop->iteration }}</td>
-                    <td>{{ $item->department_name ?? $item->division }}</td>
-                    <td>{{ $item->enduser }}</td>
-                    <td>{{ $item->classification }}</td>
-                    <td>{{ $item->description }}</td>
-                    <td class="pdf-text-center">
-                        <span class="{{ $item->condition === 'Functional' ? 'pdf-status-new' : 'pdf-status-replace' }}">
-                            {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
-                        </span>
-                    </td>
-                    <td class="pdf-text-center"><span class="{{ $item->system_boot_up ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                    <td class="pdf-text-center"><span class="{{ $item->hardware ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                    <td class="pdf-text-center"><span class="{{ $item->performance ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                    <td class="pdf-text-center"><span class="{{ $item->cables_connections ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                    <td class="pdf-text-center"><span class="{{ $item->peripherals ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                    <td>{{ $item->recommendation ?? 'N/A' }}</td>
-                    <td class="pdf-text-center">{{ $item->date_conducted ? $item->date_conducted->format('m/d/Y') : 'N/A' }}</td>
-                    <td class="pdf-text-center">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
-                    <td class="pdf-text-center">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
-                </tr>
+                @php
+                    $groupedItems = $items->groupBy('enduser');
+                    $rowNumber = 1;
+                @endphp
+                @foreach($groupedItems as $enduser => $employeeItems)
+                    @php
+                        $itemCount = $employeeItems->count();
+                        $firstItem = $employeeItems->first();
+                    @endphp
+                    @foreach($employeeItems as $index => $item)
+                        <tr>
+                            @if($index === 0)
+                                <td class="pdf-text-center" rowspan="{{ $itemCount }}">{{ $rowNumber }}</td>
+                                <td rowspan="{{ $itemCount }}">{{ $firstItem->department_name ?? $firstItem->division }}</td>
+                                <td rowspan="{{ $itemCount }}">{{ $enduser }}</td>
+                            @endif
+                            <td>{{ $item->classification }}</td>
+                            <td>{{ $item->description }}</td>
+                            <td class="pdf-text-center">
+                                <span class="{{ $item->condition === 'Functional' ? 'pdf-status-new' : 'pdf-status-replace' }}">
+                                    {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
+                                </span>
+                            </td>
+                            <td class="pdf-text-center"><span class="{{ $item->system_boot_up ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                            <td class="pdf-text-center"><span class="{{ $item->hardware ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                            <td class="pdf-text-center"><span class="{{ $item->performance ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                            <td class="pdf-text-center"><span class="{{ $item->cables_connections ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                            <td class="pdf-text-center"><span class="{{ $item->peripherals ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                            <td>{{ $item->recommendation ?? 'N/A' }}</td>
+                            <td class="pdf-text-center">{{ $item->date_conducted ? $item->date_conducted->format('m/d/Y') : 'N/A' }}</td>
+                            <td class="pdf-text-center">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
+                            <td class="pdf-text-center">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
+                        </tr>
+                    @endforeach
+                    @php $rowNumber++; @endphp
                 @endforeach
             </tbody>
         </table>

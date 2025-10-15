@@ -41,7 +41,7 @@
         <table class="pdf-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="16" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
+                    <th colspan="15" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
                 </tr>
                 <tr>
                     <th class="pdf-col-5 pdf-text-center">No</th>
@@ -49,7 +49,7 @@
                     <th class="pdf-col-10">User</th>
                     <th class="pdf-col-6">Type</th>
                     <th class="pdf-col-12">Desc</th>
-                    <th class="pdf-col-6 pdf-text-center">Condition</th>
+                    <th class="pd   f-col-6 pdf-text-center">Condition</th>
                     <th class="pdf-col-5 pdf-text-center">Boot Up</th>
                     <th class="pdf-col-5 pdf-text-center">Hardware</th>
                     <th class="pdf-col-5 pdf-text-center">Performance</th>
@@ -157,6 +157,94 @@
                     <td class="pdf-text-center">{{ $totalFunctional }}</td>
                     <td class="pdf-text-center">{{ $totalNonfunctional }}</td>
                     <td class="pdf-text-center">{{ $grandTotalItems }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Item Type Summary -->
+    <div class="pdf-summary-section pdf-mt-3">
+        <table class="pdf-summary-table pdf-table-striped">
+            <thead>
+                <tr>
+                    <th colspan="7" class="pdf-bg-dark">ITEM TYPE SUMMARY BY DEPARTMENT</th>
+                </tr>
+                <tr class="pdf-bg-primary">
+                    <th class="pdf-col-20">Department</th>
+                    <th class="pdf-col-12 pdf-text-center">Laptops</th>
+                    <th class="pdf-col-12 pdf-text-center">Printers</th>
+                    <th class="pdf-col-12 pdf-text-center">Desktops</th>
+                    <th class="pdf-col-12 pdf-text-center">Scanners</th>
+                    <th class="pdf-col-12 pdf-text-center">Others</th>
+                    <th class="pdf-col-12 pdf-text-center">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $itemTypeSummaries = collect();
+                    foreach ($allDepts as $dept) {
+                        $deptItems = $items->filter(function ($item) use ($dept) {
+                            return $item->division == $dept->department;
+                        });
+
+                        $laptops = $deptItems->filter(function ($item) {
+                            return stripos($item->classification, 'laptop') !== false || stripos($item->description, 'laptop') !== false;
+                        })->count();
+
+                        $printers = $deptItems->filter(function ($item) {
+                            return stripos($item->classification, 'printer') !== false || stripos($item->description, 'printer') !== false;
+                        })->count();
+
+                        $desktops = $deptItems->filter(function ($item) {
+                            return stripos($item->classification, 'desktop') !== false || stripos($item->description, 'desktop') !== false;
+                        })->count();
+
+                        $scanners = $deptItems->filter(function ($item) {
+                            return stripos($item->classification, 'scanner') !== false || stripos($item->description, 'scanner') !== false;
+                        })->count();
+
+                        $others = $deptItems->count() - $laptops - $printers - $desktops - $scanners;
+                        $total = $deptItems->count();
+
+                        $itemTypeSummaries->push([
+                            'name' => $dept->department,
+                            'laptops' => $laptops,
+                            'printers' => $printers,
+                            'desktops' => $desktops,
+                            'scanners' => $scanners,
+                            'others' => $others,
+                            'total' => $total
+                        ]);
+                    }
+
+                    $totalLaptops = $itemTypeSummaries->sum('laptops');
+                    $totalPrinters = $itemTypeSummaries->sum('printers');
+                    $totalDesktops = $itemTypeSummaries->sum('desktops');
+                    $totalScanners = $itemTypeSummaries->sum('scanners');
+                    $totalOthers = $itemTypeSummaries->sum('others');
+                    $grandTotalTypes = $itemTypeSummaries->sum('total');
+                @endphp
+                @foreach($itemTypeSummaries as $summary)
+                    <tr>
+                        <td><strong>{{ $summary['name'] }}</strong></td>
+                        <td class="pdf-text-center">{{ $summary['laptops'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['printers'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['desktops'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['scanners'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['others'] }}</td>
+                        <td class="pdf-text-center">{{ $summary['total'] }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr class="pdf-bg-gray pdf-font-bold">
+                    <td><strong>OVERALL TOTAL</strong></td>
+                    <td class="pdf-text-center">{{ $totalLaptops }}</td>
+                    <td class="pdf-text-center">{{ $totalPrinters }}</td>
+                    <td class="pdf-text-center">{{ $totalDesktops }}</td>
+                    <td class="pdf-text-center">{{ $totalScanners }}</td>
+                    <td class="pdf-text-center">{{ $totalOthers }}</td>
+                    <td class="pdf-text-center">{{ $grandTotalTypes }}</td>
                 </tr>
             </tfoot>
         </table>

@@ -47,40 +47,45 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($items as $index => $item)
                 @php
-                    // <CHANGE> Calculate years since acquisition for PDF badge coloring
-                    $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
-
-                    // Determine PDF badge class: green for 0-5 years, yellow for 6+ years
-                    if ($yearsSinceAcquisition <= 5) {
-                        $pdfBadgeClass = 'pdf-status-new'; // Green
-                    } else {
-                        $pdfBadgeClass = 'pdf-status-replace'; // Yellow
-                    }
+                    $groupedItems = $items->groupBy('enduser');
+                    $rowNumber = 1;
                 @endphp
-                <tr>
-                    <td class="pdf-text-center">{{ $loop->iteration }}</td>
-                    <td>{{ $item->department_name ?? $item->division }}</td>
-                    <td>{{ $item->enduser }}</td>
-                    <td>{{ $item->classification }}</td>
-                    <td>{{ $item->description }}</td>
-                    <td>{{ $item->serial_number ?? 'N/A' }}</td>
-                    <td>{{ $item->property_number }}</td>
-                    <td class="pdf-text-right">{{ number_format($item->unit_price, 2) }}</td>
-                    <td>{{ $item->co_mooe }}</td>
-                    <td class="pdf-text-center pdf-nowrap">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
-                    <td>{{ $item->remarks ?? 'N/A' }}</td>
-                    <td class="pdf-text-center">
-                        {{-- <CHANGE> Updated to use age-based badge class --}}
-                        <span class="{{ $pdfBadgeClass }}">
-                            {{ $yearsSinceAcquisition <= 5 ? 'NEW' : 'REPL' }}
-                        </span>
-                    </td>
-                </tr>
+                @foreach($groupedItems as $enduser => $employeeItems)
+                    @php
+                        $itemCount = $employeeItems->count();
+                        $firstItem = $employeeItems->first();
+                    @endphp
+                    @foreach($employeeItems as $index => $item)
+                        @php
+                            $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
+                            $pdfBadgeClass = $yearsSinceAcquisition <= 5 ? 'pdf-status-new' : 'pdf-status-replace';
+                        @endphp
+                        <tr>
+                            @if($index === 0)
+                                <td class="pdf-text-center" rowspan="{{ $itemCount }}">{{ $rowNumber }}</td>
+                                <td rowspan="{{ $itemCount }}">{{ $firstItem->department_name ?? $firstItem->division }}</td>
+                                <td rowspan="{{ $itemCount }}">{{ $enduser }}</td>
+                            @endif
+                            <td>{{ $item->classification }}</td>
+                            <td>{{ $item->description }}</td>
+                            <td>{{ $item->serial_number ?? 'N/A' }}</td>
+                            <td>{{ $item->property_number }}</td>
+                            <td class="pdf-text-right">{{ number_format($item->unit_price, 2) }}</td>
+                            <td>{{ $item->co_mooe }}</td>
+                            <td class="pdf-text-center pdf-nowrap">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
+                            <td>{{ $item->remarks ?? 'N/A' }}</td>
+                            <td class="pdf-text-center">
+                                <span class="{{ $pdfBadgeClass }}">
+                                    {{ $yearsSinceAcquisition <= 5 ? 'NEW' : 'REPL' }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                    @php $rowNumber++; @endphp
                 @endforeach
             </tbody>
-        </table>     
+        </table>
     </div>
 
     <!-- Executive Summary -->

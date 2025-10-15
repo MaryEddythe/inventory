@@ -43,15 +43,15 @@
     </div>
 
     <div class="table-responsive">
-        @include('inventory.table-data', compact('items', 'departments', 'employees'))
+        @include('inventory.table-data', compact('paginator', 'departments', 'employees'))
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
-        <div>
-            {{ $items->links('vendor.pagination.bootstrap-5') }}
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">Showing {{ $paginator->firstItem() ?? 0 }} to {{ $paginator->lastItem() ?? 0 }} of {{ $paginator->total() }} entries</div>
+            <div>
+                {{ $paginator->links('vendor.pagination.bootstrap-5') }}
+            </div>
         </div>
-    </div>
 </div>
 
 <!-- Add Inventory Modal -->

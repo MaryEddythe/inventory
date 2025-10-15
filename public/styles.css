@@ -1001,4 +1001,14 @@ mark {
     outline-offset: 2px;
 }
 
+/* Employee grouping badges for inventory tab */
+.employee-group-badge {
+    font-size: 0.85em;
+    padding: 0.3em 0.6em;
+    margin: 0.1em;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: 500;
+}
+
 

@@ -67,7 +67,7 @@ class InventoryItemController extends Controller
         $employees = Employee::orderBy('firstname')->get();
 
         if ($request->ajax()) {
-            return view('inventory.table-data', compact('items'))->render();
+            return view('inventory.table-data', compact('items', 'departments', 'employees'))->render();
         }
 
         return view('inventory.tabs.index', compact('items', 'departments', 'employees'));

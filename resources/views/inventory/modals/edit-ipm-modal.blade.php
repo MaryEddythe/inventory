@@ -10,6 +10,7 @@
 <form action="{{ route('inventory.update', $item->no) }}" method="POST" id="edit-ipm-form-{{ $item->no }}" class="edit-ipm-form">
     @csrf
     @method('PUT')
+    <input type="hidden" name="emp_no" value="{{ $item->emp_no }}">
     <div class="row">
         <div class="col-md-6 mb-3">
             <label for="condition-{{ $item->no }}" class="form-label">Condition</label>

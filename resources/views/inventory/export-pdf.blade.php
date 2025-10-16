@@ -140,8 +140,8 @@
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="pdf-bg-gray pdf-font-bold pdf-summary-footer">
-                    <td class="pdf-summary-td"><strong>TOTAL</strong></td>
+                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total">
+                    <td class="pdf-summary-td"><strong>OVERALL TOTAL</strong></td>
                     <td class="pdf-text-center pdf-summary-td pdf-new-total">{{ $totalNew }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-replace-total">{{ $totalReplacement }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalItems }}</td>
@@ -225,7 +225,7 @@
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="pdf-bg-gray pdf-font-bold pdf-summary-footer">
+                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total">
                     <td class="pdf-summary-td"><strong>OVERALL TOTAL</strong></td>
                     <td class="pdf-text-center pdf-summary-td pdf-laptop-total">{{ $totalLaptops }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-printer-total">{{ $totalPrinters }}</td>
@@ -238,7 +238,7 @@
         </table>
     </div>
 
-        <!-- Signature Section -->
+    <!-- Signature Section -->
     <div class="pdf-signature-section pdf-mt-3" style="page-break-inside: avoid;">
         <table style="width: 100%; border: none;">
             <tr>

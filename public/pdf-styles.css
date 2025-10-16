@@ -160,6 +160,19 @@ body {
     font-size: 10pt !important;
 }
 
+.pdf-bg-overall-total {
+    background-color: #1a5276 !important;
+    color: white !important;
+    font-size: 11pt !important;
+    font-weight: 900 !important;
+    padding: 8px !important;
+    border: 2px solid #000 !important;
+}
+
+.pdf-overall-total td {
+    text-transform: uppercase;
+}
+
 .pdf-dept-name {
     font-weight: bold;
     color: #2c3e50;
@@ -167,23 +180,23 @@ body {
 }
 
 /* Executive Summary Column Styles */
-.pdf-new-col {
+.pdf-functional-col {
     background-color: #27ae60 !important;
     color: white !important;
 }
 
-.pdf-new-count, .pdf-new-total {
+.pdf-functional-count, .pdf-functional-total {
     background-color: #d5f4e6 !important;
     color: #196f3d !important;
     font-weight: bold;
 }
 
-.pdf-replace-col {
+.pdf-nonfunctional-col {
     background-color: #f39c12 !important;
     color: white !important;
 }
 
-.pdf-replace-count, .pdf-replace-total {
+.pdf-nonfunctional-count, .pdf-nonfunctional-total {
     background-color: #fdebd0 !important;
     color: #9c640c !important;
     font-weight: bold;
@@ -283,22 +296,22 @@ body {
 }
 
 .pdf-status-new {
-    background-color: #28a745; /* <CHANGE> Ensured green for NEW and 0-5 years */
+    background-color: #28a745;
     color: white;
     padding: 1px 3px;
     border-radius: 2px;
-    font-size: 10px; /* Increased font size */
+    font-size: 10px;
     display: inline-block;
     min-width: 20px;
     text-align: center;
 }
 
 .pdf-status-replace {
-    background-color: #ffc107; /* <CHANGE> Yellow for 6+ years */
+    background-color: #ffc107;
     color: black;
     padding: 1px 3px;
     border-radius: 2px;
-    font-size: 10px; /* Increased font size */
+    font-size: 10px;
     display: inline-block;
     min-width: 20px;
     text-align: center;

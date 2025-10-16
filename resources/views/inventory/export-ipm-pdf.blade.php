@@ -49,7 +49,7 @@
                     <th class="pdf-col-10">User</th>
                     <th class="pdf-col-6">Type</th>
                     <th class="pdf-col-12">Desc</th>
-                    <th class="pd   f-col-6 pdf-text-center">Condition</th>
+                    <th class="pdf-col-6 pdf-text-center">Condition</th>
                     <th class="pdf-col-5 pdf-text-center">Boot Up</th>
                     <th class="pdf-col-5 pdf-text-center">Hardware</th>
                     <th class="pdf-col-5 pdf-text-center">Performance</th>
@@ -107,13 +107,13 @@
         <table class="pdf-summary-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="4" class="pdf-bg-dark">EXECUTIVE SUMMARY BY DEPARTMENT</th>
+                    <th colspan="4" class="pdf-bg-dark pdf-summary-header">EXECUTIVE SUMMARY BY DEPARTMENT</th>
                 </tr>
                 <tr class="pdf-bg-primary">
-                    <th class="pdf-col-40">Department</th>
-                    <th class="pdf-col-20 pdf-text-center">Functional Items</th>
-                    <th class="pdf-col-20 pdf-text-center">Nonfunctional Items</th>
-                    <th class="pdf-col-20 pdf-text-center">Total Items</th>
+                    <th class="pdf-col-40 pdf-summary-th">Department</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-functional-col">Functional Items</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-nonfunctional-col">Nonfunctional Items</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-total-col">Total Items</th>
                 </tr>
             </thead>
             <tbody>
@@ -143,20 +143,20 @@
                     $grandTotalItems = $departmentSummaries->sum('total');
                 @endphp
                 @foreach($departmentSummaries as $summary)
-                    <tr>
-                        <td><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center">{{ $summary['functional'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['nonfunctional'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['total'] }}</td>
+                    <tr class="pdf-summary-row">
+                        <td class="pdf-summary-td pdf-dept-name"><strong>{{ $summary['name'] }}</strong></td>
+                        <td class="pdf-text-center pdf-summary-td pdf-functional-count">{{ $summary['functional'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-nonfunctional-count">{{ $summary['nonfunctional'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="pdf-bg-gray pdf-font-bold">
-                    <td><strong>TOTAL</strong></td>
-                    <td class="pdf-text-center">{{ $totalFunctional }}</td>
-                    <td class="pdf-text-center">{{ $totalNonfunctional }}</td>
-                    <td class="pdf-text-center">{{ $grandTotalItems }}</td>
+                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total">
+                    <td class="pdf-summary-td"><strong>TOTAL</strong></td>
+                    <td class="pdf-text-center pdf-summary-td pdf-functional-total">{{ $totalFunctional }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-nonfunctional-total">{{ $totalNonfunctional }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalItems }}</td>
                 </tr>
             </tfoot>
         </table>
@@ -167,16 +167,16 @@
         <table class="pdf-summary-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="7" class="pdf-bg-dark">ITEM TYPE SUMMARY BY DEPARTMENT</th>
+                    <th colspan="7" class="pdf-bg-dark pdf-summary-header">ITEM TYPE SUMMARY BY DEPARTMENT</th>
                 </tr>
                 <tr class="pdf-bg-primary">
-                    <th class="pdf-col-20">Department</th>
-                    <th class="pdf-col-12 pdf-text-center">Laptops</th>
-                    <th class="pdf-col-12 pdf-text-center">Printers</th>
-                    <th class="pdf-col-12 pdf-text-center">Desktops</th>
-                    <th class="pdf-col-12 pdf-text-center">Scanners</th>
-                    <th class="pdf-col-12 pdf-text-center">Others</th>
-                    <th class="pdf-col-12 pdf-text-center">Total</th>
+                    <th class="pdf-col-20 pdf-summary-th">Department</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-laptop-col">Laptops</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-printer-col">Printers</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-desktop-col">Desktops</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-scanner-col">Scanners</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-other-col">Others</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-total-col">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -225,26 +225,26 @@
                     $grandTotalTypes = $itemTypeSummaries->sum('total');
                 @endphp
                 @foreach($itemTypeSummaries as $summary)
-                    <tr>
-                        <td><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center">{{ $summary['laptops'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['printers'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['desktops'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['scanners'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['others'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['total'] }}</td>
+                    <tr class="pdf-summary-row">
+                        <td class="pdf-summary-td pdf-dept-name"><strong>{{ $summary['name'] }}</strong></td>
+                        <td class="pdf-text-center pdf-summary-td pdf-laptop-count">{{ $summary['laptops'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-printer-count">{{ $summary['printers'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-desktop-count">{{ $summary['desktops'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-scanner-count">{{ $summary['scanners'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-other-count">{{ $summary['others'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="pdf-bg-gray pdf-font-bold">
-                    <td><strong>OVERALL TOTAL</strong></td>
-                    <td class="pdf-text-center">{{ $totalLaptops }}</td>
-                    <td class="pdf-text-center">{{ $totalPrinters }}</td>
-                    <td class="pdf-text-center">{{ $totalDesktops }}</td>
-                    <td class="pdf-text-center">{{ $totalScanners }}</td>
-                    <td class="pdf-text-center">{{ $totalOthers }}</td>
-                    <td class="pdf-text-center">{{ $grandTotalTypes }}</td>
+                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total">
+                    <td class="pdf-summary-td"><strong>OVERALL TOTAL</strong></td>
+                    <td class="pdf-text-center pdf-summary-td pdf-laptop-total">{{ $totalLaptops }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-printer-total">{{ $totalPrinters }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-desktop-total">{{ $totalDesktops }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-scanner-total">{{ $totalScanners }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-other-total">{{ $totalOthers }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalTypes }}</td>
                 </tr>
             </tfoot>
         </table>
@@ -277,7 +277,6 @@
             </tr>
         </table>
     </div>
-
 
     <div class="pdf-footer pdf-mt-2">
         Total Records: {{ $items->count() }} | Generated by Inventory Management System ni Idith

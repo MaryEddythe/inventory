@@ -93,13 +93,13 @@
         <table class="pdf-summary-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="4" class="pdf-bg-dark">EXECUTIVE SUMMARY BY DEPARTMENT</th>
+                    <th colspan="4" class="pdf-bg-dark pdf-summary-header">EXECUTIVE SUMMARY BY DEPARTMENT</th>
                 </tr>
                 <tr class="pdf-bg-primary">
-                    <th class="pdf-col-40">Department</th>
-                    <th class="pdf-col-20 pdf-text-center">New Items</th>
-                    <th class="pdf-col-20 pdf-text-center">For Replacement</th>
-                    <th class="pdf-col-20 pdf-text-center">Total Items</th>
+                    <th class="pdf-col-40 pdf-summary-th">Department</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-new-col">New Items</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-replace-col">For Replacement</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-total-col">Total Items</th>
                 </tr>
             </thead>
             <tbody>
@@ -131,20 +131,20 @@
                     $grandTotalItems = $departmentSummaries->sum('total');
                 @endphp
                 @foreach($departmentSummaries as $summary)
-                    <tr>
-                        <td><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center">{{ $summary['new'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['replacement'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['total'] }}</td>
+                    <tr class="pdf-summary-row">
+                        <td class="pdf-summary-td pdf-dept-name"><strong>{{ $summary['name'] }}</strong></td>
+                        <td class="pdf-text-center pdf-summary-td pdf-new-count">{{ $summary['new'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-replace-count">{{ $summary['replacement'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="pdf-bg-gray pdf-font-bold">
-                    <td><strong>TOTAL</strong></td>
-                    <td class="pdf-text-center">{{ $totalNew }}</td>
-                    <td class="pdf-text-center">{{ $totalReplacement }}</td>
-                    <td class="pdf-text-center">{{ $grandTotalItems }}</td>
+                <tr class="pdf-bg-gray pdf-font-bold pdf-summary-footer">
+                    <td class="pdf-summary-td"><strong>TOTAL</strong></td>
+                    <td class="pdf-text-center pdf-summary-td pdf-new-total">{{ $totalNew }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-replace-total">{{ $totalReplacement }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalItems }}</td>
                 </tr>
             </tfoot>
         </table>
@@ -155,16 +155,16 @@
         <table class="pdf-summary-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="7" class="pdf-bg-dark">ITEM TYPE SUMMARY BY DEPARTMENT</th>
+                    <th colspan="7" class="pdf-bg-dark pdf-summary-header">ITEM TYPE SUMMARY BY DEPARTMENT</th>
                 </tr>
                 <tr class="pdf-bg-primary">
-                    <th class="pdf-col-20">Department</th>
-                    <th class="pdf-col-12 pdf-text-center">Laptops</th>
-                    <th class="pdf-col-12 pdf-text-center">Printers</th>
-                    <th class="pdf-col-12 pdf-text-center">Desktops</th>
-                    <th class="pdf-col-12 pdf-text-center">Scanners</th>
-                    <th class="pdf-col-12 pdf-text-center">Others</th>
-                    <th class="pdf-col-12 pdf-text-center">Total</th>
+                    <th class="pdf-col-20 pdf-summary-th">Department</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-laptop-col">Laptops</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-printer-col">Printers</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-desktop-col">Desktops</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-scanner-col">Scanners</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-other-col">Others</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-total-col">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -213,59 +213,57 @@
                     $grandTotalTypes = $itemTypeSummaries->sum('total');
                 @endphp
                 @foreach($itemTypeSummaries as $summary)
-                    <tr>
-                        <td><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center">{{ $summary['laptops'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['printers'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['desktops'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['scanners'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['others'] }}</td>
-                        <td class="pdf-text-center">{{ $summary['total'] }}</td>
+                    <tr class="pdf-summary-row">
+                        <td class="pdf-summary-td pdf-dept-name"><strong>{{ $summary['name'] }}</strong></td>
+                        <td class="pdf-text-center pdf-summary-td pdf-laptop-count">{{ $summary['laptops'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-printer-count">{{ $summary['printers'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-desktop-count">{{ $summary['desktops'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-scanner-count">{{ $summary['scanners'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-other-count">{{ $summary['others'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="pdf-bg-gray pdf-font-bold">
-                    <td><strong>OVERALL TOTAL</strong></td>
-                    <td class="pdf-text-center">{{ $totalLaptops }}</td>
-                    <td class="pdf-text-center">{{ $totalPrinters }}</td>
-                    <td class="pdf-text-center">{{ $totalDesktops }}</td>
-                    <td class="pdf-text-center">{{ $totalScanners }}</td>
-                    <td class="pdf-text-center">{{ $totalOthers }}</td>
-                    <td class="pdf-text-center">{{ $grandTotalTypes }}</td>
+                <tr class="pdf-bg-gray pdf-font-bold pdf-summary-footer">
+                    <td class="pdf-summary-td"><strong>OVERALL TOTAL</strong></td>
+                    <td class="pdf-text-center pdf-summary-td pdf-laptop-total">{{ $totalLaptops }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-printer-total">{{ $totalPrinters }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-desktop-total">{{ $totalDesktops }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-scanner-total">{{ $totalScanners }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-other-total">{{ $totalOthers }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalTypes }}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
 
-    <!-- Signature Section -->
+        <!-- Signature Section -->
     <div class="pdf-signature-section pdf-mt-3" style="page-break-inside: avoid;">
-  <table style="width: 100%; border: none;">
-        <tr>
-        <!-- Left cell -->
-        <td class="pdf-col-35 pdf-text-left">
-            <span class="pdf-signature-label">Prepared by:</span>
-            <span class="pdf-signature-name">HERO JOHN E. LAPORGA</span><br>
-            <span class="pdf-signature-title">Senior IT Support Specialist</span>
-        </td>
-
-        <!-- Right cell -->
-            <td class="pdf-col-25 pdf-text-right" style="padding-right: 40px;">
-                <span class="pdf-signature-label" style="position: relative; right: 120px;">
-                Reviewed by:
-                </span>
-                <span class="pdf-signature-name">MAY FLORENCE A. PABELONIO</span><br>
-                <span class="pdf-signature-title">ICT Focal Person</span>
-            </td>
-            </tr>
-
+        <table style="width: 100%; border: none;">
             <tr>
-            <td colspan="3" class="pdf-text-center pdf-pt-3">
-                <span class="pdf-signature-name">CECILIA L. OCHAVO-SAYCON</span><br>
-                <span class="pdf-signature-title">Regional Director</span>
-            </td>
+                <!-- Left cell -->
+                <td class="pdf-col-30 pdf-text-left">
+                    <span class="pdf-signature-label">Prepared by:</span>
+                    <span class="pdf-signature-name">HERO JOHN E. LAPORGA</span><br>
+                    <span class="pdf-signature-title">Senior IT Support Specialist</span>
+                </td>
+
+                <!-- Center cell for Regional Director -->
+                <td class="pdf-col-40 pdf-text-center" style="padding-top: 80px;">
+                    <span class="pdf-signature-label">Approved by:</span>
+                    <span class="pdf-signature-name">CECILIA L. OCHAVO-SAYCON</span><br>
+                    <span class="pdf-signature-title">Regional Director</span>
+                </td>
+
+                <!-- Right cell -->
+                <td class="pdf-col-30 pdf-text-right" style="padding-right: 80px;">
+                    <span class="pdf-signature-label" style="margin-right: 120px;">Reviewed by:</span>
+                    <span class="pdf-signature-name">MAY FLORENCE A. PABELONIO</span><br>
+                    <span class="pdf-signature-title" style="margin-right: 50px;">ICT Focal Person</span>
+                </td>
             </tr>
-    </table>
+        </table>
     </div>
 
     <div class="pdf-footer pdf-mt-2">

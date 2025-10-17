@@ -180,23 +180,23 @@ body {
 }
 
 /* Executive Summary Column Styles */
-.pdf-functional-col {
+.pdf-new-col {
     background-color: #27ae60 !important;
     color: white !important;
 }
 
-.pdf-functional-count, .pdf-functional-total {
+.pdf-new-count, .pdf-new-total {
     background-color: #d5f4e6 !important;
     color: #196f3d !important;
     font-weight: bold;
 }
 
-.pdf-nonfunctional-col {
+.pdf-replace-col {
     background-color: #f39c12 !important;
     color: white !important;
 }
 
-.pdf-nonfunctional-count, .pdf-nonfunctional-total {
+.pdf-replace-count, .pdf-replace-total {
     background-color: #fdebd0 !important;
     color: #9c640c !important;
     font-weight: bold;
@@ -316,13 +316,18 @@ body {
     min-width: 20px;
     text-align: center;
 }
-.pdf-col-5 { width: 5%; }
-.pdf-col-6 { width: 6%; }
+.pdf-col-2 { width: 0.5%; }
+.pdf-col-3 { width: 3%; }
+.pdf-col-5 { width: 6%; }
+.pdf-col-6 { width: 8%; }
 .pdf-col-8 { width: 8%; }
+.pdf-col-9 { width: 10%; }
 .pdf-col-10 { width: 10%; }
 .pdf-col-12 { width: 12%; }
+.pdf-col-15 { width: 15%; }
 .pdf-col-20 { width: 20%; }
 .pdf-col-25 { width: 25%; }
+.pdf-col-30 { width: 30%; }
 .pdf-col-35 { width: 35%; }
 .pdf-col-40 { width: 40%; }
 

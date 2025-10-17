@@ -44,10 +44,10 @@
                     <th colspan="15" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
                 </tr>
                 <tr>
-                    <th class="pdf-col-5 pdf-text-center">No</th>
+                    <th class="pdf-col-5 pdf-text-center" style="width: 0.5%;">No</th>
                     <th class="pdf-col-8">Div.</th>
                     <th class="pdf-col-10">User</th>
-                    <th class="pdf-col-6">Type</th>
+                    <th class="pdf-col-6" style="width: 10%;">Type</th>
                     <th class="pdf-col-12">Desc</th>
                     <th class="pdf-col-6 pdf-text-center">Condition</th>
                     <th class="pdf-col-5 pdf-text-center">Boot Up</th>

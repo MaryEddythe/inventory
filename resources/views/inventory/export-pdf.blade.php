@@ -32,18 +32,18 @@
                     <th colspan="12" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
                 </tr>
                 <tr>
-                    <th class="pdf-col-0 pdf-text-center">No</th>
-                    <th class="pdf-col-8">Department</th>
-                    <th class="pdf-col-8">End User</th>
-                    <th class="pdf-col-6">Classification</th>
-                    <th class="pdf-col-12">Description</th>
-                    <th class="pdf-col-6">Serial No</th>
-                    <th class="pdf-col-6">Property No</th>
-                    <th class="pdf-col-6 pdf-text-right">Unit Price</th>
-                    <th class="pdf-col-4">CO/MOOE</th>
-                    <th class="pdf-col-4 pdf-text-center">Date Acquired</th>
-                    <th class="pdf-col-6">Remarks</th>
-                    <th class="pdf-col-3 pdf-text-center">Status</th>
+                    <th class="pdf-col-2 pdf-text-center" style="width: 0.5%;">No</th>
+                    <th class="pdf-col-10">Department</th>
+                    <th class="pdf-col-10">End User</th>
+                    <th class="pdf-col-9" style="width: 10%;">Classification</th>
+                    <th class="pdf-col-15">Description</th>
+                    <th class="pdf-col-8">Serial No</th>
+                    <th class="pdf-col-8">Property No</th>
+                    <th class="pdf-col-8 pdf-text-right">Unit Price</th>
+                    <th class="pdf-col-5">CO/MOOE</th>
+                    <th class="pdf-col-6 pdf-text-center">Date Acquired</th>
+                    <th class="pdf-col-12">Remarks</th>
+                    <th class="pdf-col-5 pdf-text-center">Status</th>
                 </tr>
             </thead>
             <tbody>

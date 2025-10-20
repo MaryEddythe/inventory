@@ -24,6 +24,38 @@ class InventoryItemController extends Controller
         return $years <= 5 ? 'NEW' : 'FOR REPLACEMENT';
     }
 
+    private function applyDateFilters(Request $request, $query)
+    {
+        $filter = $request->get('filter');
+
+        switch ($filter) {
+            case 'today':
+                $query->whereDate('date_acquired', today());
+                break;
+            case 'week':
+                $query->whereBetween('date_acquired', [now()->startOfWeek(), now()->endOfWeek()]);
+                break;
+            case 'month':
+                $query->whereMonth('date_acquired', now()->month)
+                      ->whereYear('date_acquired', now()->year);
+                break;
+            case 'year':
+                $query->whereYear('date_acquired', now()->year);
+                break;
+            case 'custom':
+                if ($request->filled('date_from')) {
+                    $query->whereDate('date_acquired', '>=', $request->date_from);
+                }
+                if ($request->filled('date_to')) {
+                    $query->whereDate('date_acquired', '<=', $request->date_to);
+                }
+                break;
+            default:
+                // No filter, show all
+                break;
+        }
+    }
+
     public function index(Request $request)
     {
         $query = InventoryItem::active();
@@ -337,11 +369,14 @@ class InventoryItemController extends Controller
 
     public function dashboard(Request $request)
     {
-        $filterableQuery = InventoryItem::active();
+        $filterableQuery = InventoryItem::query();
+
+        // Apply date filters
+        $this->applyDateFilters($request, $filterableQuery);
 
         $totalItems = $filterableQuery->count();
         $totalValue = $filterableQuery->sum('unit_price');
-        $itemsThisMonth = $filterableQuery->whereMonth('date_acquired', now()->month)
+        $itemsThisMonth = (clone $filterableQuery)->whereMonth('date_acquired', now()->month)
             ->whereYear('date_acquired', now()->year)
             ->count();
         $totalDivisions = $filterableQuery->distinct('division')->count('division');
@@ -361,8 +396,8 @@ class InventoryItemController extends Controller
         });
 
         // Status data: NEW and FOR REPLACEMENT
-        $newCount = (clone $filterableQuery)->where('status', 'New')->count();
-        $forReplacementCount = (clone $filterableQuery)->where('status', 'For Replacement')->count();
+        $newCount = (clone $filterableQuery)->where('status', 'NEW')->count();
+        $forReplacementCount = (clone $filterableQuery)->where('status', 'FOR REPLACEMENT')->count();
         $statusData = collect([
             (object)['status' => 'NEW', 'count' => $newCount],
             (object)['status' => 'FOR REPLACEMENT', 'count' => $forReplacementCount],
@@ -379,7 +414,6 @@ class InventoryItemController extends Controller
         // Update totalDivisions to count unique divisions with items
         $totalDivisions = $filterableQuery->distinct('division')->count('division');
 
-        // Breakdown per division by classification (for all divisions, even with 0 items)
         $divisionBreakdown = [];
         foreach ($allDivisions as $division) {
             $breakdown = $filterableQuery

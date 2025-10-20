@@ -20,59 +20,76 @@
         </tr>
     </thead>
     <tbody>
-        @forelse($items as $item)
-            <tr data-item-id="{{ $item->id }}">
-                <td class="fw-semibold text-muted">{{ $item->id }}</td>
-                <td>
-                    <span class="badge fw-normal badge-division badge-division-{{ $item->division }}">
-                        {{ $item->division }}
-                    </span>
-                </td>
-                <td class="item-enduser">
-                    {!! request('search') 
-                        ? preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->enduser)) 
-                        : e($item->enduser) !!}
-                </td>
-                <td><span class="badge bg-secondary-subtle text-dark fw-normal">{{ $item->classification }}</span></td>
-                <td class="item-description">
-                    {!! request('search') 
-                        ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->description)), 40) 
-                        : e(Str::limit($item->description, 40)) !!}
-                </td>
-                <td>
-                    <span class="badge {{ $item->condition === 'Functional' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
-                        {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
-                    </span>
-                </td>
-                <td class="text-center">{{ $item->system_boot_up ? '✓' : '✗' }}</td>
-                <td class="text-center">{{ $item->hardware ? '✓' : '✗' }}</td>
-                <td class="text-center">{{ $item->performance ? '✓' : '✗' }}</td>
-                <td class="text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
-                <td class="text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
-                <td class="item-recommendation">
-                    {!! request('search')
-                        ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->recommendation ?? 'N/A')), 20)
-                        : e(Str::limit($item->recommendation ?? 'N/A', 20)) !!}
-                </td>
-                <td class="item-date-conducted">{{ $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A' }}</td>
-                <td class="item-time-started">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
-                <td class="item-time-ended">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
-                <td>
-                    <div class="d-flex gap-1">
-                        <button type="button" class="btn btn-outline-primary btn-sm" title="Edit IPM"
-                                data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->id }}">
-                            <i class="bi bi-pencil"></i>
+        @php
+            $groupedItems = $items->groupBy('enduser');
+        @endphp
+        @forelse($groupedItems as $enduser => $userItems)
+        @php
+            $firstItem = $userItems->first();
+            $itemCount = $userItems->count();
+        @endphp
+        @foreach($userItems as $index => $item)
+        <tr data-item-id="{{ $item->id }}">
+            @if($index === 0)
+            <td class="fw-semibold text-muted" rowspan="{{ $itemCount }}">
+                @if($itemCount > 1)
+                    <span class="badge bg-light text-dark">{{ $itemCount }} items</span>
+                @else
+                    {{ $item->id }}
+                @endif
+            </td>
+            <td rowspan="{{ $itemCount }}">
+                <span class="badge fw-normal badge-division badge-division-{{ $item->division }}">
+                    {{ $item->division }}
+                </span>
+            </td>
+            <td class="item-enduser" rowspan="{{ $itemCount }}">
+                {!! request('search')
+                    ? preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($enduser))
+                    : e($enduser) !!}
+            </td>
+            @endif
+            <td><span class="badge bg-secondary-subtle text-dark fw-normal">{{ $item->classification }}</span></td>
+            <td class="item-description">
+                {!! request('search')
+                    ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->description)), 40)
+                    : e(Str::limit($item->description, 40)) !!}
+            </td>
+            <td>
+                <span class="badge {{ $item->condition === 'Functional' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
+                    {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
+                </span>
+            </td>
+            <td class="text-center">{{ $item->system_boot_up ? '✓' : '✗' }}</td>
+            <td class="text-center">{{ $item->hardware ? '✓' : '✗' }}</td>
+            <td class="text-center">{{ $item->performance ? '✓' : '✗' }}</td>
+            <td class="text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
+            <td class="text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
+            <td class="item-recommendation">
+                {!! request('search')
+                    ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->recommendation ?? 'N/A')), 20)
+                    : e(Str::limit($item->recommendation ?? 'N/A', 20)) !!}
+            </td>
+            <td class="item-date-conducted">{{ $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A' }}</td>
+            <td class="item-time-started">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
+            <td class="item-time-ended">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
+            <td>
+                <div class="d-flex gap-1">
+                    <button type="button" class="btn btn-outline-primary btn-sm" title="Edit IPM"
+                            data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->id }}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <form action="{{ route('inventory.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+                            <i class="bi bi-trash"></i>
                         </button>
-                        <form action="{{ route('inventory.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        @endforeach
         @empty
             <tr>
                 <td colspan="17" class="text-center py-4">No items found.</td>
@@ -82,10 +99,7 @@
 </table>
 
 <div class="d-flex justify-content-between align-items-center mt-4">
-    <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
-    <div>
-        {{ $items->links('vendor.pagination.bootstrap-5') }}
-    </div>
+    <div class="text-muted small">Showing {{ $items->count() }} entries</div>
 </div>
 
 {{-- Separate modals to avoid Blade compile collision --}}

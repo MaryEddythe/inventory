@@ -53,7 +53,6 @@
                 @endphp
                 @foreach($groupedItems as $enduser => $employeeItems)
                     @php
-                        $itemCount = $employeeItems->count();
                         $firstItem = $employeeItems->first();
                     @endphp
                     @foreach($employeeItems as $index => $item)
@@ -63,9 +62,9 @@
                         @endphp
                         <tr>
                             @if($index === 0)
-                                <td class="pdf-text-center" rowspan="{{ $itemCount }}">{{ $rowNumber }}</td>
-                                <td rowspan="{{ $itemCount }}">{{ $firstItem->department_name ?? $firstItem->division }}</td>
-                                <td rowspan="{{ $itemCount }}">{{ $enduser }}</td>
+                                <td class="pdf-text-center" rowspan="{{ $employeeItems->count() }}">{{ $rowNumber }}</td>
+                                <td rowspan="{{ $employeeItems->count() }}">{{ $firstItem->department_name ?? $firstItem->division }}</td>
+                                <td rowspan="{{ $employeeItems->count() }}">{{ $enduser }}</td>
                             @endif
                             <td>{{ $item->classification }}</td>
                             <td>{{ $item->description }}</td>

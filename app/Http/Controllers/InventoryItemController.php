@@ -62,35 +62,20 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
-        // Group items by enduser and get the first item for each group to determine pagination
-        $groupedItems = $query->orderBy('enduser')->orderBy('no', 'desc')->get()->groupBy('enduser');
+        // Paginate items first, then group for display
+        $paginatedItems = $query->orderBy('enduser')->orderBy('no', 'desc')->paginate(10)->withQueryString();
 
-        // Create a paginated collection of employee groups
-        $perPage = 10;
-        $currentPage = $request->get('page', 1);
-        $totalGroups = $groupedItems->count();
-        $offset = ($currentPage - 1) * $perPage;
-
-        $paginatedGroups = $groupedItems->slice($offset, $perPage);
-
-        // Create a custom paginator
-        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
-            $paginatedGroups,
-            $totalGroups,
-            $perPage,
-            $currentPage,
-            ['path' => $request->url(), 'pageName' => 'page']
-        );
-        $paginator->appends($request->query());
+        // Group the paginated items by enduser for display
+        $groupedItems = $paginatedItems->getCollection()->groupBy('enduser');
 
         $departments = Department::orderBy('department')->get();
         $employees = Employee::orderBy('firstname')->get();
 
         if ($request->ajax()) {
-            return view('inventory.table-data', compact('paginator', 'departments', 'employees'))->render();
+            return view('inventory.table-data', compact('groupedItems', 'departments', 'employees'))->render();
         }
 
-        return view('inventory.tabs.index', compact('paginator', 'departments', 'employees'));
+        return view('inventory.tabs.index', compact('groupedItems', 'departments', 'employees'));
     }
 
     public function create()
@@ -235,7 +220,7 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
-        $items = $query->orderBy('no', 'desc')->get();
+        $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
 
         $tab = $request->tab ?? 'inventory';
         $css = File::get(public_path('pdf-styles.css'));

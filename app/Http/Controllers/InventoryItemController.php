@@ -395,6 +395,11 @@ class InventoryItemController extends Controller
             ];
         });
 
+        // Update totalDivisions to count unique divisions with items
+        $totalDivisions = $divisionCounts->filter(function ($count) {
+            return $count > 0;
+        })->count();
+
         // Status data: NEW and FOR REPLACEMENT
         $newCount = (clone $filterableQuery)->where('status', 'NEW')->count();
         $forReplacementCount = (clone $filterableQuery)->where('status', 'FOR REPLACEMENT')->count();
@@ -411,8 +416,7 @@ class InventoryItemController extends Controller
             (object)['condition' => 'Nonfunctional', 'count' => $nonfunctionalCount],
         ]);
 
-        // Update totalDivisions to count unique divisions with items
-        $totalDivisions = $filterableQuery->distinct('division')->count('division');
+        // totalDivisions is already calculated above
 
         $divisionBreakdown = [];
         foreach ($allDivisions as $division) {

@@ -461,23 +461,23 @@
                             <div class="breakdown-details">
                                 <div class="breakdown-item">
                                     <span class="breakdown-label">Desktop</span>
-                                    <span class="breakdown-value">${breakdown.Desktop || 0}</span>
+                                    <span class="breakdown-value">${breakdown.Desktop ?? 0}</span>
                                 </div>
                                 <div class="breakdown-item">
                                     <span class="breakdown-label">Laptop</span>
-                                    <span class="breakdown-value">${breakdown.Laptop || 0}</span>
+                                    <span class="breakdown-value">${breakdown.Laptop ?? 0}</span>
                                 </div>
                                 <div class="breakdown-item">
                                     <span class="breakdown-label">Monitor</span>
-                                    <span class="breakdown-value">${breakdown.Monitor || 0}</span>
+                                    <span class="breakdown-value">${breakdown.Monitor ?? 0}</span>
                                 </div>
                                 <div class="breakdown-item">
                                     <span class="breakdown-label">Printer</span>
-                                    <span class="breakdown-value">${breakdown.Printer || 0}</span>
+                                    <span class="breakdown-value">${breakdown.Printer ?? 0}</span>
                                 </div>
                                 <div class="breakdown-item">
                                     <span class="breakdown-label">Scanner</span>
-                                    <span class="breakdown-value">${breakdown.Scanner || 0}</span>
+                                    <span class="breakdown-value">${breakdown.Scanner ?? 0}</span>
                                 </div>
                             </div>
                         </div>

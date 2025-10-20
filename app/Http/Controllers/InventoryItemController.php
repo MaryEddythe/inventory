@@ -361,8 +361,8 @@ class InventoryItemController extends Controller
         });
 
         // Status data: NEW and FOR REPLACEMENT
-        $newCount = (clone $filterableQuery)->where('status', 'NEW')->count();
-        $forReplacementCount = (clone $filterableQuery)->where('status', 'FOR REPLACEMENT')->count();
+        $newCount = (clone $filterableQuery)->where('status', 'New')->count();
+        $forReplacementCount = (clone $filterableQuery)->where('status', 'For Replacement')->count();
         $statusData = collect([
             (object)['status' => 'NEW', 'count' => $newCount],
             (object)['status' => 'FOR REPLACEMENT', 'count' => $forReplacementCount],
@@ -376,7 +376,10 @@ class InventoryItemController extends Controller
             (object)['condition' => 'Nonfunctional', 'count' => $nonfunctionalCount],
         ]);
 
-        // Breakdown per division by classification
+        // Update totalDivisions to count unique divisions with items
+        $totalDivisions = $filterableQuery->distinct('division')->count('division');
+
+        // Breakdown per division by classification (for all divisions, even with 0 items)
         $divisionBreakdown = [];
         foreach ($allDivisions as $division) {
             $breakdown = $filterableQuery

@@ -346,84 +346,75 @@ class InventoryItemController extends Controller
             ->count();
         $totalDivisions = $filterableQuery->distinct('division')->count('division');
 
-        $divisionData = $filterableQuery
+        // Get all divisions with item counts, including those with 0 items
+        $allDivisions = Department::orderBy('department')->pluck('department');
+        $divisionCounts = $filterableQuery
             ->select('division', \DB::raw('count(*) as count'))
             ->groupBy('division')
-            ->get();
+            ->pluck('count', 'division');
 
-        $classificationData = $filterableQuery
-            ->select('classification', \DB::raw('sum(unit_price) as total_value'))
-            ->groupBy('classification')
-            ->get();
+        $divisionData = $allDivisions->map(function ($division) use ($divisionCounts) {
+            return (object) [
+                'division' => $division,
+                'count' => $divisionCounts->get($division, 0)
+            ];
+        });
 
-        $acquisitionQuery = clone $filterableQuery;
-
-        if ($request->filled('period')) {
-            switch ($request->period) {
-                case 'last_6_months':
-                    $startDate = now()->subMonths(5)->startOfMonth();
-                    $acquisitionQuery->where('date_acquired', '>=', $startDate);
-                    break;
-                case 'this_year':
-                    $startDate = now()->startOfYear();
-                    $endDate = now()->endOfYear();
-                    $acquisitionQuery->whereBetween('date_acquired', [$startDate, $endDate]);
-                    break;
-            }
-        } else {
-            $startDate = now()->subMonths(11)->startOfMonth();
-            $acquisitionQuery->where('date_acquired', '>=', $startDate);
-        }
-
-        $monthlyAcquisitions = $acquisitionQuery
-            ->selectRaw('DATE_FORMAT(date_acquired, "%b %Y") as month, MONTH(date_acquired) as month_num, YEAR(date_acquired) as year, count(*) as count')
-            ->groupBy('month', 'month_num', 'year')
-            ->orderBy('year', 'asc')
-            ->orderBy('month_num', 'asc')
-            ->get();
-
-        $newCount = (clone $filterableQuery)->whereRaw('TRIM(UPPER(status)) = "NEW"')->count();
-        $forReplacementCount = (clone $filterableQuery)->whereRaw('TRIM(UPPER(status)) = "FOR REPLACEMENT"')->count();
-
+        // Status data: NEW and FOR REPLACEMENT
+        $newCount = (clone $filterableQuery)->where('status', 'NEW')->count();
+        $forReplacementCount = (clone $filterableQuery)->where('status', 'FOR REPLACEMENT')->count();
         $statusData = collect([
             (object)['status' => 'NEW', 'count' => $newCount],
             (object)['status' => 'FOR REPLACEMENT', 'count' => $forReplacementCount],
         ]);
 
+        // Condition data: Functional and Nonfunctional
+        $functionalCount = (clone $filterableQuery)->where('condition', 'Functional')->count();
+        $nonfunctionalCount = (clone $filterableQuery)->where('condition', 'Nonfunctional')->count();
+        $conditionData = collect([
+            (object)['condition' => 'Functional', 'count' => $functionalCount],
+            (object)['condition' => 'Nonfunctional', 'count' => $nonfunctionalCount],
+        ]);
+
+        // Breakdown per division by classification
+        $divisionBreakdown = [];
+        foreach ($allDivisions as $division) {
+            $breakdown = $filterableQuery
+                ->where('division', $division)
+                ->select('classification', \DB::raw('count(*) as count'))
+                ->groupBy('classification')
+                ->pluck('count', 'classification');
+            $divisionBreakdown[$division] = [
+                'Desktop' => $breakdown->get('Desktop', 0),
+                'Laptop' => $breakdown->get('Laptop', 0),
+                'Monitor' => $breakdown->get('Monitor', 0),
+                'Printer' => $breakdown->get('Printer', 0),
+                'Scanner' => $breakdown->get('Scanner', 0),
+            ];
+        }
+
         if ($request->ajax()) {
             return response()->json([
-                'totalItems' => (int)$totalItems, 
-                'totalValue' => (float)$totalValue, 
+                'totalItems' => (int)$totalItems,
+                'totalValue' => (float)$totalValue,
                 'itemsThisMonth' => (int)$itemsThisMonth,
                 'totalDivisions' => (int)$totalDivisions,
-                'divisionData' => [
-                    'labels' => $divisionData->pluck('division'),
-                    'counts' => $divisionData->pluck('count')
-                ],
-                'monthlyAcquisitions' => [
-                    'labels' => $monthlyAcquisitions->pluck('month'),
-                    'counts' => $monthlyAcquisitions->pluck('count')
-                ],
-                'classificationData' => [
-                    'labels' => $classificationData->pluck('classification'),
-                    'values' => $classificationData->pluck('total_value')
-                ],
-                'statusData' => [
-                    'labels' => $statusData->pluck('status'),
-                    'counts' => $statusData->pluck('count')
-                ]
+                'divisionData' => $divisionData,
+                'statusData' => $statusData,
+                'conditionData' => $conditionData,
+                'divisionBreakdown' => $divisionBreakdown
             ]);
         }
-        
+
         return view('inventory.tabs.dashboard', compact(
             'totalItems',
             'totalValue',
             'itemsThisMonth',
             'totalDivisions',
             'divisionData',
-            'monthlyAcquisitions',
-            'classificationData',
-            'statusData'
+            'statusData',
+            'conditionData',
+            'divisionBreakdown'
         ));
     }
 

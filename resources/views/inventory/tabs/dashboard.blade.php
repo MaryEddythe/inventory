@@ -2,182 +2,246 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Inventory Dashboard</h2>
-        <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary" id="refresh-btn">
-                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
-            </button>
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
-                    <i class="bi bi-funnel me-1"></i><span id="current-filter-text">Filters</span>
+    <!-- Header Section -->
+    <div class="dashboard-header mb-5">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="dashboard-title"><i class="bi bi-speedometer2 me-2"></i>Inventory Dashboard</h1>
+                <p class="dashboard-subtitle">Monitor your inventory metrics and division performance</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm" id="refresh-btn">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                 </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item filter-option" href="#" data-filter="none">All Time (Clear Filter)</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item filter-option" href="#" data-filter="today" id="filter-today">Today</a></li>
-                    <li><a class="dropdown-item filter-option" href="#" data-filter="week" id="filter-week">This Week</a></li>
-                    <li><a class="dropdown-item filter-option" href="#" data-filter="month" id="filter-month">This Month</a></li>
-                    <li><a class="dropdown-item filter-option" href="#" data-filter="year" id="filter-year">This Year</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#" id="custom-range">Custom Range</a></li>
-                </ul>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                        <i class="bi bi-funnel me-1"></i><span id="current-filter-text">Filters</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item filter-option" href="#" data-filter="none">All Time (Clear Filter)</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item filter-option" href="#" data-filter="today" id="filter-today">Today</a></li>
+                        <li><a class="dropdown-item filter-option" href="#" data-filter="week" id="filter-week">This Week</a></li>
+                        <li><a class="dropdown-item filter-option" href="#" data-filter="month" id="filter-month">This Month</a></li>
+                        <li><a class="dropdown-item filter-option" href="#" data-filter="year" id="filter-year">This Year</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="custom-range">Custom Range</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics Summary -->
+        <div class="row g-3 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card metric-card-primary">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="bi bi-boxes"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Total Items</span>
+                            <h2 class="metric-value"><span class="count-up" data-target="{{ $totalItems }}" id="totalItemsCount">{{ $totalItems }}</span></h2>
+                        </div>
+                    </div>
+                    <div class="metric-footer">
+                        <small class="text-muted">All items in inventory</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card metric-card-success">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Total Value</span>
+                            <h2 class="metric-value">₱<span class="count-up" data-target="{{ $totalValue }}" id="totalValueCount">{{ number_format($totalValue, 2) }}</span></h2>
+                        </div>
+                    </div>
+                    <div class="metric-footer">
+                        <small class="text-muted">Total inventory value</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card metric-card-info">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Added This Month</span>
+                            <h2 class="metric-value"><span class="count-up" data-target="{{ $itemsThisMonth }}" id="itemsThisMonthCount">{{ $itemsThisMonth }}</span></h2>
+                        </div>
+                    </div>
+                    <div class="metric-footer">
+                        <small class="text-muted">New items this month</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card metric-card-warning">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">Active Divisions</span>
+                            <h2 class="metric-value"><span class="count-up" data-target="{{ $totalDivisions }}" id="totalDivisionsCount">{{ $totalDivisions }}</span></h2>
+                        </div>
+                    </div>
+                    <div class="metric-footer">
+                        <small class="text-muted">Operating divisions</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Division Summary Section -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card summary-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Total number of items in inventory">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Total Items</h6>
-                            <h3 class="mb-0"><span class="count-up" data-target="{{ $totalItems }}" id="totalItemsCount">{{ $totalItems }}</span></h3>
-                        </div>
-                        <div class="bg-primary bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-box text-primary fs-4"></i>
-                        </div>
-                    </div>
+        <div class="col-12">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="bi bi-diagram-3 me-2"></i>Division Summary</h3>
+                    <p class="section-subtitle">Item distribution across divisions</p>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Total monetary value of all items">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Total Value</h6>
-                            <h3 class="mb-0">₱<span class="count-up" data-target="{{ $totalValue }}" id="totalValueCount">{{ number_format($totalValue, 2) }}</span></h3>
+                <div class="section-body">
+                    <div class="row g-3" id="division-summary-cards">
+                        @foreach($divisionData as $division)
+                        <div class="col-lg-3 col-md-6">
+                            <div class="division-card division-card-{{ str_replace(' ', '-', strtolower(trim($division->division))) }}">
+                                <div class="division-card-body">
+                                    <div class="division-icon">
+                                        <i class="bi bi-building"></i>
+                                    </div>
+                                    <div class="division-content">
+                                        <h3 class="division-count">{{ $division->count }}</h3>
+                                        <p class="division-name">{{ $division->division }}</p>
+                                    </div>
+                                </div>
+                                <div class="division-footer">
+                                    <small>items assigned</small>
+                                </div>
+                            </div>
                         </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-cash text-success fs-4"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Items added in the current month">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Items Added This Month</h6>
-                            <h3 class="mb-0"><span class="count-up" data-target="{{ $itemsThisMonth }}" id="itemsThisMonthCount">{{ $itemsThisMonth }}</span></h3>
-                        </div>
-                        <div class="bg-info bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-graph-up text-info fs-4"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Number of active divisions">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Active Divisions</h6>
-                            <h3 class="mb-0"><span class="count-up" data-target="{{ $totalDivisions }}" id="totalDivisionsCount">{{ $totalDivisions }}</span></h3>
-                        </div>
-                        <div class="bg-warning bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-building text-warning fs-4"></i>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Status and Condition Section -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="bi bi-bookmark-check me-2"></i>Item Status</h3>
+                    <p class="section-subtitle">Items by status category</p>
+                </div>
+                <div class="section-body">
+                    <div class="status-container" id="status-cards">
+                        @foreach($statusData as $status)
+                        <div class="status-item status-{{ strtolower($status->status) }}">
+                            <div class="status-icon">
+                                <i class="bi {{ $status->status == 'NEW' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill' }}"></i>
+                            </div>
+                            <div class="status-info">
+                                <p class="status-label">{{ $status->status }}</p>
+                                <h3 class="status-count">{{ $status->count }}</h3>
+                            </div>
+                            <div class="status-bar">
+                                <div class="status-bar-fill"></div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="bi bi-tools me-2"></i>Item Condition</h3>
+                    <p class="section-subtitle">Items by condition status</p>
+                </div>
+                <div class="section-body">
+                    <div class="condition-container" id="condition-cards">
+                        @foreach($conditionData as $condition)
+                        <div class="condition-item condition-{{ strtolower(str_replace(' ', '-', $condition->condition)) }}">
+                            <div class="condition-icon">
+                                <i class="bi {{ $condition->condition == 'Functional' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' }}"></i>
+                            </div>
+                            <div class="condition-info">
+                                <p class="condition-label">{{ $condition->condition }}</p>
+                                <h3 class="condition-count">{{ $condition->count }}</h3>
+                            </div>
+                            <div class="condition-indicator">
+                                <span class="condition-badge">{{ $condition->condition == 'Functional' ? '✓' : '⚠' }}</span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Division Breakdown Section -->
     <div class="row g-3">
-        <div class="col-md-6">
-            <div class="card chart-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Items by Division</h5>
+        <div class="col-12">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="bi bi-list-columns-reverse me-2"></i>Division Breakdown by Classification</h3>
+                    <p class="section-subtitle">Detailed item distribution across divisions and types</p>
                 </div>
-                <div class="card-body">
-                    <canvas id="divisionChart" style="height: 30px;"></canvas>
-                    <div class="mt-3">
-                        <div id="divisionTable" class="mt-2" style="display: none;">
-                            <table class="table table-sm table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Division</th>
-                                        <th>Count</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="divisionTableBody"></tbody>
-                            </table>
+                <div class="section-body">
+                    <div class="row g-3" id="division-breakdown-cards">
+                        @foreach($divisionBreakdown as $division => $breakdown)
+                        <div class="col-lg-4 col-md-6">
+                            <div class="breakdown-card breakdown-card-{{ str_replace(' ', '-', strtolower(trim($division))) }}">
+                                <div class="breakdown-header">
+                                    <h4 class="breakdown-title">{{ $division }}</h4>
+                                    <button class="btn-expand" type="button" data-bs-toggle="collapse" data-bs-target="#breakdown-{{ str_replace(' ', '-', $division) }}" aria-expanded="false">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+                                <div class="breakdown-summary">
+                                    <div class="breakdown-total">
+                                        <span class="breakdown-number">{{ array_sum($breakdown) }}</span>
+                                        <span class="breakdown-text">Total Items</span>
+                                    </div>
+                                </div>
+                                <div class="collapse" id="breakdown-{{ str_replace(' ', '-', $division) }}">
+                                    <div class="breakdown-details">
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Desktop</span>
+                                            <span class="breakdown-value">{{ $breakdown['Desktop'] ?? 0 }}</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Laptop</span>
+                                            <span class="breakdown-value">{{ $breakdown['Laptop'] ?? 0 }}</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Monitor</span>
+                                            <span class="breakdown-value">{{ $breakdown['Monitor'] ?? 0 }}</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Printer</span>
+                                            <span class="breakdown-value">{{ $breakdown['Printer'] ?? 0 }}</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Scanner</span>
+                                            <span class="breakdown-value">{{ $breakdown['Scanner'] ?? 0 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-           <div class="card chart-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Status Distribution</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="statusChart" style="height: 30px;"></canvas>
-                    <div class="mt-3">
-                        <div id="statusTable" class="mt-2" style="display: none;">
-                            <table class="table table-sm table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Status</th>
-                                        <th>Count</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="statusTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card chart-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Value by Classification</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="classificationChart" style="height: 200px;"></canvas>
-                    <div class="mt-3">
-                        <div id="classificationTable" class="mt-2" style="display: none;">
-                            <table class="table table-sm table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Classification</th>
-                                        <th>Value (₱)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="classificationTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card chart-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Monthly Acquisitions</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="acquisitionChart" style="height: 200px;"></canvas>
-                    <div class="mt-3">
-                        <div id="acquisitionTable" class="mt-2" style="display: none;">
-                            <table class="table table-sm table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Month</th>
-                                        <th>Count</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="acquisitionTableBody"></tbody>
-                            </table>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -215,15 +279,8 @@
 
 @push('scripts')
 <script>
-    const chartInstances = {};
-
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
-        initializeCharts();
-        populateDataTable('divisionTableBody', {!! json_encode($divisionData->pluck('division')) !!}, {!! json_encode($divisionData->pluck('count')) !!});
-        populateDataTable('acquisitionTableBody', {!! json_encode($monthlyAcquisitions->pluck('month')) !!}, {!! json_encode($monthlyAcquisitions->pluck('count')) !!});
-        populateDataTable('classificationTableBody', {!! json_encode($classificationData->pluck('classification')) !!}, {!! json_encode($classificationData->pluck('total_value')) !!}, 'currency');
-        populateDataTable('statusTableBody', {!! json_encode($statusData->pluck('status')) !!}, {!! json_encode($statusData->pluck('count')) !!});
 
         document.getElementById('refresh-btn').addEventListener('click', function() {
             location.reload();
@@ -286,15 +343,10 @@
                 totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
                 animateCountUp(totalDivisionsEl, data.totalDivisions);
 
-                updateChart('divisionChart', data.divisionData.labels, data.divisionData.counts);
-                updateChart('acquisitionChart', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
-                updateChart('classificationChart', data.classificationData.labels, data.classificationData.values);
-                updateChart('statusChart', data.statusData.labels, data.statusData.counts);
-
-                populateDataTable('divisionTableBody', data.divisionData.labels, data.divisionData.counts);
-                populateDataTable('acquisitionTableBody', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
-                populateDataTable('classificationTableBody', data.classificationData.labels, data.classificationData.values, 'currency');
-                populateDataTable('statusTableBody', data.statusData.labels, data.statusData.counts);
+                updateCards('division-summary-cards', data.divisionData, 'division-summary');
+                updateCards('status-cards', data.statusData, 'status');
+                updateCards('condition-cards', data.conditionData, 'condition');
+                updateDivisionBreakdownCards(data.divisionBreakdown);
             })
             .catch(error => {
                 console.error('Error fetching dashboard data:', error);
@@ -335,171 +387,11 @@
         window.requestAnimationFrame(step);
     }
 
-    function getDivisionColor(label) {
-        const colorMap = {
-            'MMD': '#007B83',
-            'MSESDD': '#FF6B6B',
-            'GD': '#FFC145',
-            'GSS': '#7BC950',
-            'ORD': '#8E7CC3',
-            'FAD': '#4DA9FF',
-            'Unknown Division': '#6c757d'
-        };
-        return colorMap[label] || '#6c757d'; 
-    }
+    // Color function removed as charts are replaced with cards
 
-    function initializeCharts() {
-        const divisionLabels = {!! json_encode($divisionData->pluck('division')) !!};
-        const divisionDataCounts = {!! json_encode($divisionData->pluck('count')) !!};
-        chartInstances['divisionChart'] = new Chart(document.getElementById('divisionChart'), {
-            type: 'pie',
-            data: {
-                labels: divisionLabels,
-                datasets: [{
-                    data: divisionDataCounts,
-                    backgroundColor: divisionLabels.map(label => getDivisionColor(label)),
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                            }
-                        }
-                    }
-                }
-            }
-        });
+    // Charts removed as replaced with cards
 
-        chartInstances['acquisitionChart'] = new Chart(document.getElementById('acquisitionChart'), {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($monthlyAcquisitions->pluck('month')) !!},
-                datasets: [{
-                    label: 'Items Acquired',
-                    data: {!! json_encode($monthlyAcquisitions->pluck('count')) !!},
-                    borderColor: '#007bff',
-                    tension: 0.1,
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString();
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                if (value % 1 === 0) return value.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        chartInstances['classificationChart'] = new Chart(document.getElementById('classificationChart'), {
-            type: 'bar',
-            data: {
-                labels: {!! json_encode($classificationData->pluck('classification')) !!},
-                datasets: [{
-                    label: 'Total Value (₱)',
-                    data: {!! json_encode($classificationData->pluck('total_value')) !!},
-                    backgroundColor: '#800000',
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ₱' + context.parsed.y.toLocaleString();
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '₱' + value.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        const statusLabels = {!! json_encode($statusData->pluck('status')) !!};
-        const statusDataCounts = {!! json_encode($statusData->pluck('count')) !!};
-        chartInstances['statusChart'] = new Chart(document.getElementById('statusChart'), {
-            type: 'doughnut',
-            data: {
-                labels: statusLabels,
-                datasets: [{
-                    data: statusDataCounts,
-                    backgroundColor: ['#28a745', '#ffc107'],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    function populateDataTable(tableBodyId, labels, data, format = 'count') {
-        const tableBody = document.getElementById(tableBodyId);
-        tableBody.innerHTML = '';
-        for (let i = 0; i < labels.length; i++) {
-            let dataValue = data[i];
-            if (format === 'currency') {
-                dataValue = '₱' + parseFloat(data[i]).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            } else {
-                dataValue = parseInt(data[i]).toLocaleString();
-            }
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${labels[i]}</td><td>${dataValue}</td>`;
-            tableBody.appendChild(row);
-        }
-    }
-
-    function toggleDataTable(tableId) {
-        const table = document.getElementById(tableId);
-        table.style.display = table.style.display === 'none' ? 'block' : 'none';
-    }
+    // Table functions removed as charts are replaced with cards
 
     function applyFilter(filterType, filterText) {
         document.getElementById('current-filter-text').textContent = filterText === 'All Time (Clear Filter)' ? 'Filters' : filterText;
@@ -526,15 +418,12 @@
             totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
             animateCountUp(totalDivisionsEl, data.totalDivisions);
 
-            updateChart('divisionChart', data.divisionData.labels, data.divisionData.counts);
-            updateChart('acquisitionChart', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
-            updateChart('classificationChart', data.classificationData.labels, data.classificationData.values);
-            updateChart('statusChart', data.statusData.labels, data.statusData.counts); 
+            updateCards('division-summary-cards', data.divisionData, 'division-summary');
+            updateCards('status-cards', data.statusData, 'status');
+            updateCards('condition-cards', data.conditionData, 'condition');
+            updateDivisionBreakdownCards(data.divisionBreakdown);
 
-            populateDataTable('divisionTableBody', data.divisionData.labels, data.divisionData.counts);
-            populateDataTable('acquisitionTableBody', data.monthlyAcquisitions.labels, data.monthlyAcquisitions.counts);
-            populateDataTable('classificationTableBody', data.classificationData.labels, data.classificationData.values, 'currency');
-            populateDataTable('statusTableBody', data.statusData.labels, data.statusData.counts);
+            // Tables removed as charts are replaced with cards
 
         })
         .catch(error => {
@@ -543,26 +432,131 @@
         });
     }
 
-    function updateChart(chartId, labels, data) {
-        const chart = chartInstances[chartId];
-        if (!chart) return; 
+    function updateDivisionBreakdownCards(divisionBreakdown) {
+        const container = document.getElementById('division-breakdown-cards');
+        container.innerHTML = '';
 
-        labels = [...new Set(labels)];
+        Object.keys(divisionBreakdown).forEach((division, index) => {
+            const breakdown = divisionBreakdown[division];
+            const total = Object.values(breakdown).reduce((sum, count) => sum + count, 0);
+            const divisionId = division.replace(/\s+/g, '-');
 
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = data;
-        
-        if (chartId === 'divisionChart') {
-            chart.data.datasets[0].backgroundColor = labels.map(label => getDivisionColor(label));
-        }
-
-        if (chartId === 'acquisitionChart' && data.length > 0) {
-            const maxCount = Math.max(...data);
-            chart.options.scales.y.ticks.stepSize = maxCount <= 5 ? 1 : null;
-        }
-
-        chart.update();
+            const divisionClass = division.replace(/\s+/g, '-').toLowerCase();
+            const cardHtml = `
+                <div class="col-lg-4 col-md-6">
+                    <div class="breakdown-card breakdown-card-${divisionClass}">
+                        <div class="breakdown-header">
+                            <h4 class="breakdown-title">${division}</h4>
+                            <button class="btn-expand" type="button" data-bs-toggle="collapse" data-bs-target="#breakdown-${divisionId}" aria-expanded="false">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="breakdown-summary">
+                            <div class="breakdown-total">
+                                <span class="breakdown-number">${total}</span>
+                                <span class="breakdown-text">Total Items</span>
+                            </div>
+                        </div>
+                        <div class="collapse" id="breakdown-${divisionId}">
+                            <div class="breakdown-details">
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">Desktop</span>
+                                    <span class="breakdown-value">${breakdown.Desktop || 0}</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">Laptop</span>
+                                    <span class="breakdown-value">${breakdown.Laptop || 0}</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">Monitor</span>
+                                    <span class="breakdown-value">${breakdown.Monitor || 0}</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">Printer</span>
+                                    <span class="breakdown-value">${breakdown.Printer || 0}</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">Scanner</span>
+                                    <span class="breakdown-value">${breakdown.Scanner || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        });
     }
+
+    function updateCards(containerId, data, type) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+
+        data.forEach((item, index) => {
+            let cardHtml;
+
+            if (type === 'division-summary') {
+                const divisionClass = item.division.replace(/\s+/g, '-').toLowerCase();
+                cardHtml = `
+                    <div class="col-lg-3 col-md-6">
+                        <div class="division-card division-card-${divisionClass}">
+                            <div class="division-card-body">
+                                <div class="division-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                <div class="division-content">
+                                    <h3 class="division-count">${item.count}</h3>
+                                    <p class="division-name">${item.division}</p>
+                                </div>
+                            </div>
+                            <div class="division-footer">
+                                <small>items assigned</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'status') {
+                const statusClass = item.status === 'NEW' ? 'status-new' : 'status-used';
+                const iconClass = item.status === 'NEW' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+                cardHtml = `
+                    <div class="status-item ${statusClass}">
+                        <div class="status-icon">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        <div class="status-info">
+                            <p class="status-label">${item.status}</p>
+                            <h3 class="status-count">${item.count}</h3>
+                        </div>
+                        <div class="status-bar">
+                            <div class="status-bar-fill"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'condition') {
+                const conditionClass = item.condition === 'Functional' ? 'condition-functional' : 'condition-non-functional';
+                const iconClass = item.condition === 'Functional' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+                const badge = item.condition === 'Functional' ? '✓' : '⚠';
+                cardHtml = `
+                    <div class="condition-item ${conditionClass}">
+                        <div class="condition-icon">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        <div class="condition-info">
+                            <p class="condition-label">${item.condition}</p>
+                            <h3 class="condition-count">${item.count}</h3>
+                        </div>
+                        <div class="condition-indicator">
+                            <span class="condition-badge">${badge}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        });
+    }
+
+    // Chart update functions removed as charts are replaced with cards
 </script>
 @endpush
 @endsection

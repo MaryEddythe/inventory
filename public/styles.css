@@ -1011,4 +1011,981 @@ mark {
     font-weight: 500;
 }
 
+/* ============================================
+   Dashboard Header Styles
+   ============================================ */
+.dashboard-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
 
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+  font-size: 0.95rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+/* ============================================
+   Metric Cards (Summary Cards)
+   ============================================ */
+.metric-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to right, currentColor, transparent);
+  opacity: 0.3;
+}
+
+.metric-card:hover {
+  border-color: #dee2e6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.metric-card-primary {
+  --metric-color: #0d6efd;
+}
+
+.metric-card-primary::before {
+  background: linear-gradient(to right, #0d6efd, transparent);
+}
+
+.metric-card-success {
+  --metric-color: #198754;
+}
+
+.metric-card-success::before {
+  background: linear-gradient(to right, #198754, transparent);
+}
+
+.metric-card-info {
+  --metric-color: #0dcaf0;
+}
+
+.metric-card-info::before {
+  background: linear-gradient(to right, #0dcaf0, transparent);
+}
+
+.metric-card-warning {
+  --metric-color: #ffc107;
+}
+
+.metric-card-warning::before {
+  background: linear-gradient(to right, #ffc107, transparent);
+}
+
+.metric-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.metric-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  background: linear-gradient(135deg, var(--metric-color), var(--metric-color));
+  color: white;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.metric-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+  margin: 0;
+  word-break: break-word;
+}
+
+.metric-footer {
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0f0f0;
+  text-align: center;
+}
+
+.metric-footer small {
+  font-size: 0.8rem;
+  color: #adb5bd;
+}
+
+/* ============================================
+   Section Card Container
+   ============================================ */
+.section-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease;
+}
+
+.section-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.section-header {
+  padding: 1.75rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-bottom: 1px solid #e9ecef;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 0.5rem 0;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 0;
+  font-weight: 400;
+}
+
+.section-body {
+  padding: 1.75rem;
+}
+
+/* ============================================
+   Division Cards
+   ============================================ */
+.division-card {
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.division-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.division-card-mmd {
+  background: linear-gradient(135deg, #007B83 0%, #009DA8 100%);
+  border-color: rgba(0, 125, 131, 0.3);
+  color: white;
+}
+
+.division-card-mmd .division-icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.division-card-mmd .division-count,
+.division-card-mmd .division-name,
+.division-card-mmd .division-footer {
+  color: white;
+}
+
+.division-card-msesdd {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8585 100%);
+  border-color: rgba(255, 107, 107, 0.3);
+  color: white;
+}
+
+.division-card-msesdd .division-icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.division-card-msesdd .division-count,
+.division-card-msesdd .division-name,
+.division-card-msesdd .division-footer {
+  color: white;
+}
+
+.division-card-gd {
+  background: linear-gradient(135deg, #FFC145 0%, #FFD166 100%);
+  border-color: rgba(255, 193, 69, 0.3);
+  color: #222;
+}
+
+.division-card-gd .division-icon {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.division-card-gd .division-count,
+.division-card-gd .division-name,
+.division-card-gd .division-footer {
+  color: #222;
+}
+
+.division-card-gss {
+  background: linear-gradient(135deg, #7BC950 0%, #8FD965 100%);
+  border-color: rgba(123, 201, 80, 0.3);
+  color: white;
+}
+
+.division-card-gss .division-icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.division-card-gss .division-count,
+.division-card-gss .division-name,
+.division-card-gss .division-footer {
+  color: white;
+}
+
+.division-card-ord {
+  background: linear-gradient(135deg, #8E7CC3 0%, #9F8FD4 100%);
+  border-color: rgba(142, 124, 195, 0.3);
+  color: white;
+}
+
+.division-card-ord .division-icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.division-card-ord .division-count,
+.division-card-ord .division-name,
+.division-card-ord .division-footer {
+  color: white;
+}
+
+.division-card-fad {
+  background: linear-gradient(135deg, #4DA9FF 0%, #66B8FF 100%);
+  border-color: rgba(77, 169, 255, 0.3);
+  color: white;
+}
+
+.division-card-fad .division-icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.division-card-fad .division-count,
+.division-card-fad .division-name,
+.division-card-fad .division-footer {
+  color: white;
+}
+
+.division-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.division-card-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.division-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.division-content {
+  flex: 1;
+}
+
+.division-count {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+}
+
+.division-name {
+  font-size: 0.95rem;
+  margin: 0.5rem 0 0 0;
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+.division-footer {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   Status Cards
+   ============================================ */
+.status-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border-left: 4px solid transparent;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.status-item:hover {
+  background: #f0f1f3;
+  transform: translateX(4px);
+}
+
+.status-new {
+  border-left-color: #198754;
+  background: linear-gradient(to right, rgba(25, 135, 84, 0.05), transparent);
+}
+
+.status-new:hover {
+  border-left-color: #157347;
+}
+
+.status-used {
+  border-left-color: #ffc107;
+  background: linear-gradient(to right, rgba(255, 193, 7, 0.05), transparent);
+}
+
+.status-used:hover {
+  border-left-color: #ffb800;
+}
+
+.status-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.status-new .status-icon {
+  background: rgba(25, 135, 84, 0.15);
+  color: #198754;
+}
+
+.status-used .status-icon {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.status-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.status-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0.25rem 0 0 0;
+  line-height: 1;
+}
+
+.status-bar {
+  width: 4px;
+  height: 40px;
+  background: #e9ecef;
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.status-new .status-bar {
+  background: #d3e2c1;
+}
+
+.status-new .status-bar .status-bar-fill {
+  background: #198754;
+}
+
+.status-used .status-bar {
+  background: #ffe69c;
+}
+
+.status-used .status-bar .status-bar-fill {
+  background: #ffc107;
+}
+
+.status-bar-fill {
+  width: 100%;
+  height: 60%;
+  border-radius: 2px;
+}
+
+/* ============================================
+   Condition Cards
+   ============================================ */
+.condition-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.condition-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border-top: 3px solid transparent;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.condition-item:hover {
+  background: #f0f1f3;
+  transform: translateX(4px);
+}
+
+.condition-functional {
+  border-top-color: #198754;
+  background: linear-gradient(to right, rgba(25, 135, 84, 0.05), transparent);
+}
+
+.condition-functional:hover {
+  border-top-color: #157347;
+}
+
+.condition-non-functional {
+  border-top-color: #ffc107;
+  background: linear-gradient(to right, rgba(255, 193, 7, 0.05), transparent);
+}
+
+.condition-non-functional:hover {
+  border-top-color: #ffb800;
+}
+
+.condition-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.condition-functional .condition-icon {
+  background: rgba(25, 135, 84, 0.15);
+  color: #198754;
+}
+
+.condition-non-functional .condition-icon {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.condition-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.condition-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.condition-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0.25rem 0 0 0;
+  line-height: 1;
+}
+
+.condition-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.condition-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.condition-functional .condition-badge {
+  background: rgba(25, 135, 84, 0.2);
+  color: #198754;
+}
+
+.condition-non-functional .condition-badge {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+/* ============================================
+   Breakdown Cards
+   ============================================ */
+.breakdown-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.breakdown-card:hover {
+  border-color: #dee2e6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-bottom: 1px solid #e9ecef;
+}
+
+.breakdown-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.btn-expand {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  color: #6c757d;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.btn-expand:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.btn-expand[aria-expanded="true"] {
+  transform: rotate(180deg);
+}
+
+.breakdown-summary {
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.breakdown-total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.breakdown-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.breakdown-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.breakdown-details {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.breakdown-item:hover {
+  background: #f0f1f3;
+}
+
+.breakdown-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.breakdown-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* ============================================
+   Breakdown Card Division Color Coding
+   ============================================ */
+.breakdown-card-mmd {
+  border-left: 4px solid #007B83;
+}
+
+.breakdown-card-mmd .breakdown-header {
+  background: linear-gradient(135deg, rgba(0, 123, 131, 0.1) 0%, rgba(0, 123, 131, 0.05) 100%);
+  border-bottom-color: rgba(0, 123, 131, 0.2);
+}
+
+.breakdown-card-mmd .breakdown-title {
+  color: #007B83;
+}
+
+.breakdown-card-msesdd {
+  border-left: 4px solid #FF6B6B;
+}
+
+.breakdown-card-msesdd .breakdown-header {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+  border-bottom-color: rgba(255, 107, 107, 0.2);
+}
+
+.breakdown-card-msesdd .breakdown-title {
+  color: #FF6B6B;
+}
+
+.breakdown-card-gd {
+  border-left: 4px solid #FFC145;
+}
+
+.breakdown-card-gd .breakdown-header {
+  background: linear-gradient(135deg, rgba(255, 193, 69, 0.1) 0%, rgba(255, 193, 69, 0.05) 100%);
+  border-bottom-color: rgba(255, 193, 69, 0.2);
+}
+
+.breakdown-card-gd .breakdown-title {
+  color: #FFC145;
+}
+
+.breakdown-card-gss {
+  border-left: 4px solid #7BC950;
+}
+
+.breakdown-card-gss .breakdown-header {
+  background: linear-gradient(135deg, rgba(123, 201, 80, 0.1) 0%, rgba(123, 201, 80, 0.05) 100%);
+  border-bottom-color: rgba(123, 201, 80, 0.2);
+}
+
+.breakdown-card-gss .breakdown-title {
+  color: #7BC950;
+}
+
+.breakdown-card-ord {
+  border-left: 4px solid #8E7CC3;
+}
+
+.breakdown-card-ord .breakdown-header {
+  background: linear-gradient(135deg, rgba(142, 124, 195, 0.1) 0%, rgba(142, 124, 195, 0.05) 100%);
+  border-bottom-color: rgba(142, 124, 195, 0.2);
+}
+
+.breakdown-card-ord .breakdown-title {
+  color: #8E7CC3;
+}
+
+.breakdown-card-fad {
+  border-left: 4px solid #4DA9FF;
+}
+
+.breakdown-card-fad .breakdown-header {
+  background: linear-gradient(135deg, rgba(77, 169, 255, 0.1) 0%, rgba(77, 169, 255, 0.05) 100%);
+  border-bottom-color: rgba(77, 169, 255, 0.2);
+}
+
+.breakdown-card-fad .breakdown-title {
+  color: #4DA9FF;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+@media (max-width: 768px) {
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+
+  .metric-card {
+    padding: 1.25rem;
+  }
+
+  .metric-header {
+    gap: 0.75rem;
+  }
+
+  .metric-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+  }
+
+  .metric-label {
+    font-size: 0.8rem;
+  }
+
+  .metric-footer {
+    padding-top: 0.5rem;
+  }
+
+  .section-header {
+    padding: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .section-body {
+    padding: 1.25rem;
+  }
+
+  .division-card {
+    padding: 1.25rem;
+  }
+
+  .division-count {
+    font-size: 2rem;
+  }
+
+  .status-item,
+  .condition-item {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .status-count,
+  .condition-count {
+    font-size: 1.5rem;
+  }
+
+  .breakdown-card {
+    margin-bottom: 0.5rem;
+  }
+
+  .breakdown-header {
+    padding: 1rem;
+  }
+
+  .breakdown-summary {
+    padding: 1.25rem 1rem;
+  }
+
+  .breakdown-number {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-title {
+    font-size: 1.25rem;
+  }
+
+  .dashboard-header {
+    margin-bottom: 2rem;
+  }
+
+  .metric-value {
+    font-size: 1.25rem;
+  }
+
+  .metric-card {
+    padding: 1rem;
+  }
+
+  .section-header {
+    padding: 1rem;
+  }
+
+  .section-body {
+    padding: 1rem;
+  }
+
+  .division-card {
+    padding: 1rem;
+  }
+
+  .division-card-body {
+    gap: 0.75rem;
+  }
+
+  .division-count {
+    font-size: 1.75rem;
+  }
+
+  .division-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+
+  .status-item,
+  .condition-item {
+    padding: 0.9rem;
+  }
+
+  .status-count,
+  .condition-count {
+    font-size: 1.25rem;
+  }
+
+  .breakdown-header {
+    padding: 0.9rem;
+  }
+
+  .breakdown-summary {
+    padding: 1rem 0.9rem;
+  }
+
+  .breakdown-number {
+    font-size: 1.5rem;
+  }
+
+  .breakdown-text {
+    font-size: 0.75rem;
+  }
+
+  .breakdown-details {
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  .breakdown-item {
+    padding: 0.5rem;
+  }
+
+  .breakdown-label {
+    font-size: 0.8rem;
+  }
+
+  .breakdown-value {
+    font-size: 0.95rem;
+  }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+@media print {
+  .dashboard-header > div:last-child {
+    display: none;
+  }
+
+  .metric-card,
+  .section-card,
+  .division-card,
+  .status-item,
+  .condition-item,
+  .breakdown-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+  }
+}

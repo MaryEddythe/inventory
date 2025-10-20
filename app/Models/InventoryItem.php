@@ -10,8 +10,9 @@ class InventoryItem extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mysql';
     protected $table = 'inventory_items';
-    protected $primaryKey = 'no';
+    protected $primaryKey = 'id';
     public $timestamps = false;
     public $incrementing = true;
 

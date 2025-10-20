@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // For SQLite compatibility, use strftime instead of TIMESTAMPDIFF
         DB::statement("
             UPDATE inventory_items
             SET `condition` = CASE
-                WHEN TIMESTAMPDIFF(YEAR, date_acquired, CURDATE()) <= 5 THEN 'NEW'
+                WHEN (strftime('%Y', 'now') - strftime('%Y', date_acquired)) <= 5 THEN 'NEW'
                 ELSE 'FOR REPLACEMENT'
             END
         ");

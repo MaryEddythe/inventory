@@ -22,7 +22,7 @@ class AuthController extends Controller
         ]);
 
         // Check if the input is an email or username
-        $field = filter_var($credentials['email'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $field = filter_var($credentials['email'], FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
 
         if (Auth::attempt([$field => $credentials['email'], 'password' => $credentials['password']])) {
             $request->session()->regenerate();

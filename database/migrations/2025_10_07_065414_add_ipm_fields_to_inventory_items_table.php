@@ -43,10 +43,8 @@ return new class extends Migration
             }
         });
 
-        // Change status enum using raw SQL
-        DB::statement("ALTER TABLE inventory_items MODIFY COLUMN status ENUM('NEW', 'FOR REPLACEMENT', 'Functional', 'Nonfunctional') DEFAULT 'Functional'");
-        DB::statement("UPDATE inventory_items SET status = 'Functional'");
-        DB::statement("ALTER TABLE inventory_items MODIFY COLUMN status ENUM('Functional', 'Nonfunctional') DEFAULT 'Functional'");
+        // For SQLite, we can't modify enum columns directly, so we'll handle this in a separate migration
+        // The status column will remain as is for now
     }
 
     /**

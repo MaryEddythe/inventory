@@ -21,8 +21,8 @@
     </thead>
     <tbody>
         @forelse($items as $item)
-            <tr data-item-id="{{ $item->no }}">
-                <td class="fw-semibold text-muted">{{ $item->no }}</td>
+            <tr data-item-id="{{ $item->id }}">
+                <td class="fw-semibold text-muted">{{ $item->id }}</td>
                 <td>
                     <span class="badge fw-normal badge-division badge-division-{{ $item->division }}">
                         {{ $item->division }}
@@ -60,10 +60,10 @@
                 <td>
                     <div class="d-flex gap-1">
                         <button type="button" class="btn btn-outline-primary btn-sm" title="Edit IPM"
-                                data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->no }}">
+                                data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->id }}">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline delete-form">
+                        <form action="{{ route('inventory.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
@@ -90,7 +90,7 @@
 
 {{-- Separate modals to avoid Blade compile collision --}}
 @foreach($items as $item)
-    <div class="modal fade" id="editIpmModal{{ $item->no }}" tabindex="-1" aria-labelledby="editIpmModalLabel{{ $item->no }}" aria-hidden="true">
+    <div class="modal fade" id="editIpmModal{{ $item->id }}" tabindex="-1" aria-labelledby="editIpmModalLabel{{ $item->id }}" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">

@@ -28,7 +28,7 @@
                 @if($itemCount > 1)
                     <span class="badge bg-light text-dark">{{ $itemCount }} items</span>
                 @else
-                    {{ $firstItem->no }}
+                    {{ $firstItem->id }}
                 @endif
             </td>
             <td>
@@ -158,8 +158,8 @@
                 @if($itemCount > 1)
                     @foreach($items as $index => $item)
                         <div class="d-flex gap-1 mb-1">
-                            <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
-                            <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline delete-form">
+                            <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->id }}"><i class="bi bi-pencil"></i></button>
+                            <form action="{{ route('inventory.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete"><i class="bi bi-trash"></i></button>
@@ -168,8 +168,8 @@
                     @endforeach
                 @else
                     <div class="d-flex gap-1">
-                        <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $firstItem->no }}"><i class="bi bi-pencil"></i></button>
-                        <form action="{{ route('inventory.destroy', $firstItem->no) }}" method="POST" class="d-inline delete-form">
+                        <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $firstItem->id }}"><i class="bi bi-pencil"></i></button>
+                        <form action="{{ route('inventory.destroy', $firstItem->id) }}" method="POST" class="d-inline delete-form">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete"><i class="bi bi-trash"></i></button>
@@ -187,12 +187,16 @@
 </table>
 
 
-@foreach($items as $item)
-    <div class="modal fade" id="editInventoryModal{{ $item->no }}" tabindex="-1" aria-labelledby="editInventoryModalLabel{{ $item->no }}" aria-hidden="true">
+@php
+    $allItems = $paginator->flatten();
+@endphp
+
+@foreach($allItems as $item)
+    <div class="modal fade" id="editInventoryModal{{ $item->id }}" tabindex="-1" aria-labelledby="editInventoryModalLabel{{ $item->id }}" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editInventoryModalLabel{{ $item->no }}">Edit Inventory Item {{ $item->no }}</h5>
+                    <h5 class="modal-title" id="editInventoryModalLabel{{ $item->id }}">Edit Inventory Item {{ $item->id }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

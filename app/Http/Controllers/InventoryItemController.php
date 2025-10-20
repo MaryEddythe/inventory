@@ -137,6 +137,7 @@ class InventoryItemController extends Controller
     public function update(Request $request, $id)
     {
         $item = InventoryItem::findOrFail($id);
+        $originalId = $item->id;
 
         // Check if this is an IPM update (has IPM-specific fields)
         $isIpmUpdate = $request->hasAny(['system_boot_up', 'hardware', 'performance', 'cables_connections', 'peripherals', 'recommendation', 'date_conducted', 'time_started', 'time_ended']);
@@ -181,6 +182,7 @@ class InventoryItemController extends Controller
             'success' => true,
             'message' => 'Item updated successfully',
             'item'    => $item,
+            'original_id' => $originalId,
         ]);
     }
 

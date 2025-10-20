@@ -29,7 +29,7 @@
                 @if($itemCount > 1)
                     <span class="badge bg-light text-dark">{{ $itemCount }} items</span>
                 @else
-                    {{ $firstItem->id }}
+                    {{ $firstItem->no }}
                 @endif
             </td>
             <td rowspan="{{ $itemCount }}">
@@ -62,17 +62,14 @@
             <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
             <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
             <td>
-                @php
-                    $yearsSinceAcquisition = \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now());
-                @endphp
-                <span class="badge {{ $yearsSinceAcquisition <= 5 ? 'badge-age-new' : 'badge-age-old' }} fw-normal" title="{{ $yearsSinceAcquisition }} years old">
-                    {{ $yearsSinceAcquisition <= 5 ? 'NEW' : 'FOR REPLACEMENT' }}
+                <span class="badge {{ $item->status == 'NEW' ? 'badge-age-new' : 'badge-age-old' }} fw-normal" title="Status">
+                    {{ $item->status }}
                 </span>
             </td>
             <td>
                 <div class="d-flex gap-1">
-                    <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->id }}"><i class="bi bi-pencil"></i></button>
-                    <form action="{{ route('inventory.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
+                    <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
+                    <form action="{{ route('inventory.destroy', $item->no) }}" method="POST" class="d-inline delete-form">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete"><i class="bi bi-trash"></i></button>
@@ -95,11 +92,11 @@
 @endphp
 
 @foreach($allItems as $item)
-    <div class="modal fade" id="editInventoryModal{{ $item->id }}" tabindex="-1" aria-labelledby="editInventoryModalLabel{{ $item->id }}" aria-hidden="true">
+    <div class="modal fade" id="editInventoryModal{{ $item->no }}" tabindex="-1" aria-labelledby="editInventoryModalLabel{{ $item->no }}" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editInventoryModalLabel{{ $item->id }}">Edit Inventory Item {{ $item->id }}</h5>
+                    <h5 class="modal-title" id="editInventoryModalLabel{{ $item->no }}">Edit Inventory Item {{ $item->no }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

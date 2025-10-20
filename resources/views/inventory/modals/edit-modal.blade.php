@@ -9,13 +9,13 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('inventory.update', $item->id) }}" method="POST" id="edit-inventory-form-{{ $item->id }}" class="edit-inventory-form">
+<form action="{{ route('inventory.update', $item->no) }}" method="POST" id="edit-inventory-form-{{ $item->no }}" class="edit-inventory-form">
     @csrf
     @method('PUT')
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="division-{{ $item->id }}" class="form-label">Division <span class="text-danger">*</span></label>
-            <select class="form-select" id="division-{{ $item->id }}" name="division" required>
+            <label for="division-{{ $item->no }}" class="form-label">Division <span class="text-danger">*</span></label>
+            <select class="form-select" id="division-{{ $item->no }}" name="division" required>
                 <option value="" disabled>Select Division</option>
                 @foreach($departments as $dept)
                     <option value="{{ $dept->department }}" {{ old('division', $item->division) == $dept->department ? 'selected' : '' }}>{{ $dept->department }}</option>
@@ -23,54 +23,54 @@
             </select>
         </div>
         <div class="col-md-6 mb-3 position-relative">
-            <label for="employee_search-{{ $item->id }}" class="form-label">Employee <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="employee_search-{{ $item->id }}" placeholder="Search Employee..." autocomplete="off" required>
-            <div id="employee_suggestions-{{ $item->id }}" class="suggestions-list"></div>
-            <input type="hidden" id="emp_no-{{ $item->id }}" name="emp_no" value="{{ old('emp_no', $item->emp_no) }}">
-            <input type="hidden" id="enduser-{{ $item->id }}" name="enduser" value="{{ old('enduser', $item->enduser) }}">
+            <label for="employee_search-{{ $item->no }}" class="form-label">Employee <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="employee_search-{{ $item->no }}" placeholder="Search Employee..." autocomplete="off" required>
+            <div id="employee_suggestions-{{ $item->no }}" class="suggestions-list"></div>
+            <input type="hidden" id="emp_no-{{ $item->no }}" name="emp_no" value="{{ old('emp_no', $item->emp_no) }}">
+            <input type="hidden" id="enduser-{{ $item->no }}" name="enduser" value="{{ old('enduser', $item->enduser) }}">
         </div>
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="classification-{{ $item->id }}" class="form-label">Classification <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="classification-{{ $item->id }}" name="classification" value="{{ old('classification', $item->classification) }}" required>
+            <label for="classification-{{ $item->no }}" class="form-label">Classification <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="classification-{{ $item->no }}" name="classification" value="{{ old('classification', $item->classification) }}" required>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="property_number-{{ $item->id }}" class="form-label">Property Number <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="property_number-{{ $item->id }}" name="property_number" value="{{ old('property_number', $item->property_number) }}" required>
+            <label for="property_number-{{ $item->no }}" class="form-label">Property Number <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="property_number-{{ $item->no }}" name="property_number" value="{{ old('property_number', $item->property_number) }}" required>
         </div>
     </div>
     <div class="mb-3">
-        <label for="description-{{ $item->id }}" class="form-label">Description <span class="text-danger">*</span></label>
-        <textarea class="form-control" id="description-{{ $item->id }}" name="description" rows="3" required>{{ old('description', $item->description) }}</textarea>
+        <label for="description-{{ $item->no }}" class="form-label">Description <span class="text-danger">*</span></label>
+        <textarea class="form-control" id="description-{{ $item->no }}" name="description" rows="3" required>{{ old('description', $item->description) }}</textarea>
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="serial_number-{{ $item->id }}" class="form-label">Serial Number</label>
-            <input type="text" class="form-control" id="serial_number-{{ $item->id }}" name="serial_number" value="{{ old('serial_number', $item->serial_number) }}">
+            <label for="serial_number-{{ $item->no }}" class="form-label">Serial Number</label>
+            <input type="text" class="form-control" id="serial_number-{{ $item->no }}" name="serial_number" value="{{ old('serial_number', $item->serial_number) }}">
         </div>
         <div class="col-md-6 mb-3">
-            <label for="unit_price-{{ $item->id }}" class="form-label">Unit Price <span class="text-danger">*</span></label>
-            <input type="number" step="0.01" class="form-control" id="unit_price-{{ $item->id }}" name="unit_price" value="{{ old('unit_price', $item->unit_price) }}" required>
+            <label for="unit_price-{{ $item->no }}" class="form-label">Unit Price <span class="text-danger">*</span></label>
+            <input type="number" step="0.01" class="form-control" id="unit_price-{{ $item->no }}" name="unit_price" value="{{ old('unit_price', $item->unit_price) }}" required>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="co_mooe-{{ $item->id }}" class="form-label">CO/MOOE <span class="text-danger">*</span></label>
-            <select class="form-select" id="co_mooe-{{ $item->id }}" name="co_mooe" required>
+            <label for="co_mooe-{{ $item->no }}" class="form-label">CO/MOOE <span class="text-danger">*</span></label>
+            <select class="form-select" id="co_mooe-{{ $item->no }}" name="co_mooe" required>
                 <option value="" disabled>Select CO/MOOE</option>
                 <option value="CO" {{ old('co_mooe', $item->co_mooe) == 'CO' ? 'selected' : '' }}>Capital Outlay</option>
                 <option value="MOOE" {{ old('co_mooe', $item->co_mooe) == 'MOOE' ? 'selected' : '' }}>MOOE</option>
             </select>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="date_acquired-{{ $item->id }}" class="form-label">Date Acquired <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" id="date_acquired-{{ $item->id }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" required>
+            <label for="date_acquired-{{ $item->no }}" class="form-label">Date Acquired <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" required>
         </div>
     </div>
     <div class="mb-3">
-        <label for="remarks-{{ $item->id }}" class="form-label">Remarks</label>
-        <textarea class="form-control" id="remarks-{{ $item->id }}" name="remarks" rows="2">{{ old('remarks', $item->remarks) }}</textarea>
+        <label for="remarks-{{ $item->no }}" class="form-label">Remarks</label>
+        <textarea class="form-control" id="remarks-{{ $item->no }}" name="remarks" rows="2">{{ old('remarks', $item->remarks) }}</textarea>
     </div>
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
         <button type="button" class="btn btn-secondary me-md-2" data-bs-dismiss="modal">Cancel</button>
@@ -86,10 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
         @endforeach
     ];
 
-    const employeeSearchInput = document.getElementById('employee_search-{{ $item->id }}');
-    const suggestionsDiv = document.getElementById('employee_suggestions-{{ $item->id }}');
-    const empNoInput = document.getElementById('emp_no-{{ $item->id }}');
-    const enduserInput = document.getElementById('enduser-{{ $item->id }}');
+    const employeeSearchInput = document.getElementById('employee_search-{{ $item->no }}');
+    const suggestionsDiv = document.getElementById('employee_suggestions-{{ $item->no }}');
+    const empNoInput = document.getElementById('emp_no-{{ $item->no }}');
+    const enduserInput = document.getElementById('enduser-{{ $item->no }}');
 
     if (!empNoInput) return;
 

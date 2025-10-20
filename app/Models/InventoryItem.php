@@ -12,7 +12,7 @@ class InventoryItem extends Model
 
     protected $connection = 'mysql';
     protected $table = 'inventory_items';
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'no';
     public $timestamps = false;
     public $incrementing = true;
 

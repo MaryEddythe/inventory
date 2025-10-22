@@ -72,7 +72,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'name' => 'required|string|max:255|unique:users,username,' . $user->id,
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);

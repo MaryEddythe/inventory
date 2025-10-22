@@ -61,6 +61,8 @@
                 <option value="" disabled>Select CO/MOOE</option>
                 <option value="CO" {{ old('co_mooe', $item->co_mooe) == 'CO' ? 'selected' : '' }}>Capital Outlay</option>
                 <option value="MOOE" {{ old('co_mooe', $item->co_mooe) == 'MOOE' ? 'selected' : '' }}>MOOE</option>
+                <option value="NA" {{ old('co_mooe', $item->co_mooe) == 'NA' ? 'selected' : '' }}>NA</option>
+
             </select>
         </div>
         <div class="col-md-6 mb-3">

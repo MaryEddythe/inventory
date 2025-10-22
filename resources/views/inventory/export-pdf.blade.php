@@ -48,24 +48,25 @@
             </thead>
             <tbody>
                 @php
-                    $groupedItems = $items->groupBy('enduser');
+                    // Group PDF items by division
+                    $groupedItems = $items->groupBy('division');
                     $rowNumber = 1;
                 @endphp
-                @foreach($groupedItems as $enduser => $employeeItems)
-                    @php
-                        $firstItem = $employeeItems->first();
-                    @endphp
-                    @foreach($employeeItems as $index => $item)
+
+                @foreach($groupedItems as $division => $divisionItems)
+                    <tr>
+                        <td colspan="12" style="background:#efefef;"><strong>Division: {{ $division ?? 'N/A' }}</strong></td>
+                    </tr>
+
+                    @foreach($divisionItems as $item)
                         @php
                             $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
                             $pdfBadgeClass = $yearsSinceAcquisition <= 5 ? 'pdf-status-new' : 'pdf-status-replace';
                         @endphp
                         <tr>
-                            @if($index === 0)
-                                <td class="pdf-text-center" rowspan="{{ $employeeItems->count() }}">{{ $rowNumber }}</td>
-                                <td rowspan="{{ $employeeItems->count() }}">{{ $firstItem->department_name ?? $firstItem->division }}</td>
-                                <td rowspan="{{ $employeeItems->count() }}">{{ $enduser }}</td>
-                            @endif
+                            <td class="pdf-text-center">{{ $rowNumber++ }}</td>
+                            <td>{{ $item->department_name ?? $item->division }}</td>
+                            <td>{{ $item->enduser ?? 'N/A' }}</td>
                             <td>{{ $item->classification }}</td>
                             <td>{{ $item->description }}</td>
                             <td>{{ $item->serial_number ?? 'N/A' }}</td>
@@ -81,7 +82,6 @@
                             </td>
                         </tr>
                     @endforeach
-                    @php $rowNumber++; @endphp
                 @endforeach
             </tbody>
         </table>

@@ -355,96 +355,116 @@ class InventoryItemController extends Controller
     }
 
     public function dashboard(Request $request)
-    {
-        $filterableQuery = InventoryItem::query();
+{
+    $filterableQuery = InventoryItem::where('x', 'active');
 
-        // Apply date filters
-        $this->applyDateFilters($request, $filterableQuery);
+    // Apply date filters
+    $this->applyDateFilters($request, $filterableQuery);
 
-        $totalItems = $filterableQuery->count();
-        $totalValue = $filterableQuery->sum('unit_price');
-        $itemsThisMonth = (clone $filterableQuery)->whereMonth('date_acquired', now()->month)
-            ->whereYear('date_acquired', now()->year)
-            ->count();
-        $totalDivisions = $filterableQuery->distinct('division')->count('division');
+    $totalItems = $filterableQuery->count();
+    $totalValue = $filterableQuery->sum('unit_price');
+    $itemsThisMonth = (clone $filterableQuery)->whereMonth('date_acquired', now()->month)
+        ->whereYear('date_acquired', now()->year)
+        ->count();
 
-        // Get all divisions with item counts, including those with 0 items
-        $allDivisions = Department::orderBy('department')->pluck('department');
-        $divisionCounts = $filterableQuery
-            ->select('division', \DB::raw('count(*) as count'))
-            ->groupBy('division')
-            ->pluck('count', 'division');
+    // Get all divisions with item counts, including those with 0 items
+    $allDivisions = Department::orderBy('department')->pluck('department');
+    $divisionCounts = (clone $filterableQuery)
+        ->select('division', \DB::raw('count(*) as count'))
+        ->groupBy('division')
+        ->pluck('count', 'division');
 
-        $divisionData = $allDivisions->map(function ($division) use ($divisionCounts) {
-            return (object) [
-                'division' => $division,
-                'count' => $divisionCounts->get($division, 0)
-            ];
-        });
+    $divisionData = $allDivisions->map(function ($division) use ($divisionCounts) {
+        return (object) [
+            'division' => $division,
+            'count' => $divisionCounts->get($division, 0)
+        ];
+    });
 
-        // Update totalDivisions to count unique divisions with items
-        $totalDivisions = $divisionCounts->filter(function ($count) {
-            return $count > 0;
-        })->count();
+    // Count only divisions with items
+    $totalDivisions = $divisionCounts->filter(function ($count) {
+        return $count > 0;
+    })->count();
 
-        // Status data: NEW and FOR REPLACEMENT
-        $newCount = (clone $filterableQuery)->where('status', 'NEW')->count();
-        $forReplacementCount = (clone $filterableQuery)->where('status', 'FOR REPLACEMENT')->count();
-        $statusData = collect([
-            (object)['status' => 'NEW', 'count' => $newCount],
-            (object)['status' => 'FOR REPLACEMENT', 'count' => $forReplacementCount],
-        ]);
+    // Status data: New and For Replacement
+    $statusCounts = (clone $filterableQuery)
+        ->selectRaw('status, COUNT(*) as count')
+        ->whereNotNull('status')
+        ->groupBy('status')
+        ->pluck('count', 'status');
 
-        // Condition data: Functional and Nonfunctional
-        $functionalCount = (clone $filterableQuery)->where('condition', 'Functional')->count();
-        $nonfunctionalCount = (clone $filterableQuery)->where('condition', 'Nonfunctional')->count();
-        $conditionData = collect([
-            (object)['condition' => 'Functional', 'count' => $functionalCount],
-            (object)['condition' => 'Nonfunctional', 'count' => $nonfunctionalCount],
-        ]);
+    $statusData = collect([
+        (object)[
+            'status' => 'New',
+            'count' => $statusCounts->get('New', 0)
+        ],
+        (object)[
+            'status' => 'For Replacement',
+            'count' => $statusCounts->get('For Replacement', 0)
+        ],
+    ]);
 
-        // totalDivisions is already calculated above
+    // Condition data: Functional and Nonfunctional
+    // Using backticks to escape 'condition' reserved word
+    $conditionCounts = (clone $filterableQuery)
+        ->selectRaw('`condition`, COUNT(*) as count')
+        ->whereNotNull('condition')
+        ->groupBy('condition')
+        ->pluck('count', 'condition');
 
-        $divisionBreakdown = [];
-        foreach ($allDivisions as $division) {
-            $breakdown = $filterableQuery
-                ->where('division', $division)
-                ->select('classification', \DB::raw('count(*) as count'))
-                ->groupBy('classification')
-                ->pluck('count', 'classification');
-            $divisionBreakdown[$division] = [
-                'Desktop' => $breakdown->get('Desktop', 0),
-                'Laptop' => $breakdown->get('Laptop', 0),
-                'Monitor' => $breakdown->get('Monitor', 0),
-                'Printer' => $breakdown->get('Printer', 0),
-                'Scanner' => $breakdown->get('Scanner', 0),
-            ];
-        }
+    $conditionData = collect([
+        (object)[
+            'condition' => 'Functional',
+            'count' => $conditionCounts->get('Functional', 0)
+        ],
+        (object)[
+            'condition' => 'Nonfunctional',
+            'count' => $conditionCounts->get('Nonfunctional', 0)
+        ],
+    ]);
 
-        if ($request->ajax()) {
-            return response()->json([
-                'totalItems' => (int)$totalItems,
-                'totalValue' => (float)$totalValue,
-                'itemsThisMonth' => (int)$itemsThisMonth,
-                'totalDivisions' => (int)$totalDivisions,
-                'divisionData' => $divisionData,
-                'statusData' => $statusData,
-                'conditionData' => $conditionData,
-                'divisionBreakdown' => $divisionBreakdown
-            ]);
-        }
-
-        return view('inventory.tabs.dashboard', compact(
-            'totalItems',
-            'totalValue',
-            'itemsThisMonth',
-            'totalDivisions',
-            'divisionData',
-            'statusData',
-            'conditionData',
-            'divisionBreakdown'
-        ));
+    // Division breakdown by classification
+    $divisionBreakdown = [];
+    foreach ($allDivisions as $division) {
+        $breakdown = (clone $filterableQuery)
+            ->where('division', $division)
+            ->select('classification', \DB::raw('count(*) as count'))
+            ->groupBy('classification')
+            ->pluck('count', 'classification');
+        
+        $divisionBreakdown[$division] = [
+            'Desktop' => $breakdown->get('Desktop', 0),
+            'Laptop' => $breakdown->get('Laptop', 0),
+            'Monitor' => $breakdown->get('Monitor', 0),
+            'Printer' => $breakdown->get('Printer', 0),
+            'Scanner' => $breakdown->get('Scanner', 0),
+        ];
     }
+
+    if ($request->ajax()) {
+        return response()->json([
+            'totalItems' => (int)$totalItems,
+            'totalValue' => (float)$totalValue,
+            'itemsThisMonth' => (int)$itemsThisMonth,
+            'totalDivisions' => (int)$totalDivisions,
+            'divisionData' => $divisionData,
+            'statusData' => $statusData,
+            'conditionData' => $conditionData,
+            'divisionBreakdown' => $divisionBreakdown
+        ]);
+    }
+
+    return view('inventory.tabs.dashboard', compact(
+        'totalItems',
+        'totalValue',
+        'itemsThisMonth',
+        'totalDivisions',
+        'divisionData',
+        'statusData',
+        'conditionData',
+        'divisionBreakdown'
+    ));
+}
 
     public function ipm(Request $request)
     {

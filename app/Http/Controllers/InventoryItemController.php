@@ -17,11 +17,11 @@ class InventoryItemController extends Controller
     private function calculateStatus($dateAcquired)
     {
         if (!$dateAcquired) {
-            return 'NEW';
+            return 'New';
         }
 
         $years = now()->diffInYears($dateAcquired);
-        return $years <= 5 ? 'NEW' : 'FOR REPLACEMENT';
+        return $years <= 5 ? 'New' : 'For Replacement';
     }
 
     private function applyDateFilters(Request $request, $query)
@@ -94,20 +94,26 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
-        // Paginate items first, then group for display
-        $paginatedItems = $query->orderBy('enduser')->orderBy('no', 'desc')->paginate(10)->withQueryString();
+        // determine per-page (allow only these values)
+        $allowedPerPage = [10, 25, 50, 100];
+        $perPage = (int) $request->get('per_page', 10);
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
 
-        // Group the paginated items by enduser for display
-        $groupedItems = $paginatedItems->getCollection()->groupBy('enduser');
+        // Update pagination section: use selected per-page and keep query string
+        $items = $query->orderBy('division')->orderBy('enduser')->paginate($perPage)->withQueryString();
+        $groupedItems = $items->getCollection()->groupBy('enduser');
 
         $departments = Department::orderBy('department')->get();
         $employees = Employee::orderBy('firstname')->get();
 
         if ($request->ajax()) {
-            return view('inventory.table-data', compact('groupedItems', 'departments', 'employees'))->render();
+            return view('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))->render();
         }
 
-        return view('inventory.tabs.index', compact('groupedItems', 'departments', 'employees'));
+        // pass perPage to the view so the dropdown can reflect the current value
+        return view('inventory.tabs.index', compact('items', 'groupedItems', 'departments', 'employees', 'perPage'));
     }
 
     public function create()
@@ -162,7 +168,7 @@ class InventoryItemController extends Controller
         if ($isIpmUpdate) {
             // IPM update validation
             $validated = $request->validate([
-                'condition' => 'nullable|string|in:NEW,FOR REPLACEMENT,Functional,Nonfunctional',
+                'condition' => 'nullable|string|in:New,For Replacement,Functional,Nonfunctional',
                 'system_boot_up' => 'nullable|boolean',
                 'hardware' => 'nullable|boolean',
                 'performance' => 'nullable|boolean',
@@ -507,7 +513,13 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
-        $items = $query->orderBy('no', 'desc')->paginate(10)->withQueryString();
+        $allowedPerPage = [10, 25, 50, 100];
+        $perPage = (int) $request->get('per_page', 10);
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+
+        $items = $query->orderBy('no', 'desc')->paginate($perPage)->withQueryString();
         $departments = Department::orderBy('department')->get();
         $employees = Employee::orderBy('firstname')->get();
 
@@ -515,7 +527,7 @@ class InventoryItemController extends Controller
             return view('inventory.table-data-ipm', compact('items'))->render();
         }
 
-        return view('inventory.tabs.ipm', compact('items', 'departments', 'employees'));
+        return view('inventory.tabs.ipm', compact('items', 'departments', 'employees', 'perPage'));
     }
 
     public function show(InventoryItem $inventoryItem)

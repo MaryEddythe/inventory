@@ -22,6 +22,18 @@
             <form id="searchForm" class="d-flex align-items-center" style="min-width: 220px;">
                 <input type="text" class="form-control form-control-sm" name="search" placeholder="Search anything here" value="{{ request('search') }}">
             </form>
+
+            <!-- per-page dropdown -->
+            <div class="ms-2">
+                <select id="perPageSelect" name="per_page" class="form-select form-select-sm">
+                    @php $currentPer = request('per_page', $perPage ?? 10); @endphp
+                    <option value="10" {{ $currentPer == 10 ? 'selected' : '' }}>10</option>
+                    <option value="25" {{ $currentPer == 25 ? 'selected' : '' }}>25</option>
+                    <option value="50" {{ $currentPer == 50 ? 'selected' : '' }}>50</option>
+                    <option value="100" {{ $currentPer == 100 ? 'selected' : '' }}>100</option>
+                </select>
+            </div>
+
             <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
                 <i class="bi bi-funnel"></i> Filter
             </button>
@@ -43,12 +55,13 @@
     </div>
 
     <div class="table-responsive">
-        @include('inventory.table-data', compact('groupedItems', 'departments', 'employees'))
+        @if(isset($items))
+            @include('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))
+        @else
+            <div class="text-center py-4">No items found</div>
+        @endif
     </div>
 
-        <div class="d-flex justify-content-between align-items-center mt-4">
-            <div class="text-muted small">Showing {{ $groupedItems->flatten()->count() }} entries</div>
-        </div>
 </div>
 
 <!-- Add Inventory Modal -->
@@ -74,13 +87,21 @@
 document.addEventListener('DOMContentLoaded', function() {
     let searchTimer;
     const searchInput = document.querySelector('input[name="search"]');
+    const perPageSelect = document.getElementById('perPageSelect');
 
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             updateResults();
-        }, 300); 
+        }, 300);
     });
+
+    // trigger update when per-page changes
+    if (perPageSelect) {
+        perPageSelect.addEventListener('change', function() {
+            updateResults();
+        });
+    }
 
     const filterForm = document.getElementById('filterForm');
     filterForm.addEventListener('submit', function(e) {
@@ -335,6 +356,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         });
+
+        // intercept pagination links inside the table area to use AJAX
+        document.querySelectorAll('.table-responsive .pagination a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const href = this.href;
+                if (!href) return;
+
+                // include current per_page and filter params if not already in URL
+                const params = new URL(href);
+                if (perPageSelect && perPageSelect.value) {
+                    params.searchParams.set('per_page', perPageSelect.value);
+                }
+
+                // fetch the page via AJAX
+                fetch(params.toString(), {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(r => r.text())
+                .then(html => {
+                    document.querySelector('.table-responsive').innerHTML = html;
+                    // update the browser URL so back/refresh works
+                    history.pushState({}, '', params.toString());
+                    // reattach handlers for newly injected content
+                    attachFormListeners();
+                })
+                .catch(() => {
+                    // fallback to full navigation on error
+                    window.location.href = params.toString();
+                });
+            });
+        });
     }
 
     attachFormListeners();
@@ -351,6 +404,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (pair[1]) {
                 searchParams.append(pair[0], pair[1]);
             }
+        }
+
+        // include per_page explicitly (from dropdown)
+        if (perPageSelect && perPageSelect.value) {
+            searchParams.set('per_page', perPageSelect.value);
         }
 
         const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
@@ -376,6 +434,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (pair[1]) {
                 searchParams.append(pair[0], pair[1]);
             }
+        }
+
+        if (perPageSelect && perPageSelect.value) {
+            searchParams.set('per_page', perPageSelect.value);
         }
 
         Swal.fire({

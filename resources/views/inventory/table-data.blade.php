@@ -1,3 +1,15 @@
+{{-- top pagination (new) --}}
+@if(method_exists($items, 'hasPages') && $items->hasPages())
+<div class="d-flex justify-content-between align-items-center mb-3 table-pagination-top">
+    <div class="text-muted small">
+        Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries
+    </div>
+    <div>
+        {{ $items->links('vendor.pagination.bootstrap-5') }}
+    </div>
+</div>
+@endif
+
 <table class="table align-middle table-hover mb-0" style="font-size: 1.1rem;">
     <thead style="background: #f3f4f6;">
         <tr class="text-secondary">
@@ -62,7 +74,7 @@
             <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
             <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
             <td>
-                <span class="badge {{ $item->status == 'NEW' ? 'badge-age-new' : 'badge-age-old' }} fw-normal" title="Status">
+                <span class="badge {{ $item->status == 'New' ? 'badge-age-new' : 'badge-age-old' }} fw-normal" title="Status">
                     {{ $item->status }}
                 </span>
             </td>
@@ -106,3 +118,15 @@
         </div>
     </div>
 @endforeach
+
+{{-- bottom pagination (existing) --}}
+@if(method_exists($items, 'hasPages') && $items->hasPages())
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="text-muted small">
+        Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries
+    </div>
+    <div>
+        {{ $items->links('vendor.pagination.bootstrap-5') }}
+    </div>
+</div>
+@endif

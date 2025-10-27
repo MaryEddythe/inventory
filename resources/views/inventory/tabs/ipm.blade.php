@@ -22,6 +22,18 @@
     <form id="searchForm" class="d-flex align-items-center" style="min-width: 220px;">
         <input type="text" class="form-control form-control-sm" name="search" placeholder="Search anything here" value="{{ request('search') }}">
     </form>
+
+    <!-- per-page dropdown (new) -->
+    <div class="ms-2">
+        <select id="perPageSelect" name="per_page" class="form-select form-select-sm">
+            @php $currentPer = request('per_page', $perPage ?? 10); @endphp
+            <option value="10" {{ $currentPer == 10 ? 'selected' : '' }}>10</option>
+            <option value="25" {{ $currentPer == 25 ? 'selected' : '' }}>25</option>
+            <option value="50" {{ $currentPer == 50 ? 'selected' : '' }}>50</option>
+            <option value="100" {{ $currentPer == 100 ? 'selected' : '' }}>100</option>
+        </select>
+    </div>
+
     <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
         <i class="bi bi-funnel"></i> Filter
     </button>

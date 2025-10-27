@@ -43,7 +43,7 @@
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="serial_number" class="form-label">Serial Number</label>
+            <label for="serial_number" class="form-label">Serial Number/Device ID</label>
             <input type="text" class="form-control" id="serial_number" name="serial_number" value="{{ old('serial_number') }}">
         </div>
         <div class="col-md-6 mb-3">

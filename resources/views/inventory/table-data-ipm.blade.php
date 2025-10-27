@@ -98,9 +98,17 @@
     </tbody>
 </table>
 
-<div class="d-flex justify-content-between align-items-center mt-4">
-    <div class="text-muted small">Showing {{ $items->count() }} entries</div>
+{{-- bottom pagination with entries count --}}
+@if(method_exists($items, 'hasPages') && $items->hasPages())
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="text-muted small">
+        Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries
+    </div>
+    <div>
+        {{ $items->links('vendor.pagination.bootstrap-5') }}
+    </div>
 </div>
+@endif
 
 {{-- Separate modals to avoid Blade compile collision --}}
 @foreach($items as $item)

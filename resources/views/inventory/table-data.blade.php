@@ -1,15 +1,3 @@
-{{-- top pagination (new) --}}
-@if(method_exists($items, 'hasPages') && $items->hasPages())
-<div class="d-flex justify-content-between align-items-center mb-3 table-pagination-top">
-    <div class="text-muted small">
-        Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries
-    </div>
-    <div>
-        {{ $items->links('vendor.pagination.bootstrap-5') }}
-    </div>
-</div>
-@endif
-
 <table class="table align-middle table-hover mb-0" style="font-size: 1.1rem;">
     <thead style="background: #f3f4f6;">
         <tr class="text-secondary">
@@ -98,6 +86,17 @@
     </tbody>
 </table>
 
+{{-- bottom pagination --}}
+@if(method_exists($items, 'hasPages') && $items->hasPages())
+<div class="d-flex justify-content-between align-items-center mt-3 table-pagination-bottom">
+    <div class="text-muted small">
+        Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries
+    </div>
+    <div>
+        {{ $items->links('vendor.pagination.bootstrap-5') }}
+    </div>
+</div>
+@endif
 
 @php
     $allItems = $groupedItems->flatten();
@@ -118,15 +117,3 @@
         </div>
     </div>
 @endforeach
-
-{{-- bottom pagination (existing) --}}
-@if(method_exists($items, 'hasPages') && $items->hasPages())
-<div class="d-flex justify-content-between align-items-center mt-4">
-    <div class="text-muted small">
-        Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries
-    </div>
-    <div>
-        {{ $items->links('vendor.pagination.bootstrap-5') }}
-    </div>
-</div>
-@endif

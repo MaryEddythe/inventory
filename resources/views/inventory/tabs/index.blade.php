@@ -78,6 +78,17 @@
         </div>
     </div>
 </div>
+{{-- bottom pagination --}}
+@if(method_exists($items, 'hasPages') && $items->hasPages())
+<div class="d-flex justify-content-between align-items-center mt-3 table-pagination-bottom">
+    <div class="text-muted small">
+        Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries
+    </div>
+    <div>
+        {{ $items->links('vendor.pagination.bootstrap-5') }}
+    </div>
+</div>
+@endif
 
 @include('inventory.modals.filter-modal')
 @endsection

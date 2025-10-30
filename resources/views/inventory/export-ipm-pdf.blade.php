@@ -26,7 +26,7 @@
             <td style="width: 60%; text-align: center; vertical-align: middle;">
                 <h2>Mines and Geosciences Bureau</h2>
                 <h3>Regional Office VI</h3>
-                <h1>INVENTORY REPORT SUMMARY</h1>
+                <h1>IPM REPORT SUMMARY</h1>
                 <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
             </td>
             <td style="width: 50%; text-align: right; vertical-align: middle;">
@@ -62,41 +62,28 @@
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $groupedItems = $items->groupBy('enduser');
-                    $rowNumber = 1;
-                @endphp
-                @foreach($groupedItems as $enduser => $employeeItems)
-                    @php
-                        $itemCount = $employeeItems->count();
-                        $firstItem = $employeeItems->first();
-                    @endphp
-                    @foreach($employeeItems as $index => $item)
-                        <tr>
-                            @if($index === 0)
-                                <td class="pdf-text-center" rowspan="{{ $itemCount }}">{{ $rowNumber }}</td>
-                                <td rowspan="{{ $itemCount }}">{{ $firstItem->department_name ?? $firstItem->division }}</td>
-                                <td rowspan="{{ $itemCount }}">{{ $enduser }}</td>
-                            @endif
-                            <td>{{ $item->classification }}</td>
-                            <td>{{ $item->description }}</td>
-                            <td class="pdf-text-center">
-                                <span class="{{ $item->condition === 'Functional' ? 'pdf-status-new' : 'pdf-status-replace' }}">
-                                    {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
-                                </span>
-                            </td>
-                            <td class="pdf-text-center"><span class="{{ $item->system_boot_up ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                            <td class="pdf-text-center"><span class="{{ $item->hardware ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                            <td class="pdf-text-center"><span class="{{ $item->performance ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                            <td class="pdf-text-center"><span class="{{ $item->cables_connections ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                            <td class="pdf-text-center"><span class="{{ $item->peripherals ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
-                            <td>{{ $item->recommendation ?? 'N/A' }}</td>
-                            <td class="pdf-text-center">{{ $item->date_conducted ? $item->date_conducted->format('m/d/Y') : 'N/A' }}</td>
-                            <td class="pdf-text-center">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
-                            <td class="pdf-text-center">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
-                        </tr>
-                    @endforeach
-                    @php $rowNumber++; @endphp
+                @foreach($items as $item)
+                    <tr>
+                        <td class="pdf-text-center">{{ $item->no }}</td>
+                        <td>{{ $item->division }}</td>
+                        <td>{{ $item->enduser }}</td>
+                        <td>{{ $item->classification }}</td>
+                        <td>{{ $item->description }}</td>
+                        <td class="pdf-text-center">
+                            <span class="{{ $item->condition === 'Functional' ? 'pdf-status-new' : 'pdf-status-replace' }}">
+                                {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
+                            </span>
+                        </td>
+                        <td class="pdf-text-center"><span class="{{ $item->system_boot_up ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                        <td class="pdf-text-center"><span class="{{ $item->hardware ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                        <td class="pdf-text-center"><span class="{{ $item->performance ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                        <td class="pdf-text-center"><span class="{{ $item->cables_connections ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                        <td class="pdf-text-center"><span class="{{ $item->peripherals ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
+                        <td>{{ $item->recommendation ?? 'N/A' }}</td>
+                        <td class="pdf-text-center">{{ $item->date_conducted ? $item->date_conducted->format('m/d/Y') : 'N/A' }}</td>
+                        <td class="pdf-text-center">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
+                        <td class="pdf-text-center">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
@@ -257,8 +244,8 @@
                 <!-- Left cell -->
                 <td class="pdf-col-30 pdf-text-left">
                     <span class="pdf-signature-label">Prepared by:</span>
-                    <span class="pdf-signature-name">HERO JOHN E. LAPORGA</span><br>
-                    <span class="pdf-signature-title">Senior IT Support Specialist</span>
+                    <span class="pdf-signature-name">MARY EDDYTHE M. SORNITO</span><br>
+                    <span class="pdf-signature-title">Information Systems Analyst II</span>
                 </td>
 
                 <!-- Center cell for Regional Director -->
@@ -279,7 +266,7 @@
     </div>
 
     <div class="pdf-footer pdf-mt-2">
-        Total Records: {{ $items->count() }} | Generated by Inventory Management System ni Idith
+        Total Records: {{ $items->count() }} | Generated by Inventory Management System - MGB
     </div>
 </body>
 </html>

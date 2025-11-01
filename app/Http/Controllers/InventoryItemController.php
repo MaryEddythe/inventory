@@ -513,6 +513,9 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
+        // EXCLUDE Monitor classification from IPM listing
+        $query->where('classification', '!=', 'Monitor');
+
         $allowedPerPage = [10, 25, 50, 100];
         $perPage = (int) $request->get('per_page', 10);
         if (!in_array($perPage, $allowedPerPage)) {

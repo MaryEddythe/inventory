@@ -6,6 +6,7 @@
             <th title="User">User</th>
             <th title="Type">Type</th>
             <th title="Description">Desc</th>
+            <th title="Property Number">Prop. No</th> <!-- added -->
             <th title="Condition">Condition</th>
             <th title="System Boot Up">Boot Up</th>
             <th title="Hardware">HW</th>
@@ -22,14 +23,17 @@
     <tbody>
         @php
             $groupedItems = $items->groupBy('enduser');
+            $groupCounter = 0;
         @endphp
         @forelse($groupedItems as $enduser => $userItems)
         @php
             $firstItem = $userItems->first();
             $itemCount = $userItems->count();
+            $rowClass = $groupCounter % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+            $groupCounter++;
         @endphp
         @foreach($userItems as $index => $item)
-        <tr data-item-id="{{ $item->id }}">
+        <tr data-item-id="{{ $item->id }}" class="{{ $rowClass }}">
             @if($index === 0)
             <td class="fw-semibold text-muted" rowspan="{{ $itemCount }}">
                 @if($itemCount > 1)
@@ -55,6 +59,7 @@
                     ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->description)), 40)
                     : e(Str::limit($item->description, 40)) !!}
             </td>
+            <td class="item-property">{{ $item->property_number ?? 'N/A' }}</td> <!-- added -->
             <td>
                 <span class="badge {{ $item->condition === 'Functional' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
                     {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
@@ -92,7 +97,7 @@
         @endforeach
         @empty
             <tr>
-                <td colspan="17" class="text-center py-4">No items found.</td>
+                <td colspan="18" class="text-center py-4">No items found.</td> <!-- updated colspan -->
             </tr>
         @endforelse
     </tbody>

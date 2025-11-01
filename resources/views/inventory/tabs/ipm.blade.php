@@ -84,6 +84,7 @@
                     <th title="User">User</th>
                     <th title="Type">Type</th>
                     <th title="Description">Desc</th>
+                    <th title="Property Number">Prop. No</th> <!-- added -->
                     <th title="Condition">Condition</th>
                     <th title="System Boot Up">Boot Up</th>
                     <th title="Hardware">Hardware</th>
@@ -98,57 +99,81 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($items as $item)
-                <tr data-item-id="{{ $item->no }}">
-                    <td class="fw-semibold text-muted">{{ $item->no }}</td>
-                    <td>
-                        <span class="badge fw-normal badge-division badge-division-{{ $item->division }}">
-                            {{ $item->division }}
-                        </span>
-                    </td>
-                    <td class="item-enduser">
-                        @if(request('search'))
-                            {!! preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->enduser) !!}
-                        @else
-                            {{ $item->enduser }}
+                @php
+                    $groupedItems = $items->groupBy('enduser');
+                    $groupCounter = 0;
+                @endphp
+
+                @forelse($groupedItems as $enduser => $userItems)
+                    @php
+                        $firstItem = $userItems->first();
+                        $itemCount = $userItems->count();
+                        $rowClass = $groupCounter % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+                        $groupCounter++;
+                    @endphp
+
+                    @foreach($userItems as $index => $item)
+                    <tr data-item-id="{{ $item->no }}" class="{{ $rowClass }}">
+                        @if($index === 0)
+                        <td class="fw-semibold text-muted" rowspan="{{ $itemCount }}">
+                            @if($itemCount > 1)
+                                <span class="badge bg-light text-dark">{{ $itemCount }} items</span>
+                            @else
+                                {{ $item->no }}
+                            @endif
+                        </td>
+                        <td rowspan="{{ $itemCount }}">
+                            <span class="badge fw-normal badge-division badge-division-{{ $item->division }}">
+                                {{ $item->division }}
+                            </span>
+                        </td>
+                        <td class="item-enduser" rowspan="{{ $itemCount }}">
+                            @if(request('search'))
+                                {!! preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->enduser) !!}
+                            @else
+                                {{ $item->enduser }}
+                            @endif
+                        </td>
                         @endif
-                    </td>
-                    <td><span class="badge bg-secondary-subtle text-dark fw-normal item-classification">{{ $item->classification }}</span></td>
-                    <td class="item-description">
-                        @if(request('search'))
-                            {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 40) !!}
-                        @else
-                            {{ Str::limit($item->description, 40) }}
-                        @endif
-                    </td>
-                    <td>
-                        <span class="badge {{ $item->condition === 'Functional' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
-                            {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
-                        </span>
-                    </td>
-                    <td class="text-center">{{ $item->system_boot_up ? '✓' : '✗' }}</td>
-                    <td class="text-center">{{ $item->hardware ? '✓' : '✗' }}</td>
-                    <td class="text-center">{{ $item->performance ? '✓' : '✗' }}</td>
-                    <td class="text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
-                    <td class="text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
-                    <td class="item-recommendation">
-                        {!! request('search')
-                            ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->recommendation ?? 'N/A')), 20)
-                            : e(Str::limit($item->recommendation ?? 'N/A', 20)) !!}
-                    </td>
-                    <td class="item-date-conducted">{{ $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A' }}</td>
-                    <td class="item-time-started">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
-                    <td class="item-time-ended">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
-                    <td>
-                        <div class="d-flex gap-1">
-                            <button type="button" class="btn btn-outline-primary btn-sm" title="Edit IPM" data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
-                        </div>
-                    </td>
-                </tr>
+
+                        <td><span class="badge bg-secondary-subtle text-dark fw-normal item-classification">{{ $item->classification }}</span></td>
+                        <td class="item-description">
+                            @if(request('search'))
+                                {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 40) !!}
+                            @else
+                                {{ Str::limit($item->description, 40) }}
+                            @endif
+                        </td>
+                        <td class="item-property">{{ $item->property_number ?? 'N/A' }}</td> <!-- added -->
+                        <td>
+                            <span class="badge {{ $item->condition === 'Functional' ? 'bg-success' : 'bg-warning text-dark' }} fw-normal">
+                                {{ $item->condition === 'Functional' ? 'FUNC' : 'NONFUNC' }}
+                            </span>
+                        </td>
+                        <td class="text-center">{{ $item->system_boot_up ? '✓' : '✗' }}</td>
+                        <td class="text-center">{{ $item->hardware ? '✓' : '✗' }}</td>
+                        <td class="text-center">{{ $item->performance ? '✓' : '✗' }}</td>
+                        <td class="text-center">{{ $item->cables_connections ? '✓' : '✗' }}</td>
+                        <td class="text-center">{{ $item->peripherals ? '✓' : '✗' }}</td>
+                        <td class="item-recommendation">
+                            {!! request('search')
+                                ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->recommendation ?? 'N/A')), 20)
+                                : e(Str::limit($item->recommendation ?? 'N/A', 20)) !!}
+                        </td>
+                        <td class="item-date-conducted">{{ $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A' }}</td>
+                        <td class="item-time-started">{{ $item->time_started ? \Carbon\Carbon::parse($item->time_started)->format('h:iA') : 'N/A' }}</td>
+                        <td class="item-time-ended">{{ $item->time_ended ? \Carbon\Carbon::parse($item->time_ended)->format('h:iA') : 'N/A' }}</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <button type="button" class="btn btn-outline-primary btn-sm" title="Edit IPM" data-bs-toggle="modal" data-bs-target="#editIpmModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
                 @empty
-                <tr>
-                    <td colspan="17" class="text-center py-4">No items found.</td>
-                </tr>
+                    <tr>
+                        <td colspan="18" class="text-center py-4">No items found.</td> <!-- updated colspan -->
+                    </tr>
                 @endforelse
             </tbody>
         </table>

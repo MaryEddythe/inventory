@@ -46,7 +46,7 @@
             </td>
             @endif
             <td>
-                <span class="badge bg-secondary-subtle text-dark fw-normal item-classification">{{ $item->classification }}</span>
+                <span class="badge badge-classification badge-classification-{{ strtolower($item->classification) }} fw-normal item-classification">{{ $item->classification }}</span>
             </td>
             <td class="item-description">
                 @if(request('search'))

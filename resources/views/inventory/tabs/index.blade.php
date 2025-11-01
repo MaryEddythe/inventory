@@ -447,7 +447,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(html => {
             document.querySelector('.table-responsive').innerHTML = html;
             attachFormListeners();
+            // Update pagination info after content replacement
+            updatePaginationInfo();
         });
+    }
+
+    function updatePaginationInfo() {
+        // Get current per_page value
+        const currentPerPage = perPageSelect ? perPageSelect.value : 10;
+        // The pagination info is already updated in the HTML response from the server
+        // No additional client-side updates needed as the server handles it
     }
 
     function exportData(type) {

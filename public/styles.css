@@ -261,6 +261,42 @@ header {
     font-size: 0.75rem;
 }
 
+/* Classification badges with different colors */
+.badge-classification {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.badge-classification-desktop {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.badge-classification-laptop {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.badge-classification-monitor {
+    background-color: #6f42c1 !important;
+    color: white !important;
+}
+
+.badge-classification-printer {
+    background-color: #fd7e14 !important;
+    color: white !important;
+}
+
+.badge-classification-scanner {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.badge-classification-default {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
 /* Custom scrollbar for sidebar */
 .sidebar::-webkit-scrollbar {
     width: 8px;

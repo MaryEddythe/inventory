@@ -148,7 +148,7 @@
                         </td>
                         @endif
 
-                        <td><span class="badge bg-secondary-subtle text-dark fw-normal item-classification">{{ $item->classification }}</span></td>
+                        <td><span class="badge badge-classification badge-classification-{{ strtolower($item->classification) }} fw-normal item-classification">{{ $item->classification }}</span></td>
                         <td class="item-description">
                             @if(request('search'))
                                 {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 8) !!}
@@ -407,8 +407,17 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('.table-responsive').innerHTML = html;
             attachEditFormListeners();
             bindPaginationLinks();
+            // Update pagination info after content replacement
+            updatePaginationInfo();
         });
     };
+
+    function updatePaginationInfo() {
+        // Get current per_page value
+        const currentPerPage = perPageSelect ? perPageSelect.value : 10;
+        // The pagination info is already updated in the HTML response from the server
+        // No additional client-side updates needed as the server handles it
+    }
 
     // initial bind
     bindPaginationLinks();

@@ -23,7 +23,7 @@
             $itemCount = $items->count();
         @endphp
         @foreach($items as $index => $item)
-        <tr data-enduser="{{ $enduser }}">
+        <tr data-enduser="{{ $enduser }}" class="{{ $index % 2 === 0 ? 'table-row-even' : 'table-row-odd' }}">
             @if($index === 0)
             <td class="fw-semibold text-muted" rowspan="{{ $itemCount }}">
                 @if($itemCount > 1)
@@ -86,17 +86,7 @@
     </tbody>
 </table>
 
-{{-- bottom pagination --}}
-@if(method_exists($items, 'hasPages') && $items->hasPages())
-<div class="d-flex justify-content-between align-items-center mt-3 table-pagination-bottom">
-    <div class="text-muted small">
-        Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries
-    </div>
-    <div>
-        {{ $items->links('vendor.pagination.bootstrap-5') }}
-    </div>
-</div>
-@endif
+
 
 @php
     $allItems = $groupedItems->flatten();

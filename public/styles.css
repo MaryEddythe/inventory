@@ -256,6 +256,20 @@ header {
     font-size: 0.8rem;
 }
 
+/* Alternating row colors per enduser */
+.table-row-even {
+    background-color: #f8f9fa !important;
+}
+
+.table-row-odd {
+    background-color: #ffffff !important;
+}
+
+/* Make all metric card values smaller for uniformity */
+.metric-card .metric-value {
+    font-size: 1.5rem !important;
+}
+
 /* Make table headers smaller in compact tables */
 .table-compact thead th {
     font-size: 0.75rem;

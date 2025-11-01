@@ -33,7 +33,7 @@
             $groupCounter++;
         @endphp
         @foreach($userItems as $index => $item)
-        <tr data-item-id="{{ $item->id }}" class="{{ $rowClass }}">
+        <tr data-item-id="{{ $item->id }}" class="{{ $rowClass }} {{ $index % 2 === 0 ? 'table-row-even' : 'table-row-odd' }}">
             @if($index === 0)
             <td class="fw-semibold text-muted" rowspan="{{ $itemCount }}">
                 @if($itemCount > 1)

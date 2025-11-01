@@ -1,4 +1,4 @@
-<table class="table align-middle table-hover mb-0" style="font-size: 1.1rem;">
+<table class="table align-middle table-hover mb-0 table-compact">
     <thead style="background: #f3f4f6;">
         <tr class="text-secondary">
             <th>No</th>
@@ -50,9 +50,9 @@
             </td>
             <td class="item-description">
                 @if(request('search'))
-                    {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 40) !!}
+                    {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 8) !!}
                 @else
-                    {{ Str::limit($item->description, 40) }}
+                    {{ Str::limit($item->description, 8) }}
                 @endif
             </td>
             <td class="item-serial">{{ $item->serial_number ?? 'N/A' }}</td>

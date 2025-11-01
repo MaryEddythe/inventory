@@ -56,8 +56,8 @@
             <td><span class="badge bg-secondary-subtle text-dark fw-normal">{{ $item->classification }}</span></td>
             <td class="item-description">
                 {!! request('search')
-                    ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->description)), 40)
-                    : e(Str::limit($item->description, 40)) !!}
+                    ? Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', e($item->description)), 8)
+                    : e(Str::limit($item->description, 8)) !!}
             </td>
             <td class="item-property">{{ $item->property_number ?? 'N/A' }}</td> <!-- added -->
             <td>

@@ -216,6 +216,51 @@ header {
     color: #fff;
 }
 
+/* Compact table for denser inventory lists */
+.table-compact {
+    font-size: 0.8rem; /* made even smaller */
+}
+.table-compact th,
+.table-compact td {
+    padding: 0.3rem 0.4rem; /* tighter cells */
+}
+
+/* Force description cell to ellipsize (content already trimmed server-side) */
+.table-compact .item-description {
+    max-width: 4rem; /* narrower to match ~8 chars */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ensure serial and property numbers are fully visible */
+.table-compact .item-serial,
+.table-compact .item-property {
+    white-space: nowrap;
+    max-width: none;
+    overflow: visible;
+}
+
+/* Slightly reduce hover intensity for compact */
+.table-compact.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Make action buttons smaller in compact tables */
+.table-compact .btn-sm {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+}
+
+.table-compact .btn-sm i {
+    font-size: 0.8rem;
+}
+
+/* Make table headers smaller in compact tables */
+.table-compact thead th {
+    font-size: 0.75rem;
+}
+
 /* Custom scrollbar for sidebar */
 .sidebar::-webkit-scrollbar {
     width: 8px;

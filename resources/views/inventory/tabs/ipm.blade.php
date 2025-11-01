@@ -56,27 +56,39 @@
 
     <style>
         .ipm-table {
-            font-size: 1.1rem;
+            font-size: 0.8rem;
+        }
+        .ipm-table th, .ipm-table td {
+            padding: 0.3rem 0.4rem;
+        }
+        .ipm-table thead th {
+            font-size: 0.75rem;
         }
         @media (max-width: 768px) {
             .ipm-table {
-                font-size: 0.9rem;
+                font-size: 0.75rem;
             }
             .ipm-table th, .ipm-table td {
-                padding: 0.5rem 0.25rem;
+                padding: 0.25rem 0.3rem;
+            }
+            .ipm-table thead th {
+                font-size: 0.7rem;
             }
         }
         @media (max-width: 576px) {
             .ipm-table {
-                font-size: 0.8rem;
+                font-size: 0.7rem;
             }
             .ipm-table th, .ipm-table td {
-                padding: 0.4rem 0.2rem;
+                padding: 0.2rem 0.25rem;
+            }
+            .ipm-table thead th {
+                font-size: 0.65rem;
             }
         }
     </style>
     <div class="table-responsive">
-        <table class="table align-middle table-hover mb-0 ipm-table">
+        <table class="table align-middle table-hover mb-0 ipm-table table-compact">
             <thead style="background: #f3f4f6;">
                 <tr class="text-secondary">
                     <th title="Number">No</th>
@@ -139,9 +151,9 @@
                         <td><span class="badge bg-secondary-subtle text-dark fw-normal item-classification">{{ $item->classification }}</span></td>
                         <td class="item-description">
                             @if(request('search'))
-                                {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 40) !!}
+                                {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 8) !!}
                             @else
-                                {{ Str::limit($item->description, 40) }}
+                                {{ Str::limit($item->description, 8) }}
                             @endif
                         </td>
                         <td class="item-property">{{ $item->property_number ?? 'N/A' }}</td> <!-- added -->
@@ -320,7 +332,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
     attachEditFormListeners();
 
-    function updateResults() {
+    const perPageSelect = document.getElementById('perPageSelect');
+    if (perPageSelect) {
+        perPageSelect.addEventListener('change', function() {
+            updateResults();
+        });
+    }
+
+    function bindPaginationLinks() {
+        document.querySelectorAll('.table-responsive .pagination a').forEach(link => {
+            link.removeEventListener('click', ipmPaginationClickHandler);
+            link.addEventListener('click', ipmPaginationClickHandler);
+        });
+    }
+
+    function ipmPaginationClickHandler(e) {
+        e.preventDefault();
+        const href = this.href;
+        if (!href) return;
+
+        const params = new URL(href);
+        if (perPageSelect && perPageSelect.value) {
+            params.searchParams.set('per_page', perPageSelect.value);
+        }
+
+        fetch(params.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.text())
+        .then(html => {
+            document.querySelector('.table-responsive').innerHTML = html;
+            history.pushState({}, '', params.toString());
+            attachEditFormListeners();
+            bindPaginationLinks(); // re-bind after content replaced
+        })
+        .catch(() => {
+            window.location.href = params.toString();
+        });
+    }
+
+    // Ensure updateResults adds per_page and re-binds pagination after replacing content
+    const originalUpdateResults = window.updateResults;
+    window.updateResults = function() {
+        // build search params inside local function to include per_page
         const searchParams = new URLSearchParams();
 
         if (searchInput.value) {
@@ -334,13 +388,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Add tab=ipm to ensure controller filters correctly
+        if (perPageSelect && perPageSelect.value) {
+            searchParams.set('per_page', perPageSelect.value);
+        }
+
         searchParams.set('tab', 'ipm');
 
         const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
         window.history.pushState({}, '', newUrl);
 
-        fetch(`${window.location.pathname}?${searchParams.toString()}`, {
+        return fetch(`${window.location.pathname}?${searchParams.toString()}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
@@ -349,36 +406,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(html => {
             document.querySelector('.table-responsive').innerHTML = html;
             attachEditFormListeners();
+            bindPaginationLinks();
         });
-    }
+    };
 
-    function exportData(type) {
-        const searchParams = new URLSearchParams(window.location.search);
-        searchParams.append('tab', 'ipm');
-
-        const formData = new FormData(filterForm);
-        for (let pair of formData.entries()) {
-            if (pair[1]) {
-                searchParams.append(pair[0], pair[1]);
-            }
-        }
-
-        Swal.fire({
-            title: 'Exporting...',
-            text: 'Please wait while we prepare your file',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        const exportUrl = `{{ route('inventory.export', ':type') }}?${searchParams.toString()}`.replace(':type', type);
-        window.location.href = exportUrl;
-
-        setTimeout(() => {
-            Swal.close();
-        }, 2000);
-    }
+    // initial bind
+    bindPaginationLinks();
 });
 </script>
 @endpush

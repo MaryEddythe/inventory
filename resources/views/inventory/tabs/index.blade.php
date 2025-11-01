@@ -368,37 +368,50 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // intercept pagination links inside the table area to use AJAX
-        document.querySelectorAll('.table-responsive .pagination a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const href = this.href;
-                if (!href) return;
-
-                // include current per_page and filter params if not already in URL
-                const params = new URL(href);
-                if (perPageSelect && perPageSelect.value) {
-                    params.searchParams.set('per_page', perPageSelect.value);
-                }
-
-                // fetch the page via AJAX
-                fetch(params.toString(), {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(r => r.text())
-                .then(html => {
-                    document.querySelector('.table-responsive').innerHTML = html;
-                    // update the browser URL so back/refresh works
-                    history.pushState({}, '', params.toString());
-                    // reattach handlers for newly injected content
-                    attachFormListeners();
-                })
-                .catch(() => {
-                    // fallback to full navigation on error
-                    window.location.href = params.toString();
-                });
+        function bindPaginationLinks() {
+            document.querySelectorAll('.table-responsive .pagination a').forEach(link => {
+                link.removeEventListener('click', paginationClickHandler);
+                link.addEventListener('click', paginationClickHandler);
             });
-        });
+        }
+
+        function paginationClickHandler(e) {
+            e.preventDefault();
+            const href = this.href;
+            if (!href) return;
+
+            const params = new URL(href);
+            if (perPageSelect && perPageSelect.value) {
+                params.searchParams.set('per_page', perPageSelect.value);
+            }
+
+            fetch(params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.text())
+            .then(html => {
+                document.querySelector('.table-responsive').innerHTML = html;
+                history.pushState({}, '', params.toString());
+                attachFormListeners();
+                bindPaginationLinks(); // re-bind after content replaced
+            })
+            .catch(() => {
+                window.location.href = params.toString();
+            });
+        }
+
+        // call on initial load
+        bindPaginationLinks();
+
+        // ensure updateResults re-binds pagination links after replacing content
+        const originalUpdateResults = window.updateResults;
+        if (typeof originalUpdateResults === 'function') {
+            window.updateResults = function() {
+                return originalUpdateResults().then ? originalUpdateResults().then(() => bindPaginationLinks()) : (originalUpdateResults(), bindPaginationLinks());
+            };
+        } else {
+            // fallback: ensure bind after manual calls (updateResults already calls attachFormListeners)
+        }
     }
 
     attachFormListeners();

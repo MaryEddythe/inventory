@@ -81,7 +81,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const employees = [
         @foreach($employees as $employee)
-            { emp_no: '{{ $employee->emp_no }}', name: '{{ $employee->firstname }} {{ $employee->lastname }}' },
+            { emp_no: '{{ $employee->emp_no }}', name: '{{ $employee->firstname }} {{ $employee->lastname }}', department: '{{ $employee->department }}', department_name: '{{ $employee->departmentInfo ? $employee->departmentInfo->department : '' }}' },
         @endforeach
     ];
 
@@ -114,6 +114,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     employeeSearchInput.value = `${emp.name} (${emp.emp_no})`;
                     empNoInput.value = emp.emp_no;
                     enduserInput.value = emp.name;
+
+                    // Auto-select division based on employee's department name
+                    const divisionSelect = document.getElementById('division');
+                    if (divisionSelect && emp.department_name) {
+                        const options = divisionSelect.options;
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i].value === emp.department_name) {
+                                options[i].selected = true;
+                                break;
+                            }
+                        }
+                    }
+
                     suggestionsDiv.style.display = 'none';
                 });
                 suggestionsDiv.appendChild(suggestionItem);

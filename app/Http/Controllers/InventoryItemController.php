@@ -94,29 +94,25 @@ class InventoryItemController extends Controller
         $query->whereDate('date_acquired', '<=', $request->date_to);
     }
 
-    // determine per-page (allow only these values)
     $allowedPerPage = [10, 25, 50, 100];
     $perPage = (int) $request->get('per_page', 10);
     if (!in_array($perPage, $allowedPerPage)) {
         $perPage = 10;
     }
 
-    // Update pagination section: use selected per-page and keep query string
     $items = $query->orderBy('division')->orderBy('enduser')->paginate($perPage)->withQueryString();
     $groupedItems = $items->getCollection()->groupBy('enduser');
 
     $departments = Department::orderBy('department')->get();
     $employees = Employee::orderBy('firstname')->get();
 
-    // CHANGED: Return full page view for both AJAX and regular requests
-    // JavaScript will extract just the #table-container content
     return view('inventory.tabs.index', compact('items', 'groupedItems', 'departments', 'employees', 'perPage'));
 }
 
     public function create()
     {
         $departments = Department::orderBy('department')->get();
-        $employees = Employee::orderBy('firstname')->get(['emp_no', 'firstname', 'lastname']);
+        $employees = Employee::with('departmentInfo')->orderBy('firstname')->get(['emp_no', 'firstname', 'lastname', 'department']);
         return view('inventory.modals.create-modal', compact('departments', 'employees'));
     }
 
@@ -150,7 +146,7 @@ class InventoryItemController extends Controller
     public function edit(InventoryItem $inventoryItem)
     {
         $departments = Department::orderBy('department')->get();
-        $employees = Employee::orderBy('firstname')->get(['emp_no', 'firstname', 'lastname']);
+        $employees = Employee::with('departmentInfo')->orderBy('firstname')->get(['emp_no', 'firstname', 'lastname', 'department']);
         return view('inventory.modals.edit-modal', compact('inventoryItem', 'departments', 'employees'));
     }
 

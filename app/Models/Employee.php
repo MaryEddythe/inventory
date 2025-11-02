@@ -20,4 +20,10 @@ class Employee extends Model
     {
         return $this->firstname . ' ' . $this->lastname;
     }
+
+    // Relationship to get department name
+    public function departmentInfo()
+    {
+        return $this->belongsTo(Department::class, 'department', 'dept_no');
+    }
 }

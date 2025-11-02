@@ -23,17 +23,17 @@
     <tbody>
         @php
             $groupedItems = $items->groupBy('enduser');
-            $groupCounter = 0;
+            $enduserCounter = 0;
         @endphp
         @forelse($groupedItems as $enduser => $userItems)
         @php
             $firstItem = $userItems->first();
             $itemCount = $userItems->count();
-            $rowClass = $groupCounter % 2 === 0 ? 'table-row-even' : 'table-row-odd';
-            $groupCounter++;
+            $rowClass = $enduserCounter % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+            $enduserCounter++;
         @endphp
         @foreach($userItems as $index => $item)
-        <tr data-item-id="{{ $item->id }}" class="{{ $rowClass }} {{ $index % 2 === 0 ? 'table-row-even' : 'table-row-odd' }}">
+        <tr data-item-id="{{ $item->id }}" class="{{ $rowClass }}">
             @if($index === 0)
             <td class="fw-semibold text-muted" rowspan="{{ $itemCount }}">
                 @if($itemCount > 1)

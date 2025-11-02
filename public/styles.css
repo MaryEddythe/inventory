@@ -209,6 +209,8 @@ header {
     margin: 0 4px;
     color: #0d6efd;
     font-family: 'Poppins', Arial, sans-serif;
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
 }
 .pagination .page-item.active .page-link {
     background: #0d6efd;
@@ -256,15 +258,44 @@ header {
     font-size: 0.8rem;
 }
 
-/* Alternating row colors per enduser */
-.table-row-even {
-    background-color: #f8f9fa !important;
-}
-
-.table-row-odd {
+/* Alternating row colors per enduser - MUST override Bootstrap */
+.table tbody tr.table-row-even,
+.table-compact tbody tr.table-row-even,
+.ipm-table tbody tr.table-row-even {
     background-color: #ffffff !important;
 }
 
+.table tbody tr.table-row-odd,
+.table-compact tbody tr.table-row-odd,
+.ipm-table tbody tr.table-row-odd {
+    background-color: #f0f3f5d5 !important;
+}
+
+/* Apply background to ALL cells in the row */
+.table tbody tr.table-row-even td,
+.table-compact tbody tr.table-row-even td,
+.ipm-table tbody tr.table-row-even td {
+    background-color: #ffffff !important;
+}
+
+.table tbody tr.table-row-odd td,
+.table-compact tbody tr.table-row-odd td,
+.ipm-table tbody tr.table-row-odd td {
+    background-color: #f0f3f5d5 !important;
+}
+
+/* Ensure hover effect still works on entire row */
+.table-hover tbody tr.table-row-even:hover td,
+.table-compact.table-hover tbody tr.table-row-even:hover td,
+.ipm-table.table-hover tbody tr.table-row-even:hover td {
+    background-color: #e9ecef !important;
+}
+
+.table-hover tbody tr.table-row-odd:hover td,
+.table-compact.table-hover tbody tr.table-row-odd:hover td,
+.ipm-table.table-hover tbody tr.table-row-odd:hover td {
+    background-color: #dde2e6 !important;
+}
 /* Make all metric card values smaller for uniformity */
 .metric-card .metric-value {
     font-size: 1.5rem !important;
@@ -295,7 +326,10 @@ header {
     background-color: #6f42c1 !important;
     color: white !important;
 }
-
+.badge-classification-photocopier {
+    background-color: #c142a6 !important;
+    color: white !important;
+}
 .badge-classification-printer {
     background-color: #fd7e14 !important;
     color: white !important;

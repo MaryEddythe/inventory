@@ -54,12 +54,21 @@
         </div>
     </div>
 
-    <div class="table-responsive">
-        @if(isset($items))
-            @include('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))
-        @else
-            <div class="text-center py-4">No items found</div>
-        @endif
+    <div id="table-container">
+        <div class="table-responsive">
+            @if(isset($items))
+                @include('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))
+            @else
+                <div class="text-center py-4">No items found</div>
+            @endif
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
+            <div>
+                {{ $items->links('vendor.pagination.bootstrap-5') }}
+            </div>
+        </div>
     </div>
 
 </div>
@@ -78,13 +87,6 @@
         </div>
     </div>
 </div>
- <div class="d-flex justify-content-between align-items-center mt-4">
-            <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
-            <div>
-                {{ $items->links('vendor.pagination.bootstrap-5') }}
-            </div>
-        </div>
-
 
 @include('inventory.modals.filter-modal')
 @endsection
@@ -129,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
             exportData(exportType);
         });
     });
+
     function attachFormListeners() {
         // Client-side validation for add inventory form
         const addInventoryForm = document.getElementById('add-inventory-form');
@@ -362,54 +365,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         });
+    }
 
-        function bindPaginationLinks() {
-            document.querySelectorAll('.table-responsive .pagination a').forEach(link => {
-                link.removeEventListener('click', paginationClickHandler);
-                link.addEventListener('click', paginationClickHandler);
-            });
+    function bindPaginationLinks() {
+        document.querySelectorAll('#table-container .pagination a').forEach(link => {
+            link.removeEventListener('click', paginationClickHandler);
+            link.addEventListener('click', paginationClickHandler);
+        });
+    }
+
+    function paginationClickHandler(e) {
+        e.preventDefault();
+        const href = this.href;
+        if (!href) return;
+
+        const params = new URL(href);
+        if (perPageSelect && perPageSelect.value) {
+            params.searchParams.set('per_page', perPageSelect.value);
         }
 
-        function paginationClickHandler(e) {
-            e.preventDefault();
-            const href = this.href;
-            if (!href) return;
-
-            const params = new URL(href);
-            if (perPageSelect && perPageSelect.value) {
-                params.searchParams.set('per_page', perPageSelect.value);
-            }
-
-            fetch(params.toString(), {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(r => r.text())
-            .then(html => {
-                document.querySelector('.table-responsive').innerHTML = html;
+        fetch(params.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.querySelector('#table-container');
+            
+            if (newContent) {
+                document.getElementById('table-container').innerHTML = newContent.innerHTML;
                 history.pushState({}, '', params.toString());
                 attachFormListeners();
-                bindPaginationLinks(); // re-bind after content replaced
-            })
-            .catch(() => {
-                window.location.href = params.toString();
-            });
-        }
-
-        // call on initial load
-        bindPaginationLinks();
-
-        // ensure updateResults re-binds pagination links after replacing content
-        const originalUpdateResults = window.updateResults;
-        if (typeof originalUpdateResults === 'function') {
-            window.updateResults = function() {
-                return originalUpdateResults().then ? originalUpdateResults().then(() => bindPaginationLinks()) : (originalUpdateResults(), bindPaginationLinks());
-            };
-        } else {
-            // fallback: ensure bind after manual calls (updateResults already calls attachFormListeners)
-        }
+                bindPaginationLinks();
+            }
+        })
+        .catch(() => {
+            window.location.href = params.toString();
+        });
     }
 
     attachFormListeners();
+    bindPaginationLinks();
 
     function updateResults() {
         const searchParams = new URLSearchParams();
@@ -440,22 +437,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.text())
         .then(html => {
-            document.querySelector('.table-responsive').innerHTML = html;
-            attachFormListeners();
-            // Update pagination info after content replacement
-            updatePaginationInfo();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.querySelector('#table-container');
+            
+            if (newContent) {
+                document.getElementById('table-container').innerHTML = newContent.innerHTML;
+                attachFormListeners();
+                bindPaginationLinks();
+            }
         });
     }
-
-    function updatePaginationInfo() {
-        // Get current per_page value
-        const currentPerPage = perPageSelect ? perPageSelect.value : 10;
-        // The pagination info is already updated in the HTML response from the server
-        // No additional client-side updates needed as the server handles it
-    }
-
-    // initial bind
-    bindPaginationLinks();
 
     function exportData(type) {
         const searchParams = new URLSearchParams(window.location.search);

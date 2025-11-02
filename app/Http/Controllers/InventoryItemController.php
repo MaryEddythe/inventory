@@ -57,64 +57,61 @@ class InventoryItemController extends Controller
     }
 
     public function index(Request $request)
-    {
-        $query = InventoryItem::active();
+{
+    $query = InventoryItem::active();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $searchTerms = array_filter(explode(' ', $search));
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $searchTerms = array_filter(explode(' ', $search));
 
-            $query->where(function($q) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $q->where(function($subQuery) use ($term) {
-                        $subQuery->where('division', 'LIKE', "%{$term}%")
-                                ->orWhere('enduser', 'LIKE', "%{$term}%")
-                                ->orWhere('classification', 'LIKE', "%{$term}%")
-                                ->orWhere('description', 'LIKE', "%{$term}%")
-                                ->orWhere('serial_number', 'LIKE', "%{$term}%")
-                                ->orWhere('property_number', 'LIKE', "%{$term}%")
-                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
-                    });
-                }
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('division')) {
-            $query->where('division', $request->division);
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('date_acquired', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('date_acquired', '<=', $request->date_to);
-        }
-
-        // determine per-page (allow only these values)
-        $allowedPerPage = [10, 25, 50, 100];
-        $perPage = (int) $request->get('per_page', 10);
-        if (!in_array($perPage, $allowedPerPage)) {
-            $perPage = 10;
-        }
-
-        // Update pagination section: use selected per-page and keep query string
-        $items = $query->orderBy('division')->orderBy('enduser')->paginate($perPage)->withQueryString();
-        $groupedItems = $items->getCollection()->groupBy('enduser');
-
-        $departments = Department::orderBy('department')->get();
-        $employees = Employee::orderBy('firstname')->get();
-
-        if ($request->ajax()) {
-            return view('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))->render();
-        }
-
-        // pass perPage to the view so the dropdown can reflect the current value
-        return view('inventory.tabs.index', compact('items', 'groupedItems', 'departments', 'employees', 'perPage'));
+        $query->where(function($q) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $q->where(function($subQuery) use ($term) {
+                    $subQuery->where('division', 'LIKE', "%{$term}%")
+                            ->orWhere('enduser', 'LIKE', "%{$term}%")
+                            ->orWhere('classification', 'LIKE', "%{$term}%")
+                            ->orWhere('description', 'LIKE', "%{$term}%")
+                            ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                            ->orWhere('property_number', 'LIKE', "%{$term}%")
+                            ->orWhere('emp_no', 'LIKE', "%{$term}%");
+                });
+            }
+        });
     }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('division')) {
+        $query->where('division', $request->division);
+    }
+
+    if ($request->filled('date_from')) {
+        $query->whereDate('date_acquired', '>=', $request->date_from);
+    }
+    if ($request->filled('date_to')) {
+        $query->whereDate('date_acquired', '<=', $request->date_to);
+    }
+
+    // determine per-page (allow only these values)
+    $allowedPerPage = [10, 25, 50, 100];
+    $perPage = (int) $request->get('per_page', 10);
+    if (!in_array($perPage, $allowedPerPage)) {
+        $perPage = 10;
+    }
+
+    // Update pagination section: use selected per-page and keep query string
+    $items = $query->orderBy('division')->orderBy('enduser')->paginate($perPage)->withQueryString();
+    $groupedItems = $items->getCollection()->groupBy('enduser');
+
+    $departments = Department::orderBy('department')->get();
+    $employees = Employee::orderBy('firstname')->get();
+
+    // CHANGED: Return full page view for both AJAX and regular requests
+    // JavaScript will extract just the #table-container content
+    return view('inventory.tabs.index', compact('items', 'groupedItems', 'departments', 'employees', 'perPage'));
+}
 
     public function create()
     {

@@ -17,13 +17,16 @@
         </tr>
     </thead>
     <tbody>
+        @php $enduserCounter = 0; @endphp
         @forelse($groupedItems as $enduser => $items)
         @php
             $firstItem = $items->first();
             $itemCount = $items->count();
+            $rowClass = $enduserCounter % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+            $enduserCounter++;
         @endphp
         @foreach($items as $index => $item)
-        <tr data-enduser="{{ $enduser }}" class="{{ $index % 2 === 0 ? 'table-row-even' : 'table-row-odd' }}">
+        <tr data-enduser="{{ $enduser }}" class="{{ $rowClass }}">
             @if($index === 0)
             <td class="fw-semibold text-muted" rowspan="{{ $itemCount }}">
                 @if($itemCount > 1)

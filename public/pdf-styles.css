@@ -332,11 +332,11 @@ body {
 .pdf-col-40 { width: 40%; }
 
 .pdf-table-striped tbody tr:nth-child(odd) {
-    background-color: #ffffff;
+    background-color: #f8f9fa;
 }
 
 .pdf-table-striped tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: #ffffff;
 }
 
 .pdf-font-bold {

@@ -421,6 +421,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // initial bind
     bindPaginationLinks();
+
+    function exportData(type) {
+        const searchParams = new URLSearchParams(window.location.search);
+
+        const formData = new FormData(filterForm);
+        for (let pair of formData.entries()) {
+            if (pair[1]) {
+                searchParams.append(pair[0], pair[1]);
+            }
+        }
+
+        if (perPageSelect && perPageSelect.value) {
+            searchParams.set('per_page', perPageSelect.value);
+        }
+
+        // Ensure tab is set to ipm
+        searchParams.set('tab', 'ipm');
+
+        Swal.fire({
+            title: 'Exporting...',
+            text: 'Please wait while we prepare your file',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const exportUrl = `{{ route('inventory.export', ':type') }}?${searchParams.toString()}`.replace(':type', type);
+        window.location.href = exportUrl;
+
+        setTimeout(() => {
+            Swal.close();
+        }, 2000);
+    }
 });
 </script>
 @endpush

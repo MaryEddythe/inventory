@@ -243,21 +243,21 @@
             <tr>
                 <!-- Left cell -->
                 <td class="pdf-col-30 pdf-text-left">
-                    <span class="pdf-signature-label">Prepared by:</span>
+                    <span class="pdf-signature-label">Prepared by:</span><br><br>
                     <span class="pdf-signature-name">MARY EDDYTHE M. SORNITO</span><br>
                     <span class="pdf-signature-title">Information Systems Analyst II</span>
                 </td>
 
                 <!-- Center cell for Regional Director -->
                 <td class="pdf-col-40 pdf-text-center" style="padding-top: 80px;">
-                    <span class="pdf-signature-label">Approved by:</span>
+                    <span class="pdf-signature-label">Approved by:</span><br><br>
                     <span class="pdf-signature-name">CECILIA L. OCHAVO-SAYCON</span><br>
                     <span class="pdf-signature-title">Regional Director</span>
                 </td>
 
                 <!-- Right cell -->
                 <td class="pdf-col-30 pdf-text-right" style="padding-right: 80px;">
-                    <span class="pdf-signature-label" style="margin-right: 120px;">Reviewed by:</span>
+                    <span class="pdf-signature-label" style="margin-right: 120px;">Reviewed by:</span><br><br>
                     <span class="pdf-signature-name">MAY FLORENCE A. PABELONIO</span><br>
                     <span class="pdf-signature-title" style="margin-right: 50px;">ICT Focal Person</span>
                 </td>

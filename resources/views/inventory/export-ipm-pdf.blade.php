@@ -90,7 +90,7 @@
     </div>
 
     <!-- Executive Summary -->
-    <div class="pdf-summary-section pdf-mt-3">
+    <div class="pdf-summary-section pdf-mt-3" style="page-break-before: always;">
         <table class="pdf-summary-table pdf-table-striped">
             <thead>
                 <tr>
@@ -162,7 +162,7 @@
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-printer-col">Printers</th>
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-desktop-col">Desktops</th>
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-scanner-col">Scanners</th>
-                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-other-col">Others</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-monitor-col">Monitors</th>
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-total-col">Total</th>
                 </tr>
             </thead>
@@ -190,7 +190,10 @@
                             return stripos($item->classification, 'scanner') !== false || stripos($item->description, 'scanner') !== false;
                         })->count();
 
-                        $others = $deptItems->count() - $laptops - $printers - $desktops - $scanners;
+                        $monitors = $deptItems->filter(function ($item) {
+                            return stripos($item->classification, 'monitor') !== false || stripos($item->description, 'monitor') !== false;
+                        })->count();
+
                         $total = $deptItems->count();
 
                         $itemTypeSummaries->push([
@@ -199,7 +202,7 @@
                             'printers' => $printers,
                             'desktops' => $desktops,
                             'scanners' => $scanners,
-                            'others' => $others,
+                            'monitors' => $monitors,
                             'total' => $total
                         ]);
                     }
@@ -208,7 +211,7 @@
                     $totalPrinters = $itemTypeSummaries->sum('printers');
                     $totalDesktops = $itemTypeSummaries->sum('desktops');
                     $totalScanners = $itemTypeSummaries->sum('scanners');
-                    $totalOthers = $itemTypeSummaries->sum('others');
+                    $totalMonitors = $itemTypeSummaries->sum('monitors');
                     $grandTotalTypes = $itemTypeSummaries->sum('total');
                 @endphp
                 @foreach($itemTypeSummaries as $summary)
@@ -218,7 +221,7 @@
                         <td class="pdf-text-center pdf-summary-td pdf-printer-count">{{ $summary['printers'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-desktop-count">{{ $summary['desktops'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-scanner-count">{{ $summary['scanners'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-other-count">{{ $summary['others'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-monitor-count">{{ $summary['monitors'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
@@ -230,7 +233,7 @@
                     <td class="pdf-text-center pdf-summary-td pdf-printer-total">{{ $totalPrinters }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-desktop-total">{{ $totalDesktops }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-scanner-total">{{ $totalScanners }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-other-total">{{ $totalOthers }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-monitor-total">{{ $totalMonitors }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalTypes }}</td>
                 </tr>
             </tfoot>

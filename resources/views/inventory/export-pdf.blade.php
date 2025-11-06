@@ -88,7 +88,7 @@
     </div>
 
     <!-- Executive Summary -->
-    <div class="pdf-summary-section pdf-mt-3">
+    <div class="pdf-summary-section pdf-mt-3" style="page-break-before: always;">
         <table class="pdf-summary-table pdf-table-striped">
             <thead>
                 <tr>
@@ -150,7 +150,7 @@
     </div>
 
     <!-- Item Type Summary -->
-    <div class="pdf-summary-section pdf-mt-3">
+    <div class="pdf-summary-section pdf-mt-3" style="page-break-after: always;">
         <table class="pdf-summary-table pdf-table-striped">
             <thead>
                 <tr>
@@ -162,6 +162,7 @@
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-printer-col">Printers</th>
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-desktop-col">Desktops</th>
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-scanner-col">Scanners</th>
+                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-photocopier-col">Photocopiers</th>
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-other-col">Others</th>
                     <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-total-col">Total</th>
                 </tr>
@@ -186,11 +187,15 @@
                             return stripos($item->classification, 'desktop') !== false || stripos($item->description, 'desktop') !== false;
                         })->count();
 
-                        $scanners = $deptItems->filter(function ($item) {
-                            return stripos($item->classification, 'scanner') !== false || stripos($item->description, 'scanner') !== false;
-                        })->count();
+        $scanners = $deptItems->filter(function ($item) {
+            return stripos($item->classification, 'scanner') !== false || stripos($item->description, 'scanner') !== false;
+        })->count();
 
-                        $others = $deptItems->count() - $laptops - $printers - $desktops - $scanners;
+        $photocopiers = $deptItems->filter(function ($item) {
+            return stripos($item->classification, 'photocopier') !== false || stripos($item->description, 'photocopier') !== false;
+        })->count();
+
+        $others = $deptItems->count() - $laptops - $printers - $desktops - $scanners - $photocopiers;
                         $total = $deptItems->count();
 
                         $itemTypeSummaries->push([
@@ -199,6 +204,7 @@
                             'printers' => $printers,
                             'desktops' => $desktops,
                             'scanners' => $scanners,
+                            'photocopiers' => $photocopiers,
                             'others' => $others,
                             'total' => $total
                         ]);
@@ -208,6 +214,7 @@
                     $totalPrinters = $itemTypeSummaries->sum('printers');
                     $totalDesktops = $itemTypeSummaries->sum('desktops');
                     $totalScanners = $itemTypeSummaries->sum('scanners');
+                    $totalPhotocopiers = $itemTypeSummaries->sum('photocopiers');
                     $totalOthers = $itemTypeSummaries->sum('others');
                     $grandTotalTypes = $itemTypeSummaries->sum('total');
                 @endphp
@@ -218,6 +225,7 @@
                         <td class="pdf-text-center pdf-summary-td pdf-printer-count">{{ $summary['printers'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-desktop-count">{{ $summary['desktops'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-scanner-count">{{ $summary['scanners'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-photocopier-count">{{ $summary['photocopiers'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-other-count">{{ $summary['others'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
                     </tr>

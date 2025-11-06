@@ -288,6 +288,17 @@ body {
     font-weight: bold;
 }
 
+.pdf-photocopier-col {
+    background-color: #c142a6 !important;
+    color: white !important;
+}
+
+.pdf-photocopier-count, .pdf-photocopier-total {
+    background-color: #f8d7f0 !important;
+    color: #6a1b5d !important;
+    font-weight: bold;
+}
+
 .pdf-monitor-col {
     background-color: #6f42c1 !important;
     color: white !important;

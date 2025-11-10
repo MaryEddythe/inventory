@@ -77,13 +77,13 @@ body {
     border: 1px solid #000;
     padding: 4px 6px;
     text-align: left;
-    font-size: 9pt;
+    font-size: 8pt;
     vertical-align: top;
     word-wrap: break-word;
 }
 
 .pdf-table tbody td {
-    font-size: 7.5pt;
+    font-size: 7pt;
 }
 
 .pdf-table th {
@@ -108,40 +108,43 @@ body {
 }
 
 .pdf-summary-section {
-    margin-top: 10mm;
-    margin-bottom: 5mm;
+    margin-top: 15mm;
+    margin-bottom: 8mm;
+    page-break-inside: avoid;
 }
 
 .pdf-summary-table {
     width: 100%;
-    margin-bottom: 10mm;
+    margin-bottom: 8mm;
     border-collapse: collapse;
-    border: 2px solid #2c3e50;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    border: 2px solid #000;
 }
 
 .pdf-summary-table th,
 .pdf-summary-table td {
-    border: 1px solid #34495e;
+    border: 1px solid #000;
     padding: 8px 10px;
     font-size: 10pt;
-    transition: background-color 0.2s ease;
+    text-align: center;
 }
 
 .pdf-summary-table th {
-    background-color: #d9d9d9;
+    background-color: #2c3e50;
+    color: white;
     font-weight: bold;
-    font-size: 10pt;
+    font-size: 11pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .pdf-summary-header {
-    background-color: #1a252f !important;
+    background-color: #2c3e50 !important;
     color: white !important;
-    font-size: 12pt !important;
-    padding: 10px !important;
+    font-size: 10pt !important;
+    padding: 6px !important;
     text-align: center;
-    font-weight: bold;
-    border-bottom: 2px solid #34495e;
+    font-weight: bold !important;
+    text-transform: uppercase;
 }
 
 .pdf-summary-th {
@@ -150,11 +153,14 @@ body {
     font-weight: bold !important;
     padding: 6px 4px !important;
     border: 1px solid #2c3e50 !important;
+    font-size: 9pt !important;
 }
 
 .pdf-summary-td {
-    padding: 5px 4px !important;
-    border: 1px solid #bdc3c7 !important;
+    padding: 6px 8px !important;
+    border: 1px solid #000 !important;
+    font-size: 9pt !important;
+    font-weight: 500;
 }
 
 .pdf-summary-row:hover {
@@ -172,8 +178,10 @@ body {
     color: white !important;
     font-size: 11pt !important;
     font-weight: 900 !important;
-    padding: 8px !important;
+    padding: 10px !important;
     border: 2px solid #000 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .pdf-overall-total td {
@@ -220,29 +228,6 @@ body {
     font-weight: bold;
 }
 
-/* Executive Summary Column Styles */
-.pdf-functional-col {
-    background-color: #27ae60 !important;
-    color: white !important;
-}
-
-.pdf-functional-count, .pdf-functional-total {
-    background-color: #d5f4e6 !important;
-    color: #196f3d !important;
-    font-weight: bold;
-}
-
-.pdf-nonfunctional-col {
-    background-color: #e74c3c !important;
-    color: white !important;
-}
-
-.pdf-nonfunctional-count, .pdf-nonfunctional-total {
-    background-color: #fadbd8 !important;
-    color: #922b21 !important;
-    font-weight: bold;
-}
-
 /* Item Type Summary Column Styles */
 .pdf-laptop-col {
     background-color: #28a745 !important;
@@ -250,8 +235,8 @@ body {
 }
 
 .pdf-laptop-count, .pdf-laptop-total {
-    background-color: #d5f4e6 !important;
-    color: #196f3d !important;
+    background-color: #d4edda !important;
+    color: #155724 !important;
     font-weight: bold;
 }
 
@@ -261,8 +246,8 @@ body {
 }
 
 .pdf-printer-count, .pdf-printer-total {
-    background-color: #fdebd0 !important;
-    color: #9c640c !important;
+    background-color: #ffe5d0 !important;
+    color: #8b4513 !important;
     font-weight: bold;
 }
 
@@ -272,8 +257,8 @@ body {
 }
 
 .pdf-desktop-count, .pdf-desktop-total {
-    background-color: #d6eaf8 !important;
-    color: #1b4f72 !important;
+    background-color: #cce5ff !important;
+    color: #004085 !important;
     font-weight: bold;
 }
 
@@ -283,30 +268,19 @@ body {
 }
 
 .pdf-scanner-count, .pdf-scanner-total {
-    background-color: #fadbd8 !important;
-    color: #922b21 !important;
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
     font-weight: bold;
 }
 
-.pdf-photocopier-col {
-    background-color: #c142a6 !important;
+.pdf-other-col {
+    background-color: #6c757d !important;
     color: white !important;
 }
 
-.pdf-photocopier-count, .pdf-photocopier-total {
-    background-color: #f8d7f0 !important;
-    color: #6a1b5d !important;
-    font-weight: bold;
-}
-
-.pdf-monitor-col {
-    background-color: #6f42c1 !important;
-    color: white !important;
-}
-
-.pdf-monitor-count, .pdf-monitor-total {
-    background-color: #e8daef !important;
-    color: #5b2c6f !important;
+.pdf-other-count, .pdf-other-total {
+    background-color: #e2e3e5 !important;
+    color: #383d41 !important;
     font-weight: bold;
 }
 

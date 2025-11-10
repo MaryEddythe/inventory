@@ -251,6 +251,11 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
+        // EXCLUDE Monitor classification from IPM export
+        if ($request->tab === 'ipm') {
+            $query->where('classification', '!=', 'Monitor');
+        }
+
         $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
 
         $tab = $request->tab ?? 'inventory';

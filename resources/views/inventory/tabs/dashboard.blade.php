@@ -72,12 +72,12 @@
                             <i class="bi bi-graph-up"></i>
                         </div>
                         <div class="metric-info">
-                            <span class="metric-label">Added This Month</span>
+                            <span class="metric-label">Added</span>
                             <h2 class="metric-value"><span class="count-up" data-target="{{ $itemsThisMonth }}" id="itemsThisMonthCount">{{ $itemsThisMonth }}</span></h2>
                         </div>
                     </div>
                     <div class="metric-footer">
-                        <small class="text-muted">New items this month</small>
+                        <small class="text-muted">New items added</small>
                     </div>
                 </div>
             </div>

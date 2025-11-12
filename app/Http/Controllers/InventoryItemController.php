@@ -73,7 +73,8 @@ class InventoryItemController extends Controller
                             ->orWhere('description', 'LIKE', "%{$term}%")
                             ->orWhere('serial_number', 'LIKE', "%{$term}%")
                             ->orWhere('property_number', 'LIKE', "%{$term}%")
-                            ->orWhere('emp_no', 'LIKE', "%{$term}%");
+                            ->orWhere('emp_no', 'LIKE', "%{$term}%")
+                            ->orWhere('remarks', 'LIKE', "%{$term}%");
                 });
             }
         });
@@ -228,6 +229,7 @@ class InventoryItemController extends Controller
                                 ->orWhere('enduser', 'LIKE', "%{$term}%")
                                 ->orWhere('classification', 'LIKE', "%{$term}%")
                                 ->orWhere('description', 'LIKE', "%{$term}%")
+                                ->orWhere('remarks', 'LIKE', "%{$term}%")
                                 ->orWhere('serial_number', 'LIKE', "%{$term}%")
                                 ->orWhere('property_number', 'LIKE', "%{$term}%")
                                 ->orWhere('emp_no', 'LIKE', "%{$term}%");
@@ -251,7 +253,6 @@ class InventoryItemController extends Controller
             $query->whereDate('date_acquired', '<=', $request->date_to);
         }
 
-        // EXCLUDE Monitor classification from IPM export
         if ($request->tab === 'ipm') {
             $query->where('classification', '!=', 'Monitor');
         }
@@ -468,7 +469,7 @@ class InventoryItemController extends Controller
         'conditionData',
         'divisionBreakdown'
     ));
-}
+    }
 
     public function ipm(Request $request)
     {
@@ -478,22 +479,20 @@ class InventoryItemController extends Controller
             $search = $request->search;
             $searchTerms = array_filter(explode(' ', $search));
 
-            $query->where(function($q) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $q->where(function($subQuery) use ($term) {
-                        $subQuery->where('division', 'LIKE', "%{$term}%")
-                                ->orWhere('enduser', 'LIKE', "%{$term}%")
-                                ->orWhere('classification', 'LIKE', "%{$term}%")
-                                ->orWhere('description', 'LIKE', "%{$term}%")
-                                ->orWhere('serial_number', 'LIKE', "%{$term}%")
-                                ->orWhere('property_number', 'LIKE', "%{$term}%")
-                                ->orWhere('emp_no', 'LIKE', "%{$term}%")
-                                ->orWhere('remarks', 'LIKE', "%{$term}%")
-                                ->orWhere('recommendation', 'LIKE', "%{$term}%")
-                                ->orWhere('condition', 'LIKE', "%{$term}%");
-                    });
-                }
-            });
+        $query->where(function($q) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $q->where(function($subQuery) use ($term) {
+                    $subQuery->where('division', 'LIKE', "%{$term}%")
+                            ->orWhere('enduser', 'LIKE', "%{$term}%")
+                            ->orWhere('classification', 'LIKE', "%{$term}%")
+                            ->orWhere('description', 'LIKE', "%{$term}%")
+                            ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                            ->orWhere('property_number', 'LIKE', "%{$term}%")
+                            ->orWhere('emp_no', 'LIKE', "%{$term}%")
+                            ->orWhere('remarks', 'LIKE', "%{$term}%");
+                });
+            }
+        });
         }
 
         if ($request->filled('condition')) {

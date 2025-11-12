@@ -148,7 +148,7 @@
                         </td>
                         @endif
 
-                        <td><span class="badge badge-classification badge-classification-{{ strtolower($item->classification) }} fw-normal item-classification">{{ $item->classification }}</span></td>
+                        <td><span class="badge badge-classification {{ in_array(strtolower($item->classification), ['laptop', 'desktop', 'scanner', 'monitor', 'photocopier', 'printer']) ? 'badge-classification-' . strtolower($item->classification) : 'badge-classification-default' }} fw-normal item-classification">{{ $item->classification }}</span></td>
                         <td class="item-description">
                             @if(request('search'))
                                 {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->description), 8) !!}

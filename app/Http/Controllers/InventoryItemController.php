@@ -436,13 +436,16 @@ class InventoryItemController extends Controller
             ->select('classification', \DB::raw('count(*) as count'))
             ->groupBy('classification')
             ->pluck('count', 'classification');
-        
+
         $divisionBreakdown[$division] = [
             'Desktop' => $breakdown->get('Desktop', 0),
             'Laptop' => $breakdown->get('Laptop', 0),
             'Monitor' => $breakdown->get('Monitor', 0),
             'Printer' => $breakdown->get('Printer', 0),
             'Scanner' => $breakdown->get('Scanner', 0),
+            'Others' => $breakdown->filter(function ($count, $classification) {
+                return !in_array($classification, ['Desktop', 'Laptop', 'Monitor', 'Printer', 'Scanner']);
+            })->sum(),
         ];
     }
 

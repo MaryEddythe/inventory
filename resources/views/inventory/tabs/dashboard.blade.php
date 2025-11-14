@@ -211,7 +211,7 @@
                                 </div>
                                 <div class="breakdown-summary">
                                     <div class="breakdown-total">
-                                        <span class="breakdown-number">{{ array_sum($breakdown) }}</span>
+                                        <span class="breakdown-number">{{ ($breakdown['Desktop'] ?? 0) + ($breakdown['Laptop'] ?? 0) + ($breakdown['Monitor'] ?? 0) + ($breakdown['Printer'] ?? 0) + ($breakdown['Scanner'] ?? 0) + ($breakdown['Others'] ?? 0) }}</span>
                                         <span class="breakdown-text">Total Items</span>
                                     </div>
                                 </div>
@@ -236,6 +236,10 @@
                                         <div class="breakdown-item">
                                             <span class="breakdown-label">Scanner</span>
                                             <span class="breakdown-value">{{ $breakdown['Scanner'] ?? 0 }}</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Others</span>
+                                            <span class="breakdown-value">{{ $breakdown['Others'] ?? 0 }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -453,7 +457,7 @@
                         </div>
                         <div class="breakdown-summary">
                             <div class="breakdown-total">
-                                <span class="breakdown-number">${total}</span>
+                                <span class="breakdown-number">${(breakdown.Desktop ?? 0) + (breakdown.Laptop ?? 0) + (breakdown.Monitor ?? 0) + (breakdown.Printer ?? 0) + (breakdown.Scanner ?? 0) + (breakdown.Others ?? 0)}</span>
                                 <span class="breakdown-text">Total Items</span>
                             </div>
                         </div>
@@ -478,6 +482,10 @@
                                 <div class="breakdown-item">
                                     <span class="breakdown-label">Scanner</span>
                                     <span class="breakdown-value">${breakdown.Scanner ?? 0}</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">Others</span>
+                                    <span class="breakdown-value">${breakdown.Others ?? 0}</span>
                                 </div>
                             </div>
                         </div>

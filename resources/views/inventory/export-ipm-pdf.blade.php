@@ -62,9 +62,12 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $rowNumber = 1;
+                @endphp
                 @foreach($items as $item)
                     <tr>
-                        <td class="pdf-text-center">{{ $item->no }}</td>
+                        <td class="pdf-text-center">{{ $rowNumber++ }}</td>
                         <td>{{ $item->division }}</td>
                         <td>{!! $item->enduser !!}</td>
                         <td>{{ $item->classification }}</td>

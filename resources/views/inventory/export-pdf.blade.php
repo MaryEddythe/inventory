@@ -154,17 +154,18 @@
         <table class="pdf-summary-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="8" class="pdf-bg-dark pdf-summary-header">ITEM TYPE SUMMARY BY DEPARTMENT</th>
+                    <th colspan="9" class="pdf-bg-dark pdf-summary-header">ITEM TYPE SUMMARY BY DEPARTMENT</th>
                 </tr>
                 <tr class="pdf-bg-primary">
-                    <th class="pdf-col-20 pdf-summary-th">Department</th>
-                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-laptop-col">Laptops</th>
-                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-printer-col">Printers</th>
-                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-desktop-col">Desktops</th>
-                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-scanner-col">Scanners</th>
-                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-photocopier-col">Photocopiers</th>
-                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-monitor-col">Monitors</th>
-                    <th class="pdf-col-12 pdf-text-center pdf-summary-th pdf-total-col">Total</th>
+                    <th class="pdf-col-15 pdf-summary-th">Department</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-laptop-col">Laptops</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-printer-col">Printers</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-desktop-col">Desktops</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-scanner-col">Scanners</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-photocopier-col">Photocopiers</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-monitor-col">Monitors</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-other-col">Others</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-total-col">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -198,6 +199,20 @@
                         $monitors = $deptItems->filter(function ($item) {
                             return stripos($item->classification, 'monitor') !== false || stripos($item->description, 'monitor') !== false;
                         })->count();
+
+                        $others = $deptItems->filter(function ($item) {
+                            $classification = strtolower($item->classification);
+                            $description = strtolower($item->description);
+                            return !(
+                                stripos($classification, 'laptop') !== false || stripos($description, 'laptop') !== false ||
+                                stripos($classification, 'printer') !== false || stripos($description, 'printer') !== false ||
+                                stripos($classification, 'desktop') !== false || stripos($description, 'desktop') !== false ||
+                                stripos($classification, 'scanner') !== false || stripos($description, 'scanner') !== false ||
+                                stripos($classification, 'photocopier') !== false || stripos($description, 'photocopier') !== false ||
+                                stripos($classification, 'monitor') !== false || stripos($description, 'monitor') !== false
+                            );
+                        })->count();
+
                         $total = $deptItems->count();
 
                         $itemTypeSummaries->push([
@@ -208,6 +223,7 @@
                             'scanners' => $scanners,
                             'photocopiers' => $photocopiers,
                             'monitors' => $monitors,
+                            'others' => $others,
                             'total' => $total
                         ]);
                     }
@@ -218,6 +234,7 @@
                     $totalScanners = $itemTypeSummaries->sum('scanners');
                     $totalPhotocopiers = $itemTypeSummaries->sum('photocopiers');
                     $totalMonitors = $itemTypeSummaries->sum('monitors');
+                    $totalOthers = $itemTypeSummaries->sum('others');
                     $grandTotalTypes = $itemTypeSummaries->sum('total');
                 @endphp
                 @foreach($itemTypeSummaries as $summary)
@@ -229,6 +246,7 @@
                         <td class="pdf-text-center pdf-summary-td pdf-scanner-count">{{ $summary['scanners'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-photocopier-count">{{ $summary['photocopiers'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-monitor-count">{{ $summary['monitors'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-other-count">{{ $summary['others'] }}</td>
                         <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
@@ -242,6 +260,7 @@
                     <td class="pdf-text-center pdf-summary-td pdf-scanner-total">{{ $totalScanners }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-photocopier-total">{{ $totalPhotocopiers }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-monitor-total">{{ $totalMonitors }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-other-total">{{ $totalOthers }}</td>
                     <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalTypes }}</td>
                 </tr>
             </tfoot>

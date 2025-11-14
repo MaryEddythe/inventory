@@ -223,7 +223,7 @@ body {
 }
 
 .pdf-total-count, .pdf-grand-total {
-    background-color: #d6eaf8 !important;
+    background-color: #f7fafd !important;
     color: #1b4f72 !important;
     font-weight: bold;
 }
@@ -235,7 +235,7 @@ body {
 }
 
 .pdf-laptop-count, .pdf-laptop-total {
-    background-color: #d4edda !important;
+    background-color: #f5fbf5 !important;
     color: #155724 !important;
     font-weight: bold;
 }
@@ -246,8 +246,19 @@ body {
 }
 
 .pdf-printer-count, .pdf-printer-total {
-    background-color: #ffe5d0 !important;
+    background-color: #fffbf7 !important;
     color: #8b4513 !important;
+    font-weight: bold;
+}
+
+.pdf-photocopier-col {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
+.pdf-photocopier-count, .pdf-photocopier-total {
+    background-color: #e2e3e5 !important;
+    color: #383d41 !important;
     font-weight: bold;
 }
 
@@ -257,7 +268,7 @@ body {
 }
 
 .pdf-desktop-count, .pdf-desktop-total {
-    background-color: #cce5ff !important;
+    background-color: #f5f7ff !important;
     color: #004085 !important;
     font-weight: bold;
 }
@@ -268,7 +279,7 @@ body {
 }
 
 .pdf-scanner-count, .pdf-scanner-total {
-    background-color: #f8d7da !important;
+    background-color: #fff5f5 !important;
     color: #721c24 !important;
     font-weight: bold;
 }
@@ -281,6 +292,17 @@ body {
 .pdf-other-count, .pdf-other-total {
     background-color: #e2e3e5 !important;
     color: #383d41 !important;
+    font-weight: bold;
+}
+
+.pdf-monitor-col {
+    background-color: #6f42c1 !important;
+    color: white !important;
+}
+
+.pdf-monitor-count, .pdf-monitor-total {
+    background-color: #f0e8f7 !important;
+    color: #6f42c1 !important;
     font-weight: bold;
 }
 

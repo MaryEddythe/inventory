@@ -66,7 +66,7 @@
                         <tr>
                             <td class="pdf-text-center">{{ $rowNumber++ }}</td>
                             <td>{{ $item->department_name ?? $item->division }}</td>
-                            <td>{{ $item->enduser ?? 'N/A' }}</td>
+                            <td>{!! $item->enduser ?? 'N/A' !!}</td>
                             <td>{{ $item->classification }}</td>
                             <td>{{ $item->description }}</td>
                             <td>{{ $item->serial_number ?? 'N/A' }}</td>

@@ -66,7 +66,7 @@
                     <tr>
                         <td class="pdf-text-center">{{ $item->no }}</td>
                         <td>{{ $item->division }}</td>
-                        <td>{{ $item->enduser }}</td>
+                        <td>{!! $item->enduser !!}</td>
                         <td>{{ $item->classification }}</td>
                         <td>{{ $item->description }}</td>
                         <td class="pdf-text-center">

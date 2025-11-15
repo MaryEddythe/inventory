@@ -875,6 +875,11 @@ main.container-fluid {
 .suggestion-item:last-child {
     border-bottom: none;
 }
+.suggestion-item.highlighted {
+    background: #007bff;
+    color: white;
+    border-radius: 4px;
+}
 mark {
     background: lightblue;
 }

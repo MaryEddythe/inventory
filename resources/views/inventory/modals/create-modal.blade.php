@@ -89,6 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const suggestionsDiv = document.getElementById('employee_suggestions');
     const empNoInput = document.getElementById('emp_no');
     const enduserInput = document.getElementById('enduser');
+    let currentIndex = -1;
+    let suggestionItems = [];
 
     employeeSearchInput.addEventListener('input', function() {
         const query = this.value.toLowerCase().trim();
@@ -106,39 +108,84 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (filteredEmployees.length > 0) {
             suggestionsDiv.style.display = 'block';
-            filteredEmployees.forEach(emp => {
+            suggestionItems = [];
+            filteredEmployees.forEach((emp, index) => {
                 const suggestionItem = document.createElement('div');
                 suggestionItem.className = 'suggestion-item';
-                suggestionItem.textContent = `${emp.name} (${emp.emp_no})`;
+                suggestionItem.textContent = emp.name;
+                suggestionItem.dataset.index = index;
                 suggestionItem.addEventListener('click', function() {
-                    employeeSearchInput.value = `${emp.name} (${emp.emp_no})`;
-                    empNoInput.value = emp.emp_no;
-                    enduserInput.value = emp.name;
-
-                    // Auto-select division based on employee's department name
-                    const divisionSelect = document.getElementById('division');
-                    if (divisionSelect && emp.department_name) {
-                        const options = divisionSelect.options;
-                        for (let i = 0; i < options.length; i++) {
-                            if (options[i].value === emp.department_name) {
-                                options[i].selected = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    suggestionsDiv.style.display = 'none';
+                    selectEmployee(emp);
                 });
                 suggestionsDiv.appendChild(suggestionItem);
+                suggestionItems.push(suggestionItem);
             });
+            currentIndex = -1;
         } else {
             suggestionsDiv.style.display = 'none';
+            suggestionItems = [];
+            currentIndex = -1;
         }
     });
 
-    // Prevent form submission on Enter key if no employee selected
+    // Function to select employee
+    function selectEmployee(emp) {
+        employeeSearchInput.value = emp.name;
+        empNoInput.value = emp.emp_no;
+        enduserInput.value = emp.name;
+
+        // Auto-select division based on employee's department name
+        const divisionSelect = document.getElementById('division');
+        if (divisionSelect && emp.department_name) {
+            const options = divisionSelect.options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === emp.department_name) {
+                    options[i].selected = true;
+                    break;
+                }
+            }
+        }
+
+        suggestionsDiv.style.display = 'none';
+        currentIndex = -1;
+        suggestionItems.forEach(item => item.classList.remove('highlighted'));
+    }
+
+    // Function to update highlight
+    function updateHighlight() {
+        suggestionItems.forEach((item, index) => {
+            if (index === currentIndex) {
+                item.classList.add('highlighted');
+                item.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            } else {
+                item.classList.remove('highlighted');
+            }
+        });
+    }
+
+    // Handle keyboard navigation
     employeeSearchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
+        if (suggestionsDiv.style.display === 'block' && suggestionItems.length > 0) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % suggestionItems.length;
+                updateHighlight();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentIndex = currentIndex <= 0 ? suggestionItems.length - 1 : currentIndex - 1;
+                updateHighlight();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentIndex >= 0 && currentIndex < filteredEmployees.length) {
+                    selectEmployee(filteredEmployees[currentIndex]);
+                } else if (empNoInput.value) {
+                    form.submit();
+                } else {
+                    alert('Please select a valid employee from the search results.');
+                    this.focus();
+                }
+            }
+        } else if (e.key === 'Enter') {
             e.preventDefault();
             if (empNoInput.value) {
                 form.submit();
@@ -153,6 +200,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         if (!employeeSearchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
             suggestionsDiv.style.display = 'none';
+            currentIndex = -1;
+            suggestionItems.forEach(item => item.classList.remove('highlighted'));
         }
     });
 
@@ -160,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (empNoInput.value) {
         const selectedEmployee = employees.find(emp => emp.emp_no === empNoInput.value);
         if (selectedEmployee) {
-            employeeSearchInput.value = `${selectedEmployee.name} (${selectedEmployee.emp_no})`;
+            employeeSearchInput.value = selectedEmployee.name;
             enduserInput.value = selectedEmployee.name;
         }
     }

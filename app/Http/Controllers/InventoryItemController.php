@@ -151,62 +151,74 @@ class InventoryItemController extends Controller
         return view('inventory.modals.edit-modal', compact('inventoryItem', 'departments', 'employees'));
     }
 
-    public function update(Request $request, $id)
-    {
-        $item = InventoryItem::findOrFail($id);
-        $originalId = $item->id;
+   public function update(Request $request, $id)
+{
+    $item = InventoryItem::findOrFail($id);
+    $originalId = $item->id;
 
-        // Check if this is an IPM update (has IPM-specific fields)
-        $isIpmUpdate = $request->hasAny(['system_boot_up', 'hardware', 'performance', 'cables_connections', 'peripherals', 'recommendation', 'date_conducted', 'time_started', 'time_ended']);
+    // Check if this is an IPM update (has IPM-specific fields)
+    $isIpmUpdate = $request->hasAny(['system_boot_up', 'hardware', 'performance', 'cables_connections', 'peripherals', 'recommendation', 'date_conducted', 'time_started', 'time_ended']);
 
-        if ($isIpmUpdate) {
-            // IPM update validation
-            $validated = $request->validate([
-                'condition' => 'nullable|string|in:New,For Replacement,Functional,Nonfunctional',
-                'system_boot_up' => 'nullable|boolean',
-                'hardware' => 'nullable|boolean',
-                'performance' => 'nullable|boolean',
-                'cables_connections' => 'nullable|boolean',
-                'peripherals' => 'nullable|boolean',
-                'recommendation' => 'nullable|string',
-                'date_conducted' => 'nullable|date',
-                'time_started' => 'nullable|date_format:H:i',
-                'time_ended' => 'nullable|date_format:H:i|after:time_started',
-            ]);
-        } else {
-            // Regular inventory update validation
-            $validated = $request->validate([
-                'division' => 'required|string|max:255',
-                'enduser' => 'required|string|max:255',
-                'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
-                'classification' => 'required|string|max:255',
-                'property_number' => 'required|string|max:255',
-                'description' => 'required|string',
-                'serial_number' => 'nullable|string|max:255',
-                'unit_price' => 'required|numeric|min:0',
-                'co_mooe' => 'required|string|max:255',
-                'date_acquired' => 'required|date',
-                'remarks' => 'nullable|string',
-            ]);
-
-            // Recalculate status based on possibly updated date_acquired
-            $validated['status'] = $this->calculateStatus($validated['date_acquired']);
-        }
-
-        $item->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Item updated successfully',
-            'item'    => $item,
-            'original_id' => $originalId,
+    if ($isIpmUpdate) {
+        // IPM update validation
+        $validated = $request->validate([
+            'condition' => 'nullable|string|in:New,For Replacement,Functional,Nonfunctional',
+            'system_boot_up' => 'nullable|boolean',
+            'hardware' => 'nullable|boolean',
+            'performance' => 'nullable|boolean',
+            'cables_connections' => 'nullable|boolean',
+            'peripherals' => 'nullable|boolean',
+            'recommendation' => 'nullable|string',
+            'date_conducted' => 'nullable|date',
+            'time_started' => 'nullable|date_format:H:i',
+            'time_ended' => 'nullable|date_format:H:i|after:time_started',
         ]);
+    } else {
+        // Regular inventory update validation
+        $validated = $request->validate([
+            'division' => 'required|string|max:255',
+            'enduser' => 'required|string|max:255',
+            'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
+            'classification' => 'required|string|max:255',
+            'property_number' => 'required|string|max:255',
+            'description' => 'required|string',
+            'serial_number' => 'nullable|string|max:255',
+            'unit_price' => 'required|numeric|min:0',
+            'co_mooe' => 'required|string|max:255',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        // Recalculate status based on possibly updated date_acquired
+        $validated['status'] = $this->calculateStatus($validated['date_acquired']);
     }
+
+    // SAVE WHO UPDATED THE ITEM
+    $item->updated_by = auth()->user()->emp_no;
+
+    // Apply validated data
+    $item->update($validated);
+
+    // Set updated_at to current timestamp
+    $item->updated_at = now();
+
+    $item->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Item updated successfully',
+        'item'    => $item,
+        'original_id' => $originalId,
+    ]);
+}
+
 
     public function destroy($id)
     {
         $item = InventoryItem::findOrFail($id);
         $item->update(['x' => 'INACTIVE']);
+        $item->updated_at = now();
+        $item->save();
 
         return response()->json([
             'success' => true,

@@ -39,7 +39,9 @@ class InventoryItem extends Model
         'date_conducted',
         'time_started',
         'time_ended',
-        'x'
+        'x',
+        'updated_by',
+        'updated_at',
     ];
 
     protected $dates = [
@@ -55,6 +57,7 @@ class InventoryItem extends Model
         'cables_connections' => 'boolean',
         'peripherals' => 'boolean',
         'date_conducted' => 'date',
+        'updated_at' => 'string',
     ];
 
     protected static function boot()

@@ -67,9 +67,20 @@
             <input type="date" class="form-control" id="date_acquired" name="date_acquired" value="{{ old('date_acquired') }}" required>
         </div>
     </div>
-    <div class="mb-3">
-        <label for="remarks" class="form-label">Remarks</label>
-        <textarea class="form-control" id="remarks" name="remarks" rows="2">{{ old('remarks') }}</textarea>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="serviceability" class="form-label">Serviceability</label>
+            <select class="form-select" id="serviceability" name="serviceability">
+                <option value="" disabled {{ old('serviceability') ? '' : 'selected' }}>Select Serviceability</option>
+                <option value="Good Condition" {{ old('serviceability') == 'Good Condition' ? 'selected' : '' }}>Good Condition</option>
+                <option value="For Replacement" {{ old('serviceability') == 'For Replacement' ? 'selected' : '' }}>For Replacement</option>
+                <option value="Beyond Economic Repair" {{ old('serviceability') == 'Beyond Economic Repair' ? 'selected' : '' }}>Beyond Economic Repair</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="remarks" class="form-label">Remarks</label>
+            <textarea class="form-control" id="remarks" name="remarks" rows="2">{{ old('remarks') }}</textarea>
+        </div>
     </div>
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
         <button type="button" class="btn btn-secondary me-md-2" data-bs-dismiss="modal">Cancel</button>

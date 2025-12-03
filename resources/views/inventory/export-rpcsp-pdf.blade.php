@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Inventory Report</title>
+    <title>RPCSP Report</title>
     <style>:root { --total-records: "{{ $items->count() }}"; } {{ $css }}</style>
 </head>
 <body>
@@ -14,7 +14,7 @@
             <td style="width: 60%; text-align: center; vertical-align: middle;">
                 <h2>Mines and Geosciences Bureau</h2>
                 <h3>Regional Office VI</h3>
-                <h1>INVENTORY REPORT SUMMARY</h1>
+                <h1>RPCSP REPORT SUMMARY</h1>
                 <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
             </td>
             <td style="width: 50%; text-align: right; vertical-align: middle;">
@@ -29,7 +29,7 @@
         <table class="pdf-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="12" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
+                    <th colspan="13" class="pdf-bg-dark">DETAILED RPCSP LISTING</th>
                 </tr>
                 <tr>
                     <th class="pdf-col-2 pdf-text-center" style="width: 0.5%;">No</th>
@@ -44,6 +44,7 @@
                     <th class="pdf-col-6 pdf-text-center">Date Acquired</th>
                     <th class="pdf-col-12">Remarks</th>
                     <th class="pdf-col-5 pdf-text-center">Status</th>
+                    <th class="pdf-col-8 pdf-text-center">Serviceability</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,10 +78,24 @@
                             <td>{{ $item->remarks ?? 'N/A' }}</td>
                             <td class="pdf-text-center">
                                 <span class="{{ $pdfBadgeClass }}">
-                                    {{ $yearsSinceAcquisition <= 5 ? '≤ 5' : '> 5' }}
+                                    {{ $item->status }}
                                 </span>
                             </td>
-                            <td class="pdf-text-center">{{ $item->serviceability ?? 'N/A' }}</td>
+                            <td class="pdf-text-center">
+                                @if($item->serviceability)
+                                    @if(strtolower($item->serviceability) == 'good condition')
+                                        <span class="pdf-serviceability-good">Good</span>
+                                    @elseif(strtolower($item->serviceability) == 'for replacement')
+                                        <span class="pdf-serviceability-repair">Replace</span>
+                                    @elseif(strtolower($item->serviceability) == 'beyond economic repair')
+                                        <span class="pdf-serviceability-beyond">BER</span>
+                                    @else
+                                        {{ $item->serviceability }}
+                                    @endif
+                                @else
+                                    N/A
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 @endforeach

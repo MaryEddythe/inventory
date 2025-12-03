@@ -37,40 +37,41 @@
             <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
                 <i class="bi bi-funnel"></i> Filter
             </button>
-            
+
+            <!-- Export Dropdown -->
             <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-download me-1"></i> Export
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item export-option" href="#" data-type="pdf"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export as PDF</a></li>
-                    <li><a class="dropdown-item export-option" href="#" data-type="csv"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</a></li>
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" data-bs-auto-close="outside">
+                            <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export PDF
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item export-pdf" href="#" data-format="inventory"><i class="bi bi-list-ul me-2"></i>Export Inventory</a></li>
+                            <li><a class="dropdown-item export-pdf" href="#" data-format="rpcsp"><i class="bi bi-file-text me-2"></i>Export RPCSP</a></li>
+                            <li><a class="dropdown-item export-pdf" href="#" data-format="ppe"><i class="bi bi-building me-2"></i>Export PPE</a></li>
+                        </ul>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item export-csv" href="#"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export CSV</a></li>
                 </ul>
             </div>
-            
+
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
                 <i class="bi bi-plus-circle"></i> Add Inventory
             </button>
         </div>
     </div>
 
-    <div id="table-container">
-        <div class="table-responsive">
-            @if(isset($items))
-                @include('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))
-            @else
-                <div class="text-center py-4">No items found</div>
-            @endif
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center mt-4">
-            <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
-            <div>
-                {{ $items->links('vendor.pagination.bootstrap-5') }}
-            </div>
-        </div>
+    <div class="table-responsive">
+        @if(isset($items))
+            @include('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))
+        @else
+            <div class="text-center py-4">No items found</div>
+        @endif
     </div>
-
 </div>
 
 <!-- Add Inventory Modal -->
@@ -91,12 +92,73 @@
 @include('inventory.modals.filter-modal')
 @endsection
 
+@push('styles')
+<style>
+    .dropdown-submenu {
+        position: relative;
+    }
+    .dropdown-submenu .dropdown-menu {
+        position: absolute;
+        top: 0;
+        left: 100%;
+        margin-top: -1px;
+        border-radius: 0.375rem;
+        display: none;
+    }
+    .dropdown-submenu .dropdown-menu.show {
+        display: block;
+    }
+    .dropdown-item.dropdown-toggle::after {
+        margin-left: auto;
+        border-top: 0.3em solid transparent;
+        border-bottom: 0.3em solid transparent;
+        border-left: 0.3em solid;
+        border-right: 0;
+        vertical-align: middle;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle nested dropdown for PDF export options
+    const dropdownSubmenu = document.querySelector('.dropdown-submenu');
+    if (dropdownSubmenu) {
+        const pdfDropdownToggle = dropdownSubmenu.querySelector('.dropdown-toggle');
+        const submenu = dropdownSubmenu.querySelector('.dropdown-menu');
+
+        if (pdfDropdownToggle && submenu) {
+            // Show submenu on hover
+            pdfDropdownToggle.addEventListener('mouseenter', function() {
+                submenu.classList.add('show');
+            });
+
+            // Hide submenu when mouse leaves the submenu area
+            dropdownSubmenu.addEventListener('mouseleave', function() {
+                submenu.classList.remove('show');
+            });
+
+            // Also handle click for mobile/touch devices
+            pdfDropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                submenu.classList.toggle('show');
+            });
+        }
+
+        // Close submenu when main dropdown closes
+        const mainDropdown = dropdownSubmenu.closest('.dropdown');
+        if (mainDropdown) {
+            mainDropdown.addEventListener('hidden.bs.dropdown', function() {
+                submenu.classList.remove('show');
+            });
+        }
+    }
     let searchTimer;
     const searchInput = document.querySelector('input[name="search"]');
     const perPageSelect = document.getElementById('perPageSelect');
+    const filterForm = document.getElementById('filterForm');
 
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimer);
@@ -105,14 +167,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     });
 
-    // trigger update when per-page changes
     if (perPageSelect) {
-        perPageSelect.addEventListener('change', function() {
-            updateResults();
-        });
+        perPageSelect.addEventListener('change', updateResults);
     }
 
-    const filterForm = document.getElementById('filterForm');
     filterForm.addEventListener('submit', function(e) {
         e.preventDefault();
         updateResults();
@@ -124,13 +182,71 @@ document.addEventListener('DOMContentLoaded', function() {
         updateResults();
     });
 
-    document.querySelectorAll('.export-option').forEach(option => {
-        option.addEventListener('click', function(e) {
+    // Export PDF with format (ppe, rpcsp, inventory)
+    document.querySelectorAll('.export-pdf').forEach(item => {
+        item.addEventListener('click', function(e) {
             e.preventDefault();
-            const exportType = this.getAttribute('data-type');
-            exportData(exportType);
+            const format = this.getAttribute('data-format');
+            exportData('pdf', format);
         });
     });
+
+    // Export CSV
+    document.querySelectorAll('.export-csv').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            exportData('csv');
+        });
+    });
+
+    function getQueryParams() {
+        const params = new URLSearchParams(window.location.search);
+        const formData = new FormData(filterForm);
+        for (let [key, value] of formData.entries()) {
+            if (value) params.set(key, value);
+        }
+        if (perPageSelect?.value) {
+            params.set('per_page', perPageSelect.value);
+        }
+        return params.toString();
+    }
+
+    function exportData(type, format = 'inventory') {
+        const params = getQueryParams();
+        const baseUrl = '{{ route("inventory.export", ["type" => ":type"]) }}'
+            .replace(':type', type);
+
+        let url = `${baseUrl}?${params}`;
+        if (type === 'pdf') {
+            url += `${params ? '&' : '?'}format=${format}`;
+        }
+
+        Swal.fire({
+            title: 'Exporting...',
+            text: 'Please wait while we generate your file',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        window.location.href = url;
+
+        setTimeout(() => Swal.close(), 2500);
+    }
+
+    function updateResults() {
+        const params = getQueryParams();
+        const newUrl = `${window.location.pathname}?${params}`;
+        history.pushState({}, '', newUrl);
+
+        fetch(newUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.text())
+        .then(html => {
+            document.querySelector('.table-responsive').innerHTML = html;
+            attachFormListeners();
+        });
+    }
 
     function attachFormListeners() {
         // Client-side validation for add inventory form
@@ -463,6 +579,20 @@ document.addEventListener('DOMContentLoaded', function() {
             searchParams.set('per_page', perPageSelect.value);
         }
 
+        // Parse the type to determine format and category
+        let exportType = type;
+        let category = '';
+
+        if (type.includes('-')) {
+            const parts = type.split('-');
+            category = parts[0]; // 'ppe' or 'rpcsp'
+            exportType = parts[1]; // 'pdf' or 'csv'
+        }
+
+        if (category) {
+            searchParams.set('category', category);
+        }
+
         Swal.fire({
             title: 'Exporting...',
             text: 'Please wait while we prepare your file',
@@ -472,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        const exportUrl = `{{ route('inventory.export', ':type') }}?${searchParams.toString()}`.replace(':type', type);
+        const exportUrl = `{{ route('inventory.export', ':type') }}?${searchParams.toString()}`.replace(':type', exportType);
         window.location.href = exportUrl;
 
         setTimeout(() => {

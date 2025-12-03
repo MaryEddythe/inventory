@@ -147,7 +147,7 @@
                         @foreach($statusData as $status)
                         <div class="status-item status-{{ strtolower($status->status) }}">
                             <div class="status-icon">
-                                <i class="bi {{ $status->status == 'NEW' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill' }}"></i>
+                                <i class="bi {{ $status->status == 'New' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill' }}"></i>
                             </div>
                             <div class="status-info">
                                 <p class="status-label">{{ $status->status }}</p>
@@ -524,15 +524,16 @@
                     </div>
                 `;
             } else if (type === 'status') {
-                const statusClass = item.status === 'NEW' ? 'status-new' : 'status-used';
-                const iconClass = item.status === 'NEW' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+                const statusClass = item.status === 'New' ? 'status-new' : 'status-used';
+                const iconClass = item.status === 'New' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+                const statusLabel = item.status;
                 cardHtml = `
                     <div class="status-item ${statusClass}">
                         <div class="status-icon">
                             <i class="bi ${iconClass}"></i>
                         </div>
                         <div class="status-info">
-                            <p class="status-label">${item.status}</p>
+                            <p class="status-label">${statusLabel}</p>
                             <h3 class="status-count">${item.count}</h3>
                         </div>
                         <div class="status-bar">

@@ -13,6 +13,7 @@
             <th>Date Acquired</th>
             <th>Remarks</th>
             <th>Status</th>
+            <th>Serviceability</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -65,10 +66,18 @@
             <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
             <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
             <td>
-                <span class="badge {{ $item->status == 'New' ? 'badge-age-new' : 'badge-age-old' }} fw-normal" title="Status">
+                @php
+                    $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
+                @endphp
+                <span class="badge {{ $yearsSinceAcquisition <= 5 ? 'badge-age-new' : 'badge-age-old' }} fw-normal" title="Status">
                     {{ $item->status }}
                 </span>
             </td>
+                            <td>
+                                <span class="badge fw-normal {{ $item->serviceability ? 'badge-serviceability-' . strtolower(str_replace(' ', '-', $item->serviceability)) : '' }}" title="Serviceability">
+                                    {{ $item->serviceability ?? 'N/A' }}
+                                </span>
+                            </td>
             <td>
                 <div class="d-flex gap-1">
                     <button type="button" class="btn btn-outline-primary btn-sm" title="Edit" data-bs-toggle="modal" data-bs-target="#editInventoryModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
@@ -83,7 +92,7 @@
         @endforeach
         @empty
         <tr>
-            <td colspan="13" class="text-center py-4">No items found.</td>
+            <td colspan="14" class="text-center py-4">No items found.</td>
         </tr>
         @endforelse
     </tbody>

@@ -107,6 +107,10 @@ class InventoryItemController extends Controller
     $departments = Department::orderBy('department')->get();
     $employees = Employee::orderBy('firstname')->get();
 
+    if ($request->ajax()) {
+        return view('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))->render();
+    }
+
     return view('inventory.tabs.index', compact('items', 'groupedItems', 'departments', 'employees', 'perPage'));
 }
 

@@ -2154,13 +2154,9 @@ mark {
 }
 
 .dropdown-submenu .submenu.show {
-    display: block;
+    display : block;
 }
 
-.dropdown-submenu .dropdown-toggle::after {
-    content: "\f145";
-    font-family: "bootstrap-icons";
-    border: none;
-    margin-left: auto;
-    vertical-align: middle;
+.dropdown-submenu > a.dropdown-toggle::after {
+    display: none !important;
 }

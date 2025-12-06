@@ -44,8 +44,12 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li class="dropdown-submenu">
-                        <a class="dropdown-item dropdown-toggle" href="#">
-                            <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export as PDF
+                        <a class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between" href="#">
+                            <span>
+                                <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                                Export as PDF
+                            </span>
+                            <i class="bi bi-chevron-right ms-3 small"></i>
                         </a>
                         <ul class="dropdown-menu submenu">
                             <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="inventory"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Inventory</a></li>
@@ -53,6 +57,7 @@
                             <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="ppe"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PPE</a></li>
                         </ul>
                     </li>
+                    <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item export-option" href="#" data-type="csv"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</a></li>
                 </ul>
             </div>
@@ -99,39 +104,6 @@
 
 @include('inventory.modals.filter-modal')
 @endsection
-
-@push('styles')
-<style>
-.dropdown-submenu {
-    position: relative;
-}
-
-.dropdown-submenu .submenu {
-    display: none;
-    position: absolute;
-    left: 100%;
-    top: 0;
-    margin-top: -1px;
-    background-color: #fff;
-    border: 1px solid rgba(0,0,0,.15);
-    border-radius: .375rem;
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.175);
-    z-index: 1050;
-}
-
-.dropdown-submenu .submenu.show {
-    display: block;
-}
-
-.dropdown-submenu .dropdown-toggle::after {
-    content: "\f145";
-    font-family: "bootstrap-icons";
-    border: none;
-    margin-left: auto;
-    vertical-align: middle;
-}
-</style>
-@endpush
 
 @push('scripts')
 <script>

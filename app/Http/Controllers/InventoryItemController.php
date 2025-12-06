@@ -101,7 +101,7 @@ class InventoryItemController extends Controller
         $perPage = 10;
     }
 
-    $items = $query->orderBy('division')->orderBy('enduser')->paginate($perPage)->withQueryString();
+    $items = $query->orderBy('division')->orderByRaw("SUBSTRING_INDEX(enduser, ' ', -1) ASC")->paginate($perPage)->withQueryString();
     $groupedItems = $items->getCollection()->groupBy('enduser');
 
     $departments = Department::orderBy('department')->get();

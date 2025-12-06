@@ -37,31 +37,49 @@
             <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
                 <i class="bi bi-funnel"></i> Filter
             </button>
-
-            <!-- Export Dropdown -->
+            
             <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-download me-1"></i> Export
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item export-option" href="#" data-type="pdf"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export as PDF</a></li>
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#">
+                            <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export as PDF
+                        </a>
+                        <ul class="dropdown-menu submenu">
+                            <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="inventory"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Inventory</a></li>
+                            <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="rpcsc"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>RPCSC</a></li>
+                            <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="ppe"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PPE</a></li>
+                        </ul>
+                    </li>
                     <li><a class="dropdown-item export-option" href="#" data-type="csv"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</a></li>
                 </ul>
             </div>
-
+            
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
                 <i class="bi bi-plus-circle"></i> Add Inventory
             </button>
         </div>
     </div>
 
-    <div class="table-responsive">
-        @if(isset($items))
-            @include('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))
-        @else
-            <div class="text-center py-4">No items found</div>
-        @endif
+    <div id="table-container">
+        <div class="table-responsive">
+            @if(isset($items))
+                @include('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))
+            @else
+                <div class="text-center py-4">No items found</div>
+            @endif
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
+            <div>
+                {{ $items->links('vendor.pagination.bootstrap-5') }}
+            </div>
+        </div>
     </div>
+
 </div>
 
 <!-- Add Inventory Modal -->
@@ -82,167 +100,139 @@
 @include('inventory.modals.filter-modal')
 @endsection
 
+@push('styles')
+<style>
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    margin-top: -1px;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: .375rem;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.175);
+    z-index: 1050;
+}
+
+.dropdown-submenu .submenu.show {
+    display: block;
+}
+
+.dropdown-submenu .dropdown-toggle::after {
+    content: "\f145";
+    font-family: "bootstrap-icons";
+    border: none;
+    margin-left: auto;
+    vertical-align: middle;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle nested dropdown for PDF export options
-    const dropdownSubmenu = document.querySelector('.dropdown-submenu');
-    if (dropdownSubmenu) {
-        const pdfDropdownToggle = dropdownSubmenu.querySelector('.dropdown-toggle');
-        const submenu = dropdownSubmenu.querySelector('.dropdown-menu');
-
-        if (pdfDropdownToggle && submenu) {
-            pdfDropdownToggle.addEventListener('mouseenter', () => submenu.classList.add('show'));
-            dropdownSubmenu.addEventListener('mouseleave', () => submenu.classList.remove('show'));
-            pdfDropdownToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                submenu.classList.toggle('show');
-            });
-        }
-
-        const mainDropdown = dropdownSubmenu.closest('.dropdown');
-        if (mainDropdown) {
-            mainDropdown.addEventListener('hidden.bs.dropdown', () => submenu.classList.remove('show'));
-        }
-    }
-
     let searchTimer;
     const searchInput = document.querySelector('input[name="search"]');
     const perPageSelect = document.getElementById('perPageSelect');
-    const filterForm = document.getElementById('filterForm');
 
-    function getQueryParams() {
-        const params = new URLSearchParams();
-        
-        if (searchInput.value) {
-            params.set('search', searchInput.value);
-        }
-
-        if (filterForm) {
-            const formData = new FormData(filterForm);
-            for (let [key, value] of formData.entries()) {
-                if (value) {
-                    params.set(key, value);
-                }
-            }
-        }
-
-        if (perPageSelect?.value) {
-            params.set('per_page', perPageSelect.value);
-        }
-        
-        return params;
-    }
-
-    function updateResults() {
-        const params = getQueryParams();
-        const newUrl = `${window.location.pathname}?${params.toString()}`;
-        history.pushState({}, '', newUrl);
-
-        fetch(newUrl, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newContent = doc.querySelector('#table-container');
-            
-            const tableContainer = document.getElementById('table-container');
-            if (newContent && tableContainer) {
-                tableContainer.innerHTML = newContent.innerHTML;
-            } else if (tableContainer) {
-                tableContainer.innerHTML = html;
-            } else {
-                document.querySelector('.table-responsive').innerHTML = html;
-            }
-
-            attachFormListeners();
-            bindPaginationLinks();
-        })
-        .catch(error => console.error('Error updating results:', error));
-    }
-
-    function exportData(type, format = null) {
-        const params = getQueryParams();
-        if (type === 'pdf' && format) {
-            params.set('format', format);
-        }
-        
-        const baseUrl = '{{ route("inventory.export", ["type" => ":type"]) }}'.replace(':type', type);
-        const url = `${baseUrl}?${params.toString()}`;
-
-        Swal.fire({
-            title: 'Exporting...',
-            text: 'Please wait while we generate your file',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
-
-        window.location.href = url;
-
-        setTimeout(() => Swal.close(), 2500);
-    }
-
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(() => {
-                updateResults();
-            }, 300);
-        });
-    }
-
-    if (perPageSelect) {
-        perPageSelect.addEventListener('change', updateResults);
-    }
-
-    if (filterForm) {
-        filterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
             updateResults();
-            $('#filterModal').modal('hide');
+        }, 300);
+    });
+
+    // trigger update when per-page changes
+    if (perPageSelect) {
+        perPageSelect.addEventListener('change', function() {
+            updateResults();
         });
+    }
+
+    const filterForm = document.getElementById('filterForm');
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateResults();
+        $('#filterModal').modal('hide');
+    });
 
     document.getElementById('clearFilters').addEventListener('click', function() {
         filterForm.reset();
         updateResults();
     });
 
-    document.querySelectorAll('.export-pdf').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const format = this.getAttribute('data-format');
-            exportData('pdf', format);
-        });
-    });
+    // Handle submenu toggle
+    const pdfMenuItem = document.querySelector('.dropdown-submenu .dropdown-toggle');
+    const submenu = document.querySelector('.dropdown-submenu .submenu');
 
-    document.querySelectorAll('.export-csv').forEach(item => {
-        item.addEventListener('click', function(e) {
+    if (pdfMenuItem && submenu) {
+        pdfMenuItem.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            submenu.classList.toggle('show');
+        });
+
+        // Close submenu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!pdfMenuItem.contains(e.target) && !submenu.contains(e.target)) {
+                submenu.classList.remove('show');
+            }
+        });
+    }
+
+    document.querySelectorAll('.export-option').forEach(option => {
+        option.addEventListener('click', function(e) {
             e.preventDefault();
             const exportType = this.getAttribute('data-type');
-            exportData(exportType);
+            const subtype = this.getAttribute('data-subtype');
+            exportData(exportType, subtype);
         });
     });
 
     function attachFormListeners() {
+        // Client-side validation for add inventory form
         const addInventoryForm = document.getElementById('add-inventory-form');
         if (addInventoryForm) {
             addInventoryForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const empNoInput = this.querySelector('input[name="emp_no"]');
-                if (!empNoInput || !empNoInput.value) {
-                    Swal.fire({ icon: 'error', title: 'Error!', text: 'Please select a valid employee.' });
+                if (!empNoInput) {
+                    console.error('emp_no input not found in add form');
+                    return;
+                }
+                const empNo = empNoInput.value;
+                if (!empNo) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Please select a valid employee from the search results.'
+                    });
                     return;
                 }
 
                 const formData = new FormData(this);
-                Swal.fire({ title: 'Adding Item...', text: 'Please wait', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                Swal.fire({
+                    title: 'Adding Item...',
+                    text: 'Please wait while we add the item',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
                 if (!csrfToken) {
-                    Swal.fire({ icon: 'error', title: 'Error!', text: 'CSRF token not found.' });
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'CSRF token not found. Please refresh the page.'
+                    });
                     return;
                 }
 
@@ -259,38 +249,73 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     Swal.close();
                     if (data.success) {
-                        Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 2000, showConfirmButton: false })
-                           .then(() => {
-                                $('#addInventoryModal').modal('hide');
-                                location.reload();
-                           });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $('#addInventoryModal').modal('hide');
+                            location.reload();
+                        });
                     } else {
-                        Swal.fire({ icon: 'error', title: 'Error!', text: data.message || 'An error occurred.' });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: data.message || 'An error occurred while adding the item'
+                        });
                     }
                 })
-                .catch(() => {
+                .catch(error => {
                     Swal.close();
-                    Swal.fire({ icon: 'error', title: 'Network Error!', text: 'An error occurred.' });
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error!',
+                        text: 'An error occurred while adding the item. Check console for details.'
+                    });
                 });
             });
         }
 
+        // Client-side validation for edit inventory forms
         document.querySelectorAll('.edit-inventory-form').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const empNoInput = this.querySelector('input[name="emp_no"]');
-                if (!empNoInput || !empNoInput.value) {
-                    Swal.fire({ icon: 'error', title: 'Error!', text: 'Please select a valid employee.' });
+                if (!empNoInput) {
+                    console.error('emp_no input not found in edit form');
+                    return;
+                }
+                const empNo = empNoInput.value;
+                if (!empNo) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Please select a valid employee from the search results.'
+                    });
                     return;
                 }
 
                 const itemId = this.id.split('-').pop();
                 const formData = new FormData(this);
-                Swal.fire({ title: 'Updating Item...', text: 'Please wait', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                Swal.fire({
+                    title: 'Updating Item...',
+                    text: 'Please wait while we update the item',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
                 if (!csrfToken) {
-                    Swal.fire({ icon: 'error', title: 'Error!', text: 'CSRF token not found.' });
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'CSRF token not found. Please refresh the page.'
+                    });
                     return;
                 }
 
@@ -307,18 +332,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     Swal.close();
                     if (data.success) {
-                        Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 2000, showConfirmButton: false })
-                            .then(() => {
-                                $(`#editInventoryModal${itemId}`).modal('hide');
-                                location.reload();
-                            });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $(`#editInventoryModal${itemId}`).modal('hide');
+                            location.reload();
+                        });
                     } else {
-                        Swal.fire({ icon: 'error', title: 'Error!', text: data.message || 'An error occurred.' });
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: data.message || 'An error occurred while updating the item'
+                        });
                     }
                 })
-                .catch(() => {
+                .catch(error => {
                     Swal.close();
-                    Swal.fire({ icon: 'error', title: 'Network Error!', text: 'An error occurred.' });
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error!',
+                        text: 'An error occurred while updating the item. Check console for details.'
+                    });
                 });
             });
         });
@@ -326,9 +364,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.delete-form').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+
                 Swal.fire({
                     title: 'Are you sure?',
-                    text: "You won't be able to revert this!",
+                    text: 'You won\'t be able to revert this!',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
@@ -336,14 +375,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        const formData = new FormData(this);
+
                         const csrfToken = document.querySelector('meta[name="csrf-token"]');
                         if (!csrfToken) {
-                            Swal.fire({ icon: 'error', title: 'Error!', text: 'CSRF token not found.' });
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'CSRF token not found. Please refresh the page.'
+                            });
                             return;
                         }
+
                         fetch(this.action, {
                             method: 'POST',
-                            body: new FormData(this),
+                            body: formData,
                             headers: {
                                 'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
                                 'Accept': 'application/json',
@@ -353,13 +399,30 @@ document.addEventListener('DOMContentLoaded', function() {
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                Swal.fire({ icon: 'success', title: 'Deleted!', text: data.message, timer: 2000, showConfirmButton: false })
-                                    .then(() => location.reload());
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: data.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload();
+                                });
                             } else {
-                                Swal.fire({ icon: 'error', title: 'Error!', text: data.message || 'An error occurred.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: data.message || 'An error occurred while deleting the item'
+                                });
                             }
                         })
-                        .catch(() => Swal.fire({ icon: 'error', title: 'Error!', text: 'An error occurred.' }));
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'An error occurred while deleting the item'
+                            });
+                        });
                     }
                 });
             });
@@ -368,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function bindPaginationLinks() {
         document.querySelectorAll('#table-container .pagination a').forEach(link => {
+            link.removeEventListener('click', paginationClickHandler);
             link.addEventListener('click', paginationClickHandler);
         });
     }
@@ -377,27 +441,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const href = this.href;
         if (!href) return;
 
-        fetch(href, {
+        const params = new URL(href);
+        if (perPageSelect && perPageSelect.value) {
+            params.searchParams.set('per_page', perPageSelect.value);
+        }
+
+        fetch(params.toString(), {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(response => response.text())
+        .then(r => r.text())
         .then(html => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             const newContent = doc.querySelector('#table-container');
-            const tableContainer = document.getElementById('table-container');
             
-            if (newContent && tableContainer) {
-                tableContainer.innerHTML = newContent.innerHTML;
-                history.pushState({}, '', href);
+            if (newContent) {
+                document.getElementById('table-container').innerHTML = newContent.innerHTML;
+                history.pushState({}, '', params.toString());
                 attachFormListeners();
                 bindPaginationLinks();
-            } else {
-                window.location.href = href;
             }
         })
         .catch(() => {
-            window.location.href = href;
+            window.location.href = params.toString();
         });
     }
 
@@ -445,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function exportData(type) {
+    function exportData(type, subtype = null) {
         const searchParams = new URLSearchParams(window.location.search);
 
         const formData = new FormData(filterForm);
@@ -457,6 +523,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (perPageSelect && perPageSelect.value) {
             searchParams.set('per_page', perPageSelect.value);
+        }
+
+        if (subtype) {
+            searchParams.set('subtype', subtype);
         }
 
         Swal.fire({

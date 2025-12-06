@@ -17,11 +17,11 @@ class InventoryItemController extends Controller
     private function calculateStatus($dateAcquired)
     {
         if (!$dateAcquired) {
-            return '≤ 5 years';
+            return 'New';
         }
 
         $years = now()->diffInYears($dateAcquired);
-        return $years <= 5 ? '≤ 5 years' : '> 5 years';
+        return $years <= 5 ? 'New' : 'For Replacement';
     }
 
     private function applyDateFilters(Request $request, $query)
@@ -107,10 +107,6 @@ class InventoryItemController extends Controller
     $departments = Department::orderBy('department')->get();
     $employees = Employee::orderBy('firstname')->get();
 
-    if ($request->ajax()) {
-        return view('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))->render();
-    }
-
     return view('inventory.tabs.index', compact('items', 'groupedItems', 'departments', 'employees', 'perPage'));
 }
 
@@ -138,11 +134,6 @@ class InventoryItemController extends Controller
         ]);
 
         $validated['status'] = $this->calculateStatus($validated['date_acquired']);
-
-        // Set default serviceability if not provided
-        if (!isset($validated['serviceability']) || empty($validated['serviceability'])) {
-            $validated['serviceability'] = 'Good Condition';
-        }
 
         $item = InventoryItem::create($validated);
 
@@ -196,7 +187,6 @@ class InventoryItemController extends Controller
             'co_mooe' => 'required|string|max:255',
             'date_acquired' => 'required|date',
             'remarks' => 'nullable|string',
-            'serviceability' => 'nullable|string|in:Beyond Economic Repair,Good Condition,For Replacement',
         ]);
 
         // Recalculate status based on possibly updated date_acquired
@@ -237,52 +227,75 @@ class InventoryItemController extends Controller
     }
 
     public function export(Request $request, $type)
-{
-    $format = $request->get('format', 'inventory'); // ppe, rpcsp, inventory
+    {
+        $query = InventoryItem::active();
 
-    $query = InventoryItem::active();
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchTerms = array_filter(explode(' ', $search));
 
-    // Apply same filters as index
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $searchTerms = array_filter(explode(' ', $search));
-
-        $query->where(function($q) use ($searchTerms) {
-            foreach ($searchTerms as $term) {
-                $q->where(function($subQuery) use ($term) {
-                    $subQuery->where('division', 'LIKE', "%{$term}%")
-                            ->orWhere('enduser', 'LIKE', "%{$term}%")
-                            ->orWhere('classification', 'LIKE', "%{$term}%")
-                            ->orWhere('description', 'LIKE', "%{$term}%")
-                            ->orWhere('serial_number', 'LIKE', "%{$term}%")
-                            ->orWhere('property_number', 'LIKE', "%{$term}%")
-                            ->orWhere('emp_no', 'LIKE', "%{$term}%");
-                });
-            }
-        });
-    }
-
-    if ($request->filled('status')) $query->where('status', $request->status);
-    if ($request->filled('division')) $query->where('division', $request->division);
-    if ($request->filled('date_from')) $query->whereDate('date_acquired', '>=', $request->date_from);
-    if ($request->filled('date_to')) $query->whereDate('date_acquired', '<=', $request->date_to);
-
-    $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
-    $css = File::get(public_path('pdf-styles.css'));
-    $mgbLogo = base64_encode(file_get_contents(public_path('assets/mgb.jpg')));
-    $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
-
-        if ($type === 'pdf') {
-            $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
-            $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo'))
-                ->setPaper('a3', 'landscape');
-            return $pdf->download('inventory.pdf');
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function($subQuery) use ($term) {
+                        $subQuery->where('division', 'LIKE', "%{$term}%")
+                                ->orWhere('enduser', 'LIKE', "%{$term}%")
+                                ->orWhere('classification', 'LIKE', "%{$term}%")
+                                ->orWhere('description', 'LIKE', "%{$term}%")
+                                ->orWhere('remarks', 'LIKE', "%{$term}%")
+                                ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                                ->orWhere('property_number', 'LIKE', "%{$term}%")
+                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
+                    });
+                }
+            });
         }
 
-    if ($type === 'csv') {
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('division')) {
+            $query->where('division', $request->division);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date_acquired', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date_acquired', '<=', $request->date_to);
+        }
+
+        if ($request->tab === 'ipm') {
+            $query->where('classification', '!=', 'Monitor');
+        }
+
+        $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
+
+        $tab = $request->tab ?? 'inventory';
+        $css = File::get(public_path('pdf-styles.css'));
+
+        // Encode logos for PDF
+        $mgbLogo = base64_encode(file_get_contents(public_path('assets/mgb.jpg')));
+        $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
+
+        if ($type === 'pdf') {
+            $subtype = $request->get('subtype', 'inventory');
+            if ($subtype === 'rpcsc') {
+                $view = 'inventory.export-pdf-rpcsc';
+            } elseif ($subtype === 'ppe') {
+                $view = 'inventory.export-pdf-ppe';
+            } else {
+                $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
+            }
+            $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo'))
+                ->setPaper('a3', 'landscape');
+            return $pdf->download($subtype . '.pdf');
+        }
+
+        if ($type === 'csv') {
             $csv = Writer::createFromString('');
 
-            if ($format === 'ipm') {
+            if ($tab === 'ipm') {
                 // IPM-specific CSV headers and data
                 $headers = [
                     'No',
@@ -332,7 +345,7 @@ class InventoryItemController extends Controller
                 $headers = [
                     'No', 'Division', 'Enduser', 'Classification', 'Description',
                     'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
-                    'Date Acquired', 'Remarks', 'Status', 'Serviceability'
+                    'Date Acquired', 'Remarks', 'Status'
                 ];
                 $csv->insertOne($headers);
 
@@ -349,8 +362,7 @@ class InventoryItemController extends Controller
                         $item->co_mooe,
                         $item->date_acquired->format('M d, Y'),
                         $item->remarks ?? 'N/A',
-                        $item->status == 'New' ? '≤ 5' : '> 5',
-                        $item->serviceability ?? 'N/A',
+                        $item->status,
                     ];
                     $csv->insertOne($row);
                 }
@@ -544,4 +556,3 @@ class InventoryItemController extends Controller
     {
     }
 }
-?>

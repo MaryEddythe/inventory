@@ -74,6 +74,15 @@
         <label for="remarks-{{ $item->no }}" class="form-label">Remarks</label>
         <textarea class="form-control" id="remarks-{{ $item->no }}" name="remarks" rows="2">{{ old('remarks', $item->remarks) }}</textarea>
     </div>
+    <div class="mb-3">
+        <label for="serviceability-{{ $item->no }}" class="form-label">Serviceability</label>
+        <select class="form-select" id="serviceability-{{ $item->no }}" name="serviceability">
+            <option value="" disabled>Select Serviceability</option>
+            <option value="Beyond Economic Repair" {{ old('serviceability', $item->serviceability) == 'Beyond Economic Repair' ? 'selected' : '' }}>Beyond Economic Repair</option>
+            <option value="Good Condition" {{ old('serviceability', $item->serviceability) == 'Good Condition' ? 'selected' : '' }}>Good Condition</option>
+            <option value="For Replacement" {{ old('serviceability', $item->serviceability) == 'For Replacement' ? 'selected' : '' }}>For Replacement</option>
+        </select>
+    </div>
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
         <button type="button" class="btn btn-secondary me-md-2" data-bs-dismiss="modal">Cancel</button>
         <button type="submit" class="btn btn-primary">Update Item</button>

@@ -1,2 +1,0 @@
-- [x] Fix update method in InventoryItemController to set updated_at = now() before saving
-- [x] Fix destroy method in InventoryItemController to set updated_at = now() instead of emp_no

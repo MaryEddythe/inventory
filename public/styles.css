@@ -191,18 +191,29 @@ header {
     font-weight: 500;
 }
 
-.badge-new {
-    background: #28a745 !important;
-    color: #fff !important;
-}
 .badge-age-new {
     background: #28a745 !important; 
     color: #fff !important;
 }
 
 .badge-age-old {
-    background: #ffc107 !important; 
+    background: #ffc107 !important;
     color: #222 !important;
+}
+
+.badge-serviceability-good-condition {
+    background: #006400 !important;
+    color: #fff !important;
+}
+
+.badge-serviceability-for-replacement {
+    background: #A65E00 !important;
+    color: #fff !important;
+}
+
+.badge-serviceability-beyond-economic-repair {
+    background: #7A0000 !important;
+    color: #fff !important;
 }
 .pagination .page-link {
     border-radius: 8px;

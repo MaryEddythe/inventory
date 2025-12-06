@@ -30,6 +30,7 @@ class InventoryItem extends Model
         'remarks',
         'status',
         'condition',
+        'serviceability',
         'system_boot_up',
         'hardware',
         'performance',

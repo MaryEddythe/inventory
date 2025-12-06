@@ -353,6 +353,39 @@ body {
     min-width: 20px;
     text-align: center;
 }
+
+.pdf-serviceability-good {
+    background-color: #28a745;
+    color: white;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-size: 10px;
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+}
+
+.pdf-serviceability-repair {
+    background-color: #ffc107;
+    color: black;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-size: 10px;
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+}
+
+.pdf-serviceability-beyond {
+    background-color: #dc3545;
+    color: white;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-size: 10px;
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+}
 .pdf-col-2 { width: 0.5%; }
 .pdf-col-3 { width: 3%; }
 .pdf-col-5 { width: 6%; }

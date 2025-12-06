@@ -43,7 +43,16 @@
                     <i class="bi bi-download me-1"></i> Export
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item export-option" href="#" data-type="pdf"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export as PDF</a></li>
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#">
+                            <i class="bi bi-file-earmark-pdf text-danger me-2"></i>Export as PDF
+                        </a>
+                        <ul class="dropdown-menu submenu">
+                            <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="inventory"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Inventory</a></li>
+                            <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="rpcsc"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>RPCSC</a></li>
+                            <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="ppe"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PPE</a></li>
+                        </ul>
+                    </li>
                     <li><a class="dropdown-item export-option" href="#" data-type="csv"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</a></li>
                 </ul>
             </div>
@@ -91,6 +100,39 @@
 @include('inventory.modals.filter-modal')
 @endsection
 
+@push('styles')
+<style>
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    margin-top: -1px;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: .375rem;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.175);
+    z-index: 1050;
+}
+
+.dropdown-submenu .submenu.show {
+    display: block;
+}
+
+.dropdown-submenu .dropdown-toggle::after {
+    content: "\f145";
+    font-family: "bootstrap-icons";
+    border: none;
+    margin-left: auto;
+    vertical-align: middle;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -124,11 +166,31 @@ document.addEventListener('DOMContentLoaded', function() {
         updateResults();
     });
 
+    // Handle submenu toggle
+    const pdfMenuItem = document.querySelector('.dropdown-submenu .dropdown-toggle');
+    const submenu = document.querySelector('.dropdown-submenu .submenu');
+
+    if (pdfMenuItem && submenu) {
+        pdfMenuItem.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            submenu.classList.toggle('show');
+        });
+
+        // Close submenu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!pdfMenuItem.contains(e.target) && !submenu.contains(e.target)) {
+                submenu.classList.remove('show');
+            }
+        });
+    }
+
     document.querySelectorAll('.export-option').forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
             const exportType = this.getAttribute('data-type');
-            exportData(exportType);
+            const subtype = this.getAttribute('data-subtype');
+            exportData(exportType, subtype);
         });
     });
 
@@ -449,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function exportData(type) {
+    function exportData(type, subtype = null) {
         const searchParams = new URLSearchParams(window.location.search);
 
         const formData = new FormData(filterForm);
@@ -461,6 +523,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (perPageSelect && perPageSelect.value) {
             searchParams.set('per_page', perPageSelect.value);
+        }
+
+        if (subtype) {
+            searchParams.set('subtype', subtype);
         }
 
         Swal.fire({

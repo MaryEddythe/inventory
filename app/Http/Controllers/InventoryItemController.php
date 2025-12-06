@@ -279,10 +279,17 @@ class InventoryItemController extends Controller
         $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
 
         if ($type === 'pdf') {
-            $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
+            $subtype = $request->get('subtype', 'inventory');
+            if ($subtype === 'rpcsc') {
+                $view = 'inventory.export-pdf-rpcsc';
+            } elseif ($subtype === 'ppe') {
+                $view = 'inventory.export-pdf-ppe';
+            } else {
+                $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
+            }
             $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo'))
                 ->setPaper('a3', 'landscape');
-            return $pdf->download('inventory.pdf');
+            return $pdf->download($subtype . '.pdf');
         }
 
         if ($type === 'csv') {

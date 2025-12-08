@@ -29,7 +29,7 @@
         <table class="pdf-table pdf-table-striped">
             <thead>
                 <tr>
-                    <th colspan="12" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
+                    <th colspan="13" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
                 </tr>
                 <tr>
                     <th class="pdf-col-2 pdf-text-center" style="width: 0.5%;">No</th>
@@ -44,6 +44,7 @@
                     <th class="pdf-col-6 pdf-text-center">Date Acquired</th>
                     <th class="pdf-col-12">Remarks</th>
                     <th class="pdf-col-5 pdf-text-center">Status</th>
+                    <th class="pdf-col-8 pdf-text-center">Serviceability</th>
                 </tr>
             </thead>
             <tbody>

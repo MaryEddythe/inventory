@@ -53,7 +53,7 @@
                         </a>
                         <ul class="dropdown-menu submenu">
                             <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="inventory"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>Inventory</a></li>
-                            <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="rpcsc"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>RPCSC</a></li>
+                            <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="rpcsp"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>RPCSP</a></li>
                             <li><a class="dropdown-item export-option" href="#" data-type="pdf" data-subtype="ppe"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PPE</a></li>
                         </ul>
                     </li>

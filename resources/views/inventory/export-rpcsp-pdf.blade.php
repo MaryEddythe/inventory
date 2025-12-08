@@ -2,317 +2,187 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>RPCSP Report</title>
-    <style>:root { --total-records: "{{ $items->count() }}"; } {{ $css }}</style>
+    <title>REPORT ON THE PHYSICAL COUNT OF SEMI-EXPENDABLE PROPERTY</title>
+    <link rel="stylesheet" href="{{ public_path('pdf-styles.css') }}">
 </head>
-<body>
-    <table class="pdf-header" style="width: 100%; border: none;">
-        <tr>
-            <td style="width: 50%; text-align: left; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 200px;">
-            </td>
-            <td style="width: 60%; text-align: center; vertical-align: middle;">
-                <h2>Mines and Geosciences Bureau</h2>
-                <h3>Regional Office VI</h3>
-                <h1>RPCSP REPORT SUMMARY</h1>
-                <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
-            </td>
-            <td style="width: 50%; text-align: right; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 200px;">
-            </td>
+<body class="rpcsp-body">
+
+<div class="rpcsp-header-info">
+    <h1 class="rpcsp-h1">REPORT ON THE PHYSICAL COUNT OF SEMI-EXPENDABLE PROPERTY</h1>
+    <h2 class="rpcsp-h2">OTHER PROPERTY PLANT AND EQUIPMENT</h2>
+    <h3 class="rpcsp-h3">(Type of Semi-Expendable Property)</h3>
+    <p><strong>As at December 31, 2024</strong></p>
+</div>
+
+<div class="rpcsp-meta-row">
+    <span class="rpcsp-meta-label">Fund Cluster:</span>
+    <span>&nbsp;</span>
+</div>
+
+<div style="margin: 5px 0; font-size: 9px;">
+    <div style="margin: 3px 0;">
+        <span class="rpcsp-meta-label">For which</span>
+        <span>MAY FLORENCE A. PABELENONIO</span>
+        <span class="rpcsp-meta-label" style="margin-left: 10px;">Supply Officer II/GSS</span>
+        <span>,</span>
+        <span>DENR-Mines and Geosciences Bureau R-6</span>
+        <span style="margin-left: 10px;">is accountable, having assumed such accountability on</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 60px;">&nbsp;</span>
+    </div>
+    <div style="margin-top: 3px; text-align: center; font-size: 8px;">
+        <span>(Name of Accountable Officer)</span>
+        <span style="margin-left: 40px;">(Office Designation)</span>
+        <span style="margin-left: 40px;">(Agency/Office)</span>
+        <span style="margin-left: 40px;">(Date of Assumption)</span>
+    </div>
+</div>
+
+<table class="rpcsp-table">
+    <thead>
+        <tr class="rpcsp-header-row">
+            <th class="rpcsp-article-col" rowspan="2">ARTICLE</th>
+            <th class="rpcsp-description-col" rowspan="2">DESCRIPTION</th>
+            <th class="rpcsp-property-col" rowspan="2">PROPERTY NUMBER</th>
+            <th class="rpcsp-uom-col" rowspan="2">UNIT OF MEASURE</th>
+            <th colspan="2" class="rpcsp-text-center">BALANCE PER</th>
+            <th class="rpcsp-onhand-col" rowspan="2">ON HAND<br>PER COUNT<br>(Quantity)</th>
+            <th class="rpcsp-total-value-col" rowspan="2">TOTAL<br>VALUE</th>
+            <th class="rpcsp-date-col" rowspan="2">DATE<br>ACQUIRED</th>
+            <th colspan="2" class="rpcsp-text-center">SHORTAGE/<br>OVERAGE</th>
+            <th class="rpcsp-remarks-col" rowspan="2">REMARKS</th>
         </tr>
-    </table>
-    <hr>
+        <tr class="rpcsp-header-row">
+            <th class="rpcsp-unit-value-col">UNIT VALUE</th>
+            <th class="rpcsp-card-col">CARD<br>(Quantity)</th>
+            <th class="rpcsp-shortage-qty-col">Quantity</th>
+            <th class="rpcsp-shortage-value-col">Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        @php
+            // Debug: Check what data we have
+            $totalItems = $items->count();
+            $filteredItems = $items->filter(function($item) {
+                $isValid = $item->unit_price >= 49999 && $item->co_mooe === 'CO';
+                return $isValid;
+            });
 
-    <!-- Detailed Inventory -->
-    <div class="pdf-mt-3">
-        <table class="pdf-table pdf-table-striped">
-            <thead>
-                <tr>
-                    <th colspan="13" class="pdf-bg-dark">DETAILED RPCSP LISTING</th>
-                </tr>
-                <tr>
-                    <th class="pdf-col-2 pdf-text-center" style="width: 0.5%;">No</th>
-                    <th class="pdf-col-10">Department</th>
-                    <th class="pdf-col-10">End User</th>
-                    <th class="pdf-col-9" style="width: 10%;">Classification</th>
-                    <th class="pdf-col-15">Description</th>
-                    <th class="pdf-col-8">Serial No</th>
-                    <th class="pdf-col-8">Property No</th>
-                    <th class="pdf-col-8 pdf-text-right">Unit Price</th>
-                    <th class="pdf-col-5">CO/MOOE</th>
-                    <th class="pdf-col-6 pdf-text-center">Date Acquired</th>
-                    <th class="pdf-col-12">Remarks</th>
-                    <th class="pdf-col-5 pdf-text-center">Status</th>
-                    <th class="pdf-col-8 pdf-text-center">Serviceability</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    // Group PDF items by division
-                    $groupedItems = $items->groupBy('division');
-                    $rowNumber = 1;
-                @endphp
+            // Group by classification
+            $classificationItems = $filteredItems->groupBy('classification');
 
-                @foreach($groupedItems as $division => $divisionItems)
+            $totalGrandValue = 0;
+            $itemCount = 0;
+        @endphp
+
+        @if($filteredItems->count() > 0)
+            @foreach($classificationItems as $classification => $groupedItems)
+                @foreach($groupedItems as $item)
+                    @php
+                        // Determine Unit of Measure based on description
+                        $uom = 'unit';
+                        $desc = strtolower($item->description ?? '');
+
+                        if (str_contains($desc, 'desktop') || str_contains($desc, 'set')) {
+                            $uom = 'set';
+                        } elseif (str_contains($desc, 'monitor') ||
+                                  str_contains($desc, 'printer') ||
+                                  str_contains($desc, 'scanner') ||
+                                  str_contains($desc, 'laptop') ||
+                                  str_contains($desc, 'tablet') ||
+                                  str_contains($desc, 'phone')) {
+                            $uom = 'pc';
+                        } elseif (str_contains($desc, 'pair')) {
+                            $uom = 'pair';
+                        }
+
+                        // Format remarks: enduser / division
+                        $remarks = '';
+                        if ($item->enduser && $item->division) {
+                            $remarks = $item->enduser . ' / ' . $item->division;
+                        } elseif ($item->enduser) {
+                            $remarks = $item->enduser;
+                        } elseif ($item->division) {
+                            $remarks = $item->division;
+                        }
+
+                        // Calculate total value (unit_price × 1 since quantity is 1)
+                        $totalValue = $item->unit_price;
+                        $totalGrandValue += $totalValue;
+                        $itemCount++;
+
+                        // Format classification - convert DESKTOP to COMPUTER
+                        $article = $classification;
+                        if (strtoupper($classification) === 'DESKTOP') {
+                            $article = 'COMPUTER';
+                        }
+                    @endphp
                     <tr>
-                        <td colspan="13" style="background:#efefef;"><strong>Division: {{ $division ?? 'N/A' }}</strong></td>
-                    </tr>
-
-                    @foreach($divisionItems as $item)
-                        @php
-                            $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
-                            $pdfBadgeClass = $yearsSinceAcquisition <= 5 ? 'pdf-status-new' : 'pdf-status-replace';
-                        @endphp
-                        <tr>
-                            <td class="pdf-text-center">{{ $rowNumber++ }}</td>
-                            <td>{{ $item->department_name ?? $item->division }}</td>
-                            <td>{!! $item->enduser ?? 'N/A' !!}</td>
-                            <td>{{ $item->classification }}</td>
-                            <td>{{ $item->description }}</td>
-                            <td>{{ $item->serial_number ?? 'N/A' }}</td>
-                            <td>{{ $item->property_number }}</td>
-                            <td class="pdf-text-right">{{ number_format($item->unit_price, 2) }}</td>
-                            <td>{{ $item->co_mooe }}</td>
-                            <td class="pdf-text-center pdf-nowrap">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
-                            <td>{{ $item->remarks ?? 'N/A' }}</td>
-                            <td class="pdf-text-center">
-                                <span class="{{ $pdfBadgeClass }}">
-                                    {{ $item->status }}
-                                </span>
-                            </td>
-                            <td class="pdf-text-center">
-                                @if($item->serviceability)
-                                    @if(strtolower($item->serviceability) == 'good condition')
-                                        <span class="pdf-serviceability-good">Good</span>
-                                    @elseif(strtolower($item->serviceability) == 'for replacement')
-                                        <span class="pdf-serviceability-repair">Replace</span>
-                                    @elseif(strtolower($item->serviceability) == 'beyond economic repair')
-                                        <span class="pdf-serviceability-beyond">BER</span>
-                                    @else
-                                        {{ $item->serviceability }}
-                                    @endif
-                                @else
-                                    N/A
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Executive Summary -->
-    <div class="pdf-summary-section pdf-mt-3" style="page-break-before: always;">
-        <table class="pdf-summary-table pdf-table-striped">
-            <thead>
-                <tr>
-                    <th colspan="4" class="pdf-bg-dark pdf-summary-header">EXECUTIVE SUMMARY BY DEPARTMENT</th>
-                </tr>
-                <tr class="pdf-bg-primary">
-                    <th class="pdf-col-40 pdf-summary-th">Department</th>
-                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-new-col">New Items</th>
-                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-replace-col">For Replacement</th>
-                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-total-col">Total Items</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $departmentSummaries = collect();
-                    $allDepts = \App\Models\Department::all();
-                    foreach ($allDepts as $dept) {
-                        $group = $items->filter(function ($item) use ($dept) {
-                            return $item->division == $dept->department;
-                        });
-                        $newCount = $group->filter(function ($item) {
-                            $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
-                            return $yearsSinceAcquisition <= 5;
-                        })->count();
-                        $replacementCount = $group->filter(function ($item) {
-                            $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
-                            return $yearsSinceAcquisition > 5;
-                        })->count();
-                        $totalCount = $group->count();
-                        $departmentSummaries->push([
-                            'name' => $dept->department,
-                            'new' => $newCount,
-                            'replacement' => $replacementCount,
-                            'total' => $totalCount
-                        ]);
-                    }
-                    $totalNew = $departmentSummaries->sum('new');
-                    $totalReplacement = $departmentSummaries->sum('replacement');
-                    $grandTotalItems = $departmentSummaries->sum('total');
-                @endphp
-                @foreach($departmentSummaries as $summary)
-                    <tr class="pdf-summary-row">
-                        <td class="pdf-summary-td pdf-dept-name"><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center pdf-summary-td pdf-new-count">{{ $summary['new'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-replace-count">{{ $summary['replacement'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
+                        <td class="rpcsp-article-col pdf-text-center">{{ strtoupper($article) }}</td>
+                        <td class="rpcsp-description-col">{{ ucwords($item->description) }}</td>
+                        <td class="rpcsp-property-col pdf-text-center">{{ $item->property_number ?? 'N/A' }}</td>
+                        <td class="rpcsp-uom-col pdf-text-center">{{ $uom }}</td>
+                        <td class="rpcsp-unit-value-col pdf-text-right">{{ number_format($item->unit_price, 2) }}</td>
+                        <td class="rpcsp-card-col pdf-text-center">1</td> <!-- Balance per Card (Quantity) -->
+                        <td class="rpcsp-onhand-col pdf-text-center">1</td> <!-- On Hand per Count (Quantity) -->
+                        <td class="rpcsp-total-value-col pdf-text-right">{{ number_format($totalValue, 2) }}</td>
+                        <td class="rpcsp-date-col pdf-text-center">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
+                        <td class="rpcsp-shortage-qty-col pdf-text-center"></td> <!-- Shortage/Overage Quantity -->
+                        <td class="rpcsp-shortage-value-col pdf-text-right"></td> <!-- Shortage/Overage Value -->
+                        <td class="rpcsp-remarks-col">{{ $remarks }}</td>
                     </tr>
                 @endforeach
-            </tbody>
-            <tfoot>
-                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total">
-                    <td class="pdf-summary-td"><strong>OVERALL TOTAL</strong></td>
-                    <td class="pdf-text-center pdf-summary-td pdf-new-total">{{ $totalNew }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-replace-total">{{ $totalReplacement }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalItems }}</td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
+            @endforeach
 
-    <!-- Item Type Summary -->
-    <div class="pdf-summary-section pdf-mt-3" style="page-break-after: always;">
-        <table class="pdf-summary-table pdf-table-striped">
-            <thead>
-                <tr>
-                    <th colspan="9" class="pdf-bg-dark pdf-summary-header">ITEM TYPE SUMMARY BY DEPARTMENT</th>
-                </tr>
-                <tr class="pdf-bg-primary">
-                    <th class="pdf-col-15 pdf-summary-th">Department</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-laptop-col">Laptops</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-printer-col">Printers</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-desktop-col">Desktops</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-scanner-col">Scanners</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-photocopier-col">Photocopiers</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-monitor-col">Monitors</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-other-col">Others</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-total-col">Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $itemTypeSummaries = collect();
-                    foreach ($allDepts as $dept) {
-                        $deptItems = $items->filter(function ($item) use ($dept) {
-                            return $item->division == $dept->department;
-                        });
-
-                        $laptops = $deptItems->filter(function ($item) {
-                            return stripos($item->classification, 'laptop') !== false || stripos($item->description, 'laptop') !== false;
-                        })->count();
-
-                        $printers = $deptItems->filter(function ($item) {
-                            return stripos($item->classification, 'printer') !== false || stripos($item->description, 'printer') !== false;
-                        })->count();
-
-                        $desktops = $deptItems->filter(function ($item) {
-                            return stripos($item->classification, 'desktop') !== false || stripos($item->description, 'desktop') !== false;
-                        })->count();
-
-        $scanners = $deptItems->filter(function ($item) {
-            return stripos($item->classification, 'scanner') !== false || stripos($item->description, 'scanner') !== false;
-        })->count();
-
-                        $photocopiers = $deptItems->filter(function ($item) {
-                            return stripos($item->classification, 'photocopier') !== false || stripos($item->description, 'photocopier') !== false;
-                        })->count();
-
-                        $monitors = $deptItems->filter(function ($item) {
-                            return stripos($item->classification, 'monitor') !== false || stripos($item->description, 'monitor') !== false;
-                        })->count();
-
-                        $others = $deptItems->filter(function ($item) {
-                            $classification = strtolower($item->classification);
-                            $description = strtolower($item->description);
-                            return !(
-                                stripos($classification, 'laptop') !== false || stripos($description, 'laptop') !== false ||
-                                stripos($classification, 'printer') !== false || stripos($description, 'printer') !== false ||
-                                stripos($classification, 'desktop') !== false || stripos($description, 'desktop') !== false ||
-                                stripos($classification, 'scanner') !== false || stripos($description, 'scanner') !== false ||
-                                stripos($classification, 'photocopier') !== false || stripos($description, 'photocopier') !== false ||
-                                stripos($classification, 'monitor') !== false || stripos($description, 'monitor') !== false
-                            );
-                        })->count();
-
-                        $total = $deptItems->count();
-
-                        $itemTypeSummaries->push([
-                            'name' => $dept->department,
-                            'laptops' => $laptops,
-                            'printers' => $printers,
-                            'desktops' => $desktops,
-                            'scanners' => $scanners,
-                            'photocopiers' => $photocopiers,
-                            'monitors' => $monitors,
-                            'others' => $others,
-                            'total' => $total
-                        ]);
-                    }
-
-                    $totalLaptops = $itemTypeSummaries->sum('laptops');
-                    $totalPrinters = $itemTypeSummaries->sum('printers');
-                    $totalDesktops = $itemTypeSummaries->sum('desktops');
-                    $totalScanners = $itemTypeSummaries->sum('scanners');
-                    $totalPhotocopiers = $itemTypeSummaries->sum('photocopiers');
-                    $totalMonitors = $itemTypeSummaries->sum('monitors');
-                    $totalOthers = $itemTypeSummaries->sum('others');
-                    $grandTotalTypes = $itemTypeSummaries->sum('total');
-                @endphp
-                @foreach($itemTypeSummaries as $summary)
-                    <tr class="pdf-summary-row">
-                        <td class="pdf-summary-td pdf-dept-name"><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center pdf-summary-td pdf-laptop-count">{{ $summary['laptops'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-printer-count">{{ $summary['printers'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-desktop-count">{{ $summary['desktops'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-scanner-count">{{ $summary['scanners'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-photocopier-count">{{ $summary['photocopiers'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-monitor-count">{{ $summary['monitors'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-other-count">{{ $summary['others'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total">
-                    <td class="pdf-summary-td"><strong>OVERALL TOTAL</strong></td>
-                    <td class="pdf-text-center pdf-summary-td pdf-laptop-total">{{ $totalLaptops }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-printer-total">{{ $totalPrinters }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-desktop-total">{{ $totalDesktops }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-scanner-total">{{ $totalScanners }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-photocopier-total">{{ $totalPhotocopiers }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-monitor-total">{{ $totalMonitors }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-other-total">{{ $totalOthers }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalTypes }}</td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-
-    <!-- Signature Section -->
-    <div class="pdf-signature-section pdf-mt-3" style="page-break-inside: avoid;">
-        <table style="width: 100%; border: none;">
+            <!-- Grand Total Row -->
+            <tr class="pdf-bg-gray pdf-font-bold">
+                <td colspan="7" class="pdf-text-right">GRAND TOTAL ({{ $itemCount }} items):</td>
+                <td class="pdf-text-right">{{ number_format($totalGrandValue, 2) }}</td>
+                <td colspan="4"></td>
+            </tr>
+        @else
             <tr>
-                <!-- Left cell -->
-                <td class="pdf-col-30 pdf-text-left">
-                    <span class="pdf-signature-label">Prepared by:</span><br><br>
-                    <span class="pdf-signature-name">MARY EDDYTHE M. SORNITO</span><br>
-                    <span class="pdf-signature-title">Information Systems Analyst II</span>
-                </td>
-
-                <!-- Center cell for Regional Director -->
-                <td class="pdf-col-40 pdf-text-center" style="padding-top: 80px;">
-                    <span class="pdf-signature-label">Approved by:</span><br><br>
-                    <span class="pdf-signature-name">CECILIA L. OCHAVO-SAYCON</span><br>
-                    <span class="pdf-signature-title">Regional Director</span>
-                </td>
-
-                <!-- Right cell -->
-                <td class="pdf-col-30 pdf-text-right" style="padding-right: 80px;">
-                    <span class="pdf-signature-label" style="margin-right: 120px;">Reviewed by:</span><br><br>
-                    <span class="pdf-signature-name">MAY FLORENCE A. PABELONIO</span><br>
-                    <span class="pdf-signature-title" style="margin-right: 50px;">ICT Focal Person</span>
+                <td colspan="12" class="no-data">
+                    No qualifying semi-expendable property items found.<br>
+                    Criteria: Unit Price ≥ ₱49,999.00 AND CO/MOOE = 'CO'<br>
+                    Total items in database: {{ $totalItems }}<br>
+                    @if($totalItems > 0)
+                        Sample items:
+                        @foreach($items->take(3) as $sample)
+                            <br>- {{ $sample->description }} (₱{{ number_format($sample->unit_price, 2) }}, {{ $sample->co_mooe }})
+                        @endforeach
+                    @endif
                 </td>
             </tr>
-        </table>
-    </div>
+        @endif
+    </tbody>
+</table>
 
-    <div class="pdf-footer pdf-mt-2">
-        Total Records: {{ $items->count() }} | Generated by Inventory Management System - MGB</p>
+<div class="signature-section">
+    <div class="signature-row">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <strong>MARY EDDYTHE M. SORNITO</strong><br>
+            <span style="font-size: 8px;">Information Systems Analyst II</span><br>
+            <span style="font-size: 8px; font-style: italic;">Prepared by</span>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <strong>CECILIA L. OCHAVO-SAYCON</strong><br>
+            <span style="font-size: 8px;">Regional Director</span><br>
+            <span style="font-size: 8px; font-style: italic;">Approved by</span>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <strong>MAY FLORENCE A. PABELENONIO</strong><br>
+            <span style="font-size: 8px;">ICT Focal Person / Property Officer</span><br>
+            <span style="font-size: 8px; font-style: italic;">Certified Correct / Reviewed by</span>
+        </div>
     </div>
+</div>
+
+<div class="footer">
+    <p>Generated on: {{ now()->format('F d, Y h:i A') }} | Inventory Management System - MGB Region VI</p>
+</div>
+
 </body>
 </html>

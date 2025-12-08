@@ -440,3 +440,145 @@ body {
     text-transform: uppercase;
     margin-bottom: 2mm;
 }
+
+/* RPCSP PDF Styles */
+.rpcsp-body {
+    font-family: "Arial", sans-serif;
+    font-size: 10px;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
+
+.rpcsp-header-info {
+    text-align: center;
+    margin: 5px 0 10px 0;
+}
+
+.rpcsp-header-info p {
+    margin: 2px 0;
+}
+
+.rpcsp-h1, .rpcsp-h2, .rpcsp-h3 {
+    margin: 3px 0;
+    text-align: center;
+    padding: 0;
+}
+
+.rpcsp-h1 {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.rpcsp-h2 {
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.rpcsp-h3 {
+    font-size: 10px;
+}
+
+.rpcsp-meta-row {
+    margin: 5px 0;
+    font-size: 9px;
+}
+
+.rpcsp-meta-label {
+    font-weight: bold;
+}
+
+.rpcsp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    table-layout: fixed;
+    font-size: 8px;
+}
+
+.rpcsp-table th, .rpcsp-table td {
+    border: 1px solid #000;
+    padding: 3px;
+    text-align: left;
+    vertical-align: top;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+.rpcsp-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    text-align: center;
+}
+
+.rpcsp-text-center {
+    text-align: center;
+}
+
+.rpcsp-text-right {
+    text-align: right;
+}
+
+.rpcsp-header-row {
+    background-color: #e8e8e8;
+    font-weight: bold;
+}
+
+.rpcsp-note-section {
+    margin-top: 15px;
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.rpcsp-signature-section {
+    margin-top: 30px;
+    page-break-inside: avoid;
+}
+
+.rpcsp-signature-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.rpcsp-signature-box {
+    flex: 1;
+    text-align: center;
+}
+
+.rpcsp-signature-line {
+    height: 40px;
+    border-bottom: 1px solid #000;
+    margin: 5px auto 5px auto;
+    width: 80%;
+}
+
+.rpcsp-footer {
+    margin-top: 20px;
+    font-size: 8px;
+    text-align: center;
+    color: #666;
+}
+
+.rpcsp-no-data {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #666;
+}
+
+.rpcsp-article-col { width: 8%; }
+.rpcsp-description-col { width: 18%; }
+.rpcsp-property-col { width: 8%; }
+.rpcsp-uom-col { width: 5%; }
+.rpcsp-unit-value-col { width: 7%; }
+.rpcsp-card-col { width: 5%; }
+.rpcsp-onhand-col { width: 5%; }
+.rpcsp-total-value-col { width: 7%; }
+.rpcsp-date-col { width: 7%; }
+.rpcsp-shortage-qty-col { width: 5%; }
+.rpcsp-shortage-value-col { width: 6%; }
+.rpcsp-remarks-col { width: 15%; }

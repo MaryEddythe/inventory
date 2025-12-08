@@ -227,129 +227,164 @@ class InventoryItemController extends Controller
     }
 
     public function export(Request $request, $type)
-    {
-        $query = InventoryItem::active();
+{
+    $query = InventoryItem::active();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $searchTerms = array_filter(explode(' ', $search));
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $searchTerms = array_filter(explode(' ', $search));
 
-            $query->where(function($q) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $q->where(function($subQuery) use ($term) {
-                        $subQuery->where('division', 'LIKE', "%{$term}%")
-                                ->orWhere('enduser', 'LIKE', "%{$term}%")
-                                ->orWhere('classification', 'LIKE', "%{$term}%")
-                                ->orWhere('description', 'LIKE', "%{$term}%")
-                                ->orWhere('remarks', 'LIKE', "%{$term}%")
-                                ->orWhere('serial_number', 'LIKE', "%{$term}%")
-                                ->orWhere('property_number', 'LIKE', "%{$term}%")
-                                ->orWhere('emp_no', 'LIKE', "%{$term}%");
-                    });
-                }
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('division')) {
-            $query->where('division', $request->division);
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('date_acquired', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('date_acquired', '<=', $request->date_to);
-        }
-
-        if ($request->tab === 'ipm') {
-            $query->where('classification', '!=', 'Monitor');
-        }
-
-        $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
-
-        $tab = $request->tab ?? 'inventory';
-        $css = File::get(public_path('pdf-styles.css'));
-
-        // Encode logos for PDF
-        $mgbLogo = base64_encode(file_get_contents(public_path('assets/mgb.jpg')));
-        $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
-
-        if ($type === 'pdf') {
-            $subtype = $request->get('subtype', 'inventory');
-            if ($subtype === 'rpcsc') {
-                $view = 'inventory.export-pdf-rpcsc';
-            } elseif ($subtype === 'ppe') {
-                $view = 'inventory.export-pdf-ppe';
-            } else {
-                $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
+        $query->where(function($q) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $q->where(function($subQuery) use ($term) {
+                    $subQuery->where('division', 'LIKE', "%{$term}%")
+                            ->orWhere('enduser', 'LIKE', "%{$term}%")
+                            ->orWhere('classification', 'LIKE', "%{$term}%")
+                            ->orWhere('description', 'LIKE', "%{$term}%")
+                            ->orWhere('remarks', 'LIKE', "%{$term}%")
+                            ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                            ->orWhere('property_number', 'LIKE', "%{$term}%")
+                            ->orWhere('emp_no', 'LIKE', "%{$term}%");
+                });
             }
-            $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo'))
-                ->setPaper('a3', 'landscape');
-            return $pdf->download($subtype . '.pdf');
+        });
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('division')) {
+        $query->where('division', $request->division);
+    }
+
+    if ($request->filled('date_from')) {
+        $query->whereDate('date_acquired', '>=', $request->date_from);
+    }
+    if ($request->filled('date_to')) {
+        $query->whereDate('date_acquired', '<=', $request->date_to);
+    }
+
+    if ($request->tab === 'ipm') {
+        $query->where('classification', '!=', 'Monitor');
+    }
+
+    // GET THE SUBTYPE FROM REQUEST
+    $subtype = $request->get('subtype', 'inventory');
+    
+    // APPLY RPCSP-SPECIFIC FILTERS ONLY WHEN SUBTYPE IS 'rpcsp'
+    if ($subtype === 'rpcsp') {
+        $query->where('unit_price', '>=', 49999)
+              ->where('co_mooe', 'CO');
+    }
+
+    $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
+
+    $tab = $request->tab ?? 'inventory';
+    $css = File::get(public_path('pdf-styles.css'));
+
+    // Encode logos for PDF
+    $mgbLogo = base64_encode(file_get_contents(public_path('assets/mgb.jpg')));
+    $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
+
+    if ($type === 'pdf') {
+        // Use the subtype already determined above
+        if ($subtype === 'rpcsp') {
+            $view = 'inventory.export-rpcsp-pdf';
+        } elseif ($subtype === 'ppe') {
+            $view = 'inventory.export-pdf-ppe';
+        } else {
+            $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
         }
+        $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo'))
+            ->setPaper('landscape');
+        return $pdf->download($subtype . '.pdf');
+    }
 
-        if ($type === 'csv') {
-            $csv = Writer::createFromString('');
+    if ($type === 'csv') {
+        $csv = Writer::createFromString('');
 
-            if ($tab === 'ipm') {
-                // IPM-specific CSV headers and data
-                $headers = [
-                    'No',
-                    'Div.',
-                    'User',
-                    'Type',
-                    'Desc',
-                    'Condition',
-                    'Boot Up',
-                    'HW',
-                    'Perf',
-                    'Cables/Conn',
-                    'Periph',
-                    'Rem',
-                    'Rec',
-                    'Date',
-                    'Start',
-                    'End'
+        if ($tab === 'ipm') {
+            // IPM-specific CSV headers and data
+            $headers = [
+                'No',
+                'Div.',
+                'User',
+                'Type',
+                'Desc',
+                'Condition',
+                'Boot Up',
+                'HW',
+                'Perf',
+                'Cables/Conn',
+                'Periph',
+                'Rem',
+                'Rec',
+                'Date',
+                'Start',
+                'End'
+            ];
+            $csv->insertOne($headers);
+
+            foreach ($items as $item) {
+                $row = [
+                    $item->no,
+                    $item->division,
+                    $item->enduser,
+                    $item->classification,
+                    $item->description,
+                    $item->condition,
+                    $item->system_boot_up ? 'Yes' : 'No',
+                    $item->hardware ? 'Yes' : 'No',
+                    $item->performance ? 'Yes' : 'No',
+                    $item->cables_connections ? 'Yes' : 'No',
+                    $item->peripherals ? 'Yes' : 'No',
+                    $item->remarks ?? 'N/A',
+                    $item->recommendation ?? 'N/A',
+                    $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A',
+                    $item->time_started ?? 'N/A',
+                    $item->time_ended ?? 'N/A'
                 ];
-                $csv->insertOne($headers);
+                $csv->insertOne($row);
+            }
 
-                foreach ($items as $item) {
+            $filename = 'ipm_inventory.csv';
+        } else {
+            // For RPCSP CSV export, add note about filtering
+            if ($subtype === 'rpcsp') {
+                $headers = [
+                    'No', 'Division', 'Enduser', 'Classification', 'Description',
+                    'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
+                    'Date Acquired', 'Remarks', 'Status', 'NOTE'
+                ];
+            } else {
+                $headers = [
+                    'No', 'Division', 'Enduser', 'Classification', 'Description',
+                    'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
+                    'Date Acquired', 'Remarks', 'Status'
+                ];
+            }
+            
+            $csv->insertOne($headers);
+
+            foreach ($items as $item) {
+                if ($subtype === 'rpcsp') {
                     $row = [
                         $item->no,
                         $item->division,
                         $item->enduser,
                         $item->classification,
                         $item->description,
-                        $item->condition,
-                        $item->system_boot_up ? 'Yes' : 'No',
-                        $item->hardware ? 'Yes' : 'No',
-                        $item->performance ? 'Yes' : 'No',
-                        $item->cables_connections ? 'Yes' : 'No',
-                        $item->peripherals ? 'Yes' : 'No',
+                        $item->serial_number ?? 'N/A',
+                        $item->property_number,
+                        number_format($item->unit_price, 2),
+                        $item->co_mooe,
+                        $item->date_acquired->format('M d, Y'),
                         $item->remarks ?? 'N/A',
-                        $item->recommendation ?? 'N/A',
-                        $item->date_conducted ? $item->date_conducted->format('M d, Y') : 'N/A',
-                        $item->time_started ?? 'N/A',
-                        $item->time_ended ?? 'N/A'
+                        $item->status,
+                        'RPCSP Export' // Add note for RPCSP
                     ];
-                    $csv->insertOne($row);
-                }
-
-                $filename = 'ipm_inventory.csv';
-            } else {
-                // Regular inventory CSV
-                $headers = [
-                    'No', 'Division', 'Enduser', 'Classification', 'Description',
-                    'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
-                    'Date Acquired', 'Remarks', 'Status'
-                ];
-                $csv->insertOne($headers);
-
-                foreach ($items as $item) {
+                } else {
                     $row = [
                         $item->no,
                         $item->division,
@@ -364,19 +399,20 @@ class InventoryItemController extends Controller
                         $item->remarks ?? 'N/A',
                         $item->status,
                     ];
-                    $csv->insertOne($row);
                 }
-
-                $filename = 'inventory.csv';
+                $csv->insertOne($row);
             }
 
-            return response($csv->getContent(), 200)
-                ->header('Content-Type', 'text/csv')
-                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            $filename = $subtype === 'rpcsp' ? 'rpcsp_inventory.csv' : 'inventory.csv';
         }
 
-        return back()->with('error', 'Invalid export type');
+        return response($csv->getContent(), 200)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
+
+    return back()->with('error', 'Invalid export type');
+}
 
     public function dashboard(Request $request)
 {

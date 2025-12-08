@@ -22,10 +22,10 @@
 <div style="margin: 5px 0; font-size: 9px;">
     <div style="margin: 3px 0;">
         <span class="rpcsp-meta-label">For which</span>
-        <span>MAY FLORENCE A. PABELENONIO</span>
-        <span class="rpcsp-meta-label" style="margin-left: 10px;">Supply Officer II/GSS</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 120px;">MAY FLORENCE A. PABELENONIO</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 100px;">Supply Officer II/GSS</span>
         <span>,</span>
-        <span>DENR-Mines and Geosciences Bureau R-6</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 150px;">DENR-Mines and Geosciences Bureau R-6</span>
         <span style="margin-left: 10px;">is accountable, having assumed such accountability on</span>
         <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 60px;">&nbsp;</span>
     </div>
@@ -71,6 +71,7 @@
             $classificationItems = $filteredItems->groupBy('classification');
 
             $totalGrandValue = 0;
+            $totalUnitValue = 0;
             $itemCount = 0;
         @endphp
 
@@ -108,6 +109,7 @@
                         // Calculate total value (unit_price × 1 since quantity is 1)
                         $totalValue = $item->unit_price;
                         $totalGrandValue += $totalValue;
+                        $totalUnitValue += $item->unit_price;
                         $itemCount++;
 
                         // Format classification - convert DESKTOP to COMPUTER
@@ -133,9 +135,11 @@
                 @endforeach
             @endforeach
 
-            <!-- Grand Total Row -->
+            <!-- Subtotal and Grand Total on Same Row -->
             <tr class="pdf-bg-gray pdf-font-bold">
-                <td colspan="7" class="pdf-text-right">GRAND TOTAL ({{ $itemCount }} items):</td>
+                <td colspan="4" class="pdf-text-right">SUBTOTAL:</td>
+                <td class="pdf-text-right">{{ number_format($totalUnitValue, 2) }}</td>
+                <td colspan="3" class="pdf-text-right">GRAND TOTAL:</td>
                 <td class="pdf-text-right">{{ number_format($totalGrandValue, 2) }}</td>
                 <td colspan="4"></td>
             </tr>
@@ -157,30 +161,53 @@
     </tbody>
 </table>
 
-<div class="signature-section">
-    <div class="signature-row">
-        <div class="signature-box">
-            <div class="signature-line"></div>
-            <strong>MARY EDDYTHE M. SORNITO</strong><br>
-            <span style="font-size: 8px;">Information Systems Analyst II</span><br>
-            <span style="font-size: 8px; font-style: italic;">Prepared by</span>
-        </div>
-        <div class="signature-box">
-            <div class="signature-line"></div>
-            <strong>CECILIA L. OCHAVO-SAYCON</strong><br>
-            <span style="font-size: 8px;">Regional Director</span><br>
-            <span style="font-size: 8px; font-style: italic;">Approved by</span>
-        </div>
-        <div class="signature-box">
-            <div class="signature-line"></div>
-            <strong>MAY FLORENCE A. PABELENONIO</strong><br>
-            <span style="font-size: 8px;">ICT Focal Person / Property Officer</span><br>
-            <span style="font-size: 8px; font-style: italic;">Certified Correct / Reviewed by</span>
-        </div>
-    </div>
+<div class="signature-section" style="margin-top: 20px; text-align: center;">
+    <table style="width: 100%; border: none; margin-bottom: 20px;">
+        <tr>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+                <span style="font-size: 8px; font-style: italic;">Certified Correct by</span><br>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
+                <strong>GLENN L. UMIPIG</strong><br>
+                <span style="font-size: 9px;">OIC Chief, FAD in Concurrent Capacity as</span><br>
+                <span style="font-size: 9px;">Chief, Finance Section</span>
+            </td>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+                <span style="font-size: 8px; font-style: italic;">Approved by</span><br>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
+                <strong>DELILAH P. AGUILAR</strong><br>
+                <span style="font-size: 9px;">Administrative Assistant III</span><br>
+                <span style="font-size: 9px;">Member</span>
+            </td>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+                <span style="font-size: 8px; font-style: italic;">Witnessed by</span><br>
+                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
+                <strong>CECILIA L. OCHAVO-SAYCON</strong><br>
+                <span style="font-size: 9px;">OIC Regional Director</span><br>
+                <span style="font-size: 9px;">Signature over Printed of COA</span><br>
+                <span style="font-size: 9px;">Representative</span>
+            </td>
+        </tr>
+    </table>
+
+    <table style="width: 100%; border: none;">
+        <tr>
+            <td style="width: 45%; text-align: center; vertical-align: top;">
+                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
+                <strong>PRUDENCIO C. BULAWAN IV</strong><br>
+                <span style="font-size: 9px;">D./Prop. Inspector</span><br>
+                <span style="font-size: 9px;">Member</span>
+            </td>
+            <td style="width: 45%; text-align: center; vertical-align: top;">
+                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
+                <strong>MAY FLORENCE A. PABELENONIO</strong><br>
+                <span style="font-size: 9px;">Supply Officer II/GSS</span><br>
+                <span style="font-size: 9px;">Member</span>
+            </td>
+        </tr>
+    </table>
 </div>
 
-<div class="footer">
+<div class="footer" style="text-align: center;">
     <p>Generated on: {{ now()->format('F d, Y h:i A') }} | Inventory Management System - MGB Region VI</p>
 </div>
 

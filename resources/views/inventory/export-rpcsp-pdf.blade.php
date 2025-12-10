@@ -63,7 +63,7 @@
             // Debug: Check what data we have
             $totalItems = $items->count();
             $filteredItems = $items->filter(function($item) {
-                $isValid = $item->unit_price >= 49999 && $item->co_mooe === 'CO';
+                $isValid = $item->unit_price <= 49999 && $item->co_mooe === 'CO';
                 return $isValid;
             });
 

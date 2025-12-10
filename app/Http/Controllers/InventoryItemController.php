@@ -272,9 +272,11 @@ class InventoryItemController extends Controller
     // GET THE SUBTYPE FROM REQUEST
     $subtype = $request->get('subtype', 'inventory');
     
-    // APPLY RPCSP-SPECIFIC FILTERS ONLY WHEN SUBTYPE IS 'rpcsp'
     if ($subtype === 'rpcsp') {
-        $query->where('unit_price', '>=', 49999)
+        $query->where('unit_price', '<=', 49999)
+              ->where('co_mooe', 'CO');
+    } elseif ($subtype === 'ppe') {
+        $query->where('unit_price', '>=', 50000)
               ->where('co_mooe', 'CO');
     }
 
@@ -292,7 +294,7 @@ class InventoryItemController extends Controller
         if ($subtype === 'rpcsp') {
             $view = 'inventory.export-rpcsp-pdf';
         } elseif ($subtype === 'ppe') {
-            $view = 'inventory.export-pdf-ppe';
+            $view = 'inventory.export-ppe-pdf';
         } else {
             $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
         }

@@ -1,6 +1,6 @@
 @page {
     margin: 15mm;
-    size: A4 landscape;
+    size: landscape;
 }
 .badge-new {
     background: #28a745 !important;
@@ -492,6 +492,8 @@ body {
 .rpcsp-table {
     width: 100%;
     border-collapse: collapse;
+    border: 1px solid #000;
+    border-right: 1px solid #000;
     margin-top: 10px;
     table-layout: fixed;
     font-size: 8px;
@@ -581,4 +583,4 @@ body {
 .rpcsp-date-col { width: 7%; }
 .rpcsp-shortage-qty-col { width: 5%; }
 .rpcsp-shortage-value-col { width: 6%; }
-.rpcsp-remarks-col { width: 15%; }
+.rpcsp-remarks-col { width: 15%; border-right: 1px solid #000 !important; }

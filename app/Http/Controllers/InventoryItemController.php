@@ -17,11 +17,11 @@ class InventoryItemController extends Controller
     private function calculateStatus($dateAcquired)
     {
         if (!$dateAcquired) {
-            return 'New';
+            return '≤ 5 years';
         }
 
         $years = now()->diffInYears($dateAcquired);
-        return $years <= 5 ? 'New' : 'For Replacement';
+        return $years <= 5 ? '≤ 5 years' : '> 5 years';
     }
 
     private function applyDateFilters(Request $request, $query)
@@ -457,12 +457,12 @@ class InventoryItemController extends Controller
 
     $statusData = collect([
         (object)[
-            'status' => 'New',
-            'count' => $statusCounts->get('New', 0)
+            'status' => '≤ 5 years',
+            'count' => $statusCounts->get('≤ 5 years', 0)
         ],
         (object)[
-            'status' => 'For Replacement',
-            'count' => $statusCounts->get('For Replacement', 0)
+            'status' => '> 5 years',
+            'count' => $statusCounts->get('> 5 years', 0)
         ],
     ]);
 

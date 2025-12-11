@@ -11,8 +11,8 @@
                         <label class="form-label">Status</label>
                         <select class="form-select" name="status">
                             <option value="">All Status</option>
-                            <option value="NEW">New</option>
-                            <option value="FOR REPLACEMENT">For Replacement</option>
+                            <option value="≤ 5 years">≤ 5 years</option>
+                            <option value="> 5 years">> 5 years</option>
                         </select>
                     </div>
                     <div class="mb-3">

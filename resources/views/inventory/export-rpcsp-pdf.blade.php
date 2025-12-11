@@ -19,7 +19,7 @@
     <span>&nbsp;</span>
 </div>
 
-<div style="margin: 5px 0; font-size: 9px;">
+<div style="margin: 5px 0; font-size: 7px;">
     <div style="margin: 3px 0;">
         <span class="rpcsp-meta-label">For which</span>
         <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 120px;">MAY FLORENCE A. PABELENONIO</span>

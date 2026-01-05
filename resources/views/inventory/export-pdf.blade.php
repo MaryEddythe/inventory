@@ -78,7 +78,7 @@
                             <td>{{ $item->remarks ?? 'N/A' }}</td>
                             <td class="pdf-text-center">
                                 <span class="{{ $pdfBadgeClass }}">
-                                    {{ $yearsSinceAcquisition <= 5 ? '≤ 5' : '> 5' }}
+                                    {{ $yearsSinceAcquisition <= 5 ? '<= 5' : '> 5' }}
                                 </span>
                             </td>
                             <td class="pdf-text-center">{{ $item->serviceability ?? 'N/A' }}</td>

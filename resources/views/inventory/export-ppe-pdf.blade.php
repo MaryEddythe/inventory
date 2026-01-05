@@ -56,7 +56,7 @@
             <th class="rpcsp-total-value-col" rowspan="2">TOTAL<br>VALUE</th>
             <th class="rpcsp-date-col" rowspan="2">DATE<br>ACQUIRED</th>
             <th colspan="2" class="rpcsp-text-center">SHORTAGE/<br>OVERAGE</th>
-            <th class="rpcsp-remarks-col" rowspan="2">REMARKS</th>
+            <th class="rpcsp-remarks-col" rowspan="2" style="border-right: 1px solid #000 !important;">REMARKS</th>
         </tr>
         <tr class="rpcsp-header-row">
             <th class="rpcsp-unit-value-col">UNIT VALUE</th>
@@ -144,7 +144,7 @@
                         <td class="rpcsp-date-col pdf-text-center">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
                         <td class="rpcsp-shortage-qty-col pdf-text-center"></td> <!-- Shortage/Overage Quantity -->
                         <td class="rpcsp-shortage-value-col pdf-text-right"></td> <!-- Shortage/Overage Value -->
-                        <td class="rpcsp-remarks-col">{{ $remarks }}</td>
+                        <td class="rpcsp-remarks-col" style="border-right: 1px solid #000 !important;">{{ $remarks }}</td>
                     </tr>
                 @endforeach
             @endforeach
@@ -155,7 +155,8 @@
                 <td class="pdf-text-right">{{ number_format($totalUnitValue, 2) }}</td>
                 <td colspan="3" class="pdf-text-right">GRAND TOTAL:</td>
                 <td class="pdf-text-right">{{ number_format($totalGrandValue, 2) }}</td>
-                <td colspan="4"></td>
+                <td colspan="3"></td>
+                <td style="border-right: 1px solid #000 !important;"></td>
             </tr>
         @else
             <tr>

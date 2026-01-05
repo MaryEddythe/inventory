@@ -20,20 +20,27 @@
 </div>
 
 <div style="margin: 5px 0; font-size: 9px;">
-    <div style="margin: 3px 0;">
+    <div style="margin: 3px 0; white-space: nowrap;">
         <span class="rpcsp-meta-label">For which</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 120px;">MAY FLORENCE A. PABELENONIO</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 100px;">Supply Officer II/GSS</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 200px; text-align: center;">MAY FLORENCE A. PABELENONIO</span>
         <span>,</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 150px;">DENR-Mines and Geosciences Bureau R-6</span>
-        <span style="margin-left: 10px;">is accountable, having assumed such accountability on</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 60px;">&nbsp;</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 150px; text-align: center;">Supply Officer II/GSS</span>
+        <span>,</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 200px; text-align: center;">DENR-Mines and Geosciences Bureau R-6</span>
+        <span>is accountable, having assumed such accountability on</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 60px; text-align: center;">&nbsp;</span>
     </div>
-    <div style="margin-top: 3px; text-align: center; font-size: 8px;">
-        <span>(Name of Accountable Officer)</span>
-        <span style="margin-left: 40px;">(Office Designation)</span>
-        <span style="margin-left: 40px;">(Agency/Office)</span>
-        <span style="margin-left: 40px;">(Date of Assumption)</span>
+
+    <!-- Aligned labels directly under each underlined field -->
+    <div style="margin-top: 3px; font-size: 8px; text-align: left; white-space: nowrap;">
+        <span style="display:inline-block; width: 52px;">&nbsp;</span>
+        <span style="display:inline-block; width: 200px; text-align:center;">(Name of Accountable Officer)</span>
+        <span style="display:inline-block; width: 6px;">&nbsp;</span>
+        <span style="display:inline-block; width: 150px; text-align:center;">(Office Designation)</span>
+        <span style="display:inline-block; width: 6px;">&nbsp;</span>
+        <span style="display:inline-block; width: 200px; text-align:center;">(Agency/Office)</span>
+        <span style="display:inline-block; width: 238px;">&nbsp;</span>
+        <span style="display:inline-block; width: 60px; text-align:center;">(Date of Assumption)</span>
     </div>
 </div>
 

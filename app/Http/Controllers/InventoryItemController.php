@@ -280,6 +280,12 @@ class InventoryItemController extends Controller
               ->where('co_mooe', 'CO');
     }
 
+    if ($subtype === 'ppe') {
+        $items = $query->orderByRaw("SUBSTRING_INDEX(enduser, ' ', -1) ASC")->get();
+    } else {
+        $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
+    }
+
     $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
 
     $tab = $request->tab ?? 'inventory';

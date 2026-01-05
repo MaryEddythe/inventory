@@ -19,21 +19,28 @@
     <span>&nbsp;</span>
 </div>
 
-<div style="margin: 5px 0; font-size: 7px;">
+<div style="margin: 5px 0; font-size: 9px;">
     <div style="margin: 3px 0;">
         <span class="rpcsp-meta-label">For which</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 120px;">MAY FLORENCE A. PABELENONIO</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 100px;">Supply Officer II/GSS</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 200px; text-align: center;">MAY FLORENCE A. PABELENONIO</span>
         <span>,</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 150px;">DENR-Mines and Geosciences Bureau R-6</span>
-        <span style="margin-left: 10px;">is accountable, having assumed such accountability on</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 60px;">&nbsp;</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 150px; text-align: center;">Supply Officer II/GSS</span>
+        <span>,</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 200px; text-align: center;">DENR-Mines and Geosciences Bureau R-6</span>
+        <span>is accountable, having assumed such accountability on</span>
+        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 60px; text-align: center;">&nbsp;</span>
     </div>
-    <div style="margin-top: 3px; text-align: center; font-size: 8px;">
-        <span>(Name of Accountable Officer)</span>
-        <span style="margin-left: 40px;">(Office Designation)</span>
-        <span style="margin-left: 40px;">(Agency/Office)</span>
-        <span style="margin-left: 40px;">(Date of Assumption)</span>
+
+    <!-- Aligned labels directly under each underlined field -->
+    <div style="margin-top: 3px; font-size: 8px; text-align: left; white-space: nowrap;">
+        <span style="display:inline-block; width: 52px;">&nbsp;</span>
+        <span style="display:inline-block; width: 200px; text-align:center;">(Name of Accountable Officer)</span>
+        <span style="display:inline-block; width: 6px;">&nbsp;</span>
+        <span style="display:inline-block; width: 150px; text-align:center;">(Office Designation)</span>
+        <span style="display:inline-block; width: 6px;">&nbsp;</span>
+        <span style="display:inline-block; width: 200px; text-align:center;">(Agency/Office)</span>
+        <span style="display:inline-block; width: 238px;">&nbsp;</span>
+        <span style="display:inline-block; width: 60px; text-align:center;">(Date of Assumption)</span>
     </div>
 </div>
 
@@ -49,7 +56,7 @@
             <th class="rpcsp-total-value-col" rowspan="2">TOTAL<br>VALUE</th>
             <th class="rpcsp-date-col" rowspan="2">DATE<br>ACQUIRED</th>
             <th colspan="2" class="rpcsp-text-center">SHORTAGE/<br>OVERAGE</th>
-            <th class="rpcsp-remarks-col" rowspan="2">REMARKS</th>
+            <th class="rpcsp-remarks-col" rowspan="2" style="border-right: 1px solid #000 !important;">REMARKS</th>
         </tr>
         <tr class="rpcsp-header-row">
             <th class="rpcsp-unit-value-col">UNIT VALUE</th>
@@ -62,9 +69,10 @@
         @php
             // Debug: Check what data we have
             $totalItems = $items->count();
-            $filteredItems = $items->filter(function($item) {
-                $isValid = $item->unit_price >= 50000 && $item->co_mooe === 'CO';
-                return $isValid;
+            // Use a single threshold for semi-expendable qualification
+            $threshold = 50000;
+            $filteredItems = $items->filter(function($item) use ($threshold) {
+                return ($item->unit_price >= $threshold) && ($item->co_mooe === 'CO');
             });
 
             // Group by classification
@@ -83,7 +91,11 @@
                         $uom = 'unit';
                         $desc = strtolower($item->description ?? '');
 
+                        // If a monitor has an unusually high unit price it is likely part of a computer set â€" treat as 'set'
                         if (str_contains($desc, 'desktop') || str_contains($desc, 'set')) {
+                            $uom = 'set';
+                        } elseif (str_contains($desc, 'monitor') && $item->unit_price >= $threshold) {
+                            // High-priced monitor -> part of a COMPUTER set
                             $uom = 'set';
                         } elseif (str_contains($desc, 'monitor') ||
                                   str_contains($desc, 'printer') ||
@@ -106,7 +118,7 @@
                             $remarks = $item->division;
                         }
 
-                        // Calculate total value (unit_price × 1 since quantity is 1)
+                        // Calculate total value (unit_price Ã— 1 since quantity is 1)
                         $totalValue = $item->unit_price;
                         $totalGrandValue += $totalValue;
                         $totalUnitValue += $item->unit_price;
@@ -114,7 +126,9 @@
 
                         // Format classification - convert DESKTOP to COMPUTER
                         $article = $classification;
-                        if (strtoupper($classification) === 'DESKTOP') {
+                        $clsUp = strtoupper($classification ?? '');
+                        // Treat DESKTOP or high-priced MONITOR entries as COMPUTER
+                        if ($clsUp === 'DESKTOP' || ($clsUp !== '' && stripos($desc, 'monitor') !== false && $item->unit_price >= $threshold)) {
                             $article = 'COMPUTER';
                         }
                     @endphp
@@ -130,7 +144,7 @@
                         <td class="rpcsp-date-col pdf-text-center">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
                         <td class="rpcsp-shortage-qty-col pdf-text-center"></td> <!-- Shortage/Overage Quantity -->
                         <td class="rpcsp-shortage-value-col pdf-text-right"></td> <!-- Shortage/Overage Value -->
-                        <td class="rpcsp-remarks-col">{{ $remarks }}</td>
+                        <td class="rpcsp-remarks-col" style="border-right: 1px solid #000 !important;">{{ $remarks }}</td>
                     </tr>
                 @endforeach
             @endforeach
@@ -141,18 +155,19 @@
                 <td class="pdf-text-right">{{ number_format($totalUnitValue, 2) }}</td>
                 <td colspan="3" class="pdf-text-right">GRAND TOTAL:</td>
                 <td class="pdf-text-right">{{ number_format($totalGrandValue, 2) }}</td>
-                <td colspan="4"></td>
+                <td colspan="3"></td>
+                <td style="border-right: 1px solid #000 !important;"></td>
             </tr>
         @else
             <tr>
                 <td colspan="12" class="no-data">
                     No qualifying semi-expendable property items found.<br>
-                    Criteria: Unit Price ≥ ₱49,999.00 AND CO/MOOE = 'CO'<br>
+                    Criteria: Unit Price â‰¥ â‚±50,000.00 AND CO/MOOE = 'CO'<br>
                     Total items in database: {{ $totalItems }}<br>
                     @if($totalItems > 0)
                         Sample items:
                         @foreach($items->take(3) as $sample)
-                            <br>- {{ $sample->description }} (₱{{ number_format($sample->unit_price, 2) }}, {{ $sample->co_mooe }})
+                            <br>- {{ $sample->description }} (â‚±{{ number_format($sample->unit_price, 2) }}, {{ $sample->co_mooe }})
                         @endforeach
                     @endif
                 </td>

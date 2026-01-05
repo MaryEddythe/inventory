@@ -9,7 +9,7 @@
     <table class="pdf-header" style="width: 100%; border: none;">
         <tr>
             <td style="width: 50%; text-align: left; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 200px;">
+                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 100px;">
             </td>
             <td style="width: 60%; text-align: center; vertical-align: middle;">
                 <h2>Mines and Geosciences Bureau</h2>
@@ -18,7 +18,7 @@
                 <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
             </td>
             <td style="width: 50%; text-align: right; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 200px;">
+                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 100px;">
             </td>
         </tr>
     </table>

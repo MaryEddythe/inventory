@@ -56,12 +56,28 @@
                             <i class="bi bi-cash-coin"></i>
                         </div>
                         <div class="metric-info">
-                            <span class="metric-label">Total Value</span>
-                            <h2 class="metric-value">₱<span class="count-up" data-target="{{ $totalValue }}" id="totalValueCount">{{ number_format($totalValue, 2) }}</span></h2>
+                            <span class="metric-label">RPCSP Value</span>
+                            <h2 class="metric-value">₱<span class="count-up" data-target="{{ $rpcspValue }}" id="rpcspValueCount">{{ number_format($rpcspValue, 2) }}</span></h2>
                         </div>
                     </div>
                     <div class="metric-footer">
-                        <small class="text-muted">Total inventory value</small>
+                        <small class="text-muted">Regular supplies value</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card metric-card-info">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div class="metric-info">
+                            <span class="metric-label">PPE Value</span>
+                            <h2 class="metric-value">₱<span class="count-up" data-target="{{ $ppeValue }}" id="ppeValueCount">{{ number_format($ppeValue, 2) }}</span></h2>
+                        </div>
+                    </div>
+                    <div class="metric-footer">
+                        <small class="text-muted">Equipment value</small>
                     </div>
                 </div>
             </div>
@@ -145,9 +161,9 @@
                 <div class="section-body">
                     <div class="status-container" id="status-cards">
                         @foreach($statusData as $status)
-                        <div class="status-item status-{{ strtolower($status->status) }}">
+                        <div class="status-item status-{{ strtolower(str_replace(' ', '-', $status->status)) }}">
                             <div class="status-icon">
-                                <i class="bi {{ $status->status == 'New' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill' }}"></i>
+                                <i class="bi {{ strpos($status->status, 'Less than') !== false ? 'bi-calendar-check' : 'bi-calendar-x' }}"></i>
                             </div>
                             <div class="status-info">
                                 <p class="status-label">{{ $status->status }}</p>
@@ -335,9 +351,13 @@
                 totalItemsEl.setAttribute('data-target', data.totalItems);
                 animateCountUp(totalItemsEl, data.totalItems);
 
-                const totalValueEl = document.getElementById('totalValueCount');
-                totalValueEl.setAttribute('data-target', data.totalValue);
-                animateCountUp(totalValueEl, data.totalValue);
+                const rpcspValueEl = document.getElementById('rpcspValueCount');
+                rpcspValueEl.setAttribute('data-target', data.rpcspValue);
+                animateCountUp(rpcspValueEl, data.rpcspValue);
+
+                const ppeValueEl = document.getElementById('ppeValueCount');
+                ppeValueEl.setAttribute('data-target', data.ppeValue);
+                animateCountUp(ppeValueEl, data.ppeValue);
 
                 const itemsThisMonthEl = document.getElementById('itemsThisMonthCount');
                 itemsThisMonthEl.setAttribute('data-target', data.itemsThisMonth);
@@ -399,7 +419,7 @@
 
     function applyFilter(filterType, filterText) {
         document.getElementById('current-filter-text').textContent = filterText === 'All Time (Clear Filter)' ? 'Filters' : filterText;
-        
+
         fetch(`/dashboard?filter=${filterType}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -410,9 +430,14 @@
             const totalItemsEl = document.getElementById('totalItemsCount');
             totalItemsEl.setAttribute('data-target', data.totalItems);
             animateCountUp(totalItemsEl, data.totalItems);
-            const totalValueEl = document.getElementById('totalValueCount');
-            totalValueEl.setAttribute('data-target', data.totalValue);
-            animateCountUp(totalValueEl, data.totalValue);
+
+            const rpcspValueEl = document.getElementById('rpcspValueCount');
+            rpcspValueEl.setAttribute('data-target', data.rpcspValue);
+            animateCountUp(rpcspValueEl, data.rpcspValue);
+
+            const ppeValueEl = document.getElementById('ppeValueCount');
+            ppeValueEl.setAttribute('data-target', data.ppeValue);
+            animateCountUp(ppeValueEl, data.ppeValue);
 
             const itemsThisMonthEl = document.getElementById('itemsThisMonthCount');
             itemsThisMonthEl.setAttribute('data-target', data.itemsThisMonth);
@@ -426,9 +451,6 @@
             updateCards('status-cards', data.statusData, 'status');
             updateCards('condition-cards', data.conditionData, 'condition');
             updateDivisionBreakdownCards(data.divisionBreakdown);
-
-            // Tables removed as charts are replaced with cards
-
         })
         .catch(error => {
             console.error('Error fetching dashboard data:', error);
@@ -524,11 +546,11 @@
                     </div>
                 `;
             } else if (type === 'status') {
-                const statusClass = item.status === 'New' ? 'status-new' : 'status-used';
-                const iconClass = item.status === 'New' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+                const statusClass = item.status.replace(/\s+/g, '-').toLowerCase();
+                const iconClass = item.status.includes('Less than') ? 'bi-calendar-check' : 'bi-calendar-x';
                 const statusLabel = item.status;
                 cardHtml = `
-                    <div class="status-item ${statusClass}">
+                    <div class="status-item status-${statusClass}">
                         <div class="status-icon">
                             <i class="bi ${iconClass}"></i>
                         </div>

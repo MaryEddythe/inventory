@@ -431,6 +431,12 @@ class InventoryItemController extends Controller
 
     $totalItems = $filterableQuery->count();
     $totalValue = $filterableQuery->sum('unit_price');
+    $rpcspValue = (clone $filterableQuery)->where('unit_price', '<=', 49999)
+        ->where('co_mooe', 'CO')
+        ->sum('unit_price');
+    $ppeValue = (clone $filterableQuery)->where('unit_price', '>=', 50000)
+        ->where('co_mooe', 'CO')
+        ->sum('unit_price');
     $itemsThisMonth = (clone $filterableQuery)->whereMonth('date_acquired', now()->month)
         ->whereYear('date_acquired', now()->year)
         ->count();
@@ -454,21 +460,31 @@ class InventoryItemController extends Controller
         return $count > 0;
     })->count();
 
-    // Status data: New and For Replacement
-    $statusCounts = (clone $filterableQuery)
-        ->selectRaw('status, COUNT(*) as count')
-        ->whereNotNull('status')
-        ->groupBy('status')
-        ->pluck('count', 'status');
+    // Status data: Items less than 5 years and 5 years or more since date acquired
+    $fiveYearsAgo = now()->subYears(5);
+    $allStatusItems = (clone $filterableQuery)->get();
+    $lessThan5Years = 0;
+    $fiveYearsOrMore = 0;
+
+    foreach ($allStatusItems as $item) {
+        if ($item->date_acquired) {
+            // If date_acquired is before 5 years ago, it's 5 years or more
+            if ($item->date_acquired < $fiveYearsAgo) {
+                $fiveYearsOrMore++;
+            } else {
+                $lessThan5Years++;
+            }
+        }
+    }
 
     $statusData = collect([
         (object)[
-            'status' => 'New',
-            'count' => $statusCounts->get('New', 0)
+            'status' => 'Less than 5 years',
+            'count' => $lessThan5Years
         ],
         (object)[
-            'status' => 'For Replacement',
-            'count' => $statusCounts->get('For Replacement', 0)
+            'status' => '5 years or more',
+            'count' => $fiveYearsOrMore
         ],
     ]);
 
@@ -516,6 +532,8 @@ class InventoryItemController extends Controller
         return response()->json([
             'totalItems' => (int)$totalItems,
             'totalValue' => (float)$totalValue,
+            'rpcspValue' => (float)$rpcspValue,
+            'ppeValue' => (float)$ppeValue,
             'itemsThisMonth' => (int)$itemsThisMonth,
             'totalDivisions' => (int)$totalDivisions,
             'divisionData' => $divisionData,
@@ -528,6 +546,8 @@ class InventoryItemController extends Controller
     return view('inventory.tabs.dashboard', compact(
         'totalItems',
         'totalValue',
+        'rpcspValue',
+        'ppeValue',
         'itemsThisMonth',
         'totalDivisions',
         'divisionData',

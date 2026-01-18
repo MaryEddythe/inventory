@@ -78,7 +78,7 @@
                             <td>{{ $item->remarks ?? 'N/A' }}</td>
                             <td class="pdf-text-center">
                                 <span class="{{ $pdfBadgeClass }}">
-                                    {{ $yearsSinceAcquisition <= 5 ? '≤ 5' : '> 5' }}
+                                    {{ $yearsSinceAcquisition <= 5 ? '<= 5' : '> 5' }}
                                 </span>
                             </td>
                             <td class="pdf-text-center">{{ $item->serviceability ?? 'N/A' }}</td>
@@ -288,8 +288,8 @@
                 </td>
 
                 <!-- Right cell -->
-                <td class="pdf-col-30 pdf-text-right" style="padding-right: 80px;">
-                    <span class="pdf-signature-label" style="margin-right: 120px;">Reviewed by:</span><br><br>
+                <td class="pdf-col-30 pdf-text-right" style="padding-right: 40px;">
+                    <span class="pdf-signature-label" style="margin-right: 100px;">Reviewed by:</span><br><br>
                     <span class="pdf-signature-name">MAY FLORENCE A. PABELONIO</span><br>
                     <span class="pdf-signature-title" style="margin-right: 50px;">ICT Focal Person</span>
                 </td>

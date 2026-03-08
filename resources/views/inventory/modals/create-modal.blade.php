@@ -47,8 +47,15 @@
             <input type="text" class="form-control" id="serial_number" name="serial_number" value="{{ old('serial_number') }}">
         </div>
         <div class="col-md-6 mb-3">
-            <label for="unit_price" class="form-label">Unit Price <span class="text-danger">*</span></label>
-            <input type="number" step="0.01" class="form-control" id="unit_price" name="unit_price" value="{{ old('unit_price') }}" required>
+            <label for="unit_price_type" class="form-label">Unit Price <span class="text-danger">*</span></label>
+            <div class="input-group">
+                <select class="form-select" id="unit_price_type" name="unit_price_type" required>
+                    <option value="" disabled {{ old('unit_price_type') ? '' : 'selected' }}>Select Option</option>
+                    <option value="value" {{ old('unit_price_type') == 'value' ? 'selected' : '' }}>Enter Amount</option>
+                    <option value="na" {{ old('unit_price_type') == 'na' ? 'selected' : '' }}>NA (No Sticker)</option>
+                </select>
+            </div>
+            <input type="number" step="0.01" class="form-control mt-2" id="unit_price" name="unit_price" placeholder="Enter amount" value="{{ old('unit_price') }}" style="display: {{ old('unit_price_type') == 'value' || old('unit_price') ? 'block' : 'none' }};">
         </div>
     </div>
     <div class="row">
@@ -58,13 +65,20 @@
                 <option value="" disabled {{ old('co_mooe') ? '' : 'selected' }}>Select CO/MOOE</option>
                 <option value="CO" {{ old('co_mooe') == 'CO' ? 'selected' : '' }}>Capital Outlay</option>
                 <option value="MOOE" {{ old('co_mooe') == 'MOOE' ? 'selected' : '' }}>MOOE</option>
-                <option value="MOOE" {{ old('co_mooe') == 'NA' ? 'selected' : '' }}>NA</option>
+                <option value="NA" {{ old('co_mooe') == 'NA' ? 'selected' : '' }}>NA</option>
 
             </select>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="date_acquired" class="form-label">Date Acquired <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" id="date_acquired" name="date_acquired" value="{{ old('date_acquired') }}" required>
+            <label for="date_acquired_type" class="form-label">Date Acquired <span class="text-danger">*</span></label>
+            <div class="input-group">
+                <select class="form-select" id="date_acquired_type" name="date_acquired_type" required>
+                    <option value="" disabled {{ old('date_acquired_type') ? '' : 'selected' }}>Select Option</option>
+                    <option value="date" {{ old('date_acquired_type') == 'date' ? 'selected' : '' }}>Enter Date</option>
+                    <option value="na" {{ old('date_acquired_type') == 'na' ? 'selected' : '' }}>NA (No Sticker)</option>
+                </select>
+            </div>
+            <input type="date" class="form-control mt-2" id="date_acquired" name="date_acquired" value="{{ old('date_acquired') }}" style="display: {{ old('date_acquired_type') == 'date' || old('date_acquired') ? 'block' : 'none' }};">
         </div>
     </div>
     <div class="row">
@@ -223,6 +237,40 @@ document.addEventListener('DOMContentLoaded', function() {
             employeeSearchInput.value = selectedEmployee.name;
             enduserInput.value = selectedEmployee.name;
         }
+    }
+
+    // Handle Unit Price Type Toggle
+    const unitPriceTypeSelect = document.getElementById('unit_price_type');
+    const unitPriceInput = document.getElementById('unit_price');
+    
+    if (unitPriceTypeSelect) {
+        unitPriceTypeSelect.addEventListener('change', function() {
+            if (this.value === 'value') {
+                unitPriceInput.style.display = 'block';
+                unitPriceInput.setAttribute('required', 'required');
+            } else if (this.value === 'na') {
+                unitPriceInput.style.display = 'none';
+                unitPriceInput.removeAttribute('required');
+                unitPriceInput.value = '';
+            }
+        });
+    }
+
+    // Handle Date Acquired Type Toggle
+    const dateAcquiredTypeSelect = document.getElementById('date_acquired_type');
+    const dateAcquiredInput = document.getElementById('date_acquired');
+    
+    if (dateAcquiredTypeSelect) {
+        dateAcquiredTypeSelect.addEventListener('change', function() {
+            if (this.value === 'date') {
+                dateAcquiredInput.style.display = 'block';
+                dateAcquiredInput.setAttribute('required', 'required');
+            } else if (this.value === 'na') {
+                dateAcquiredInput.style.display = 'none';
+                dateAcquiredInput.removeAttribute('required');
+                dateAcquiredInput.value = '';
+            }
+        });
     }
 
     // Form validation before submission

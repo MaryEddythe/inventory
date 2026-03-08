@@ -50,8 +50,15 @@
             <input type="text" class="form-control" id="serial_number-{{ $item->no }}" name="serial_number" value="{{ old('serial_number', $item->serial_number) }}">
         </div>
         <div class="col-md-6 mb-3">
-            <label for="unit_price-{{ $item->no }}" class="form-label">Unit Price <span class="text-danger">*</span></label>
-            <input type="number" step="0.01" class="form-control" id="unit_price-{{ $item->no }}" name="unit_price" value="{{ old('unit_price', $item->unit_price) }}" required>
+            <label for="unit_price_type-{{ $item->no }}" class="form-label">Unit Price <span class="text-danger">*</span></label>
+            <div class="input-group">
+                <select class="form-select unit_price_type-select" id="unit_price_type-{{ $item->no }}" name="unit_price_type" data-item-no="{{ $item->no }}" required>
+                    <option value="" disabled>Select Option</option>
+                    <option value="value" {{ $item->unit_price || old('unit_price_type') == 'value' ? 'selected' : '' }}>Enter Amount</option>
+                    <option value="na" {{ !$item->unit_price && old('unit_price_type') == 'na' ? 'selected' : '' }}>NA (No Sticker)</option>
+                </select>
+            </div>
+            <input type="number" step="0.01" class="form-control mt-2" id="unit_price-{{ $item->no }}" name="unit_price" placeholder="Enter amount" value="{{ old('unit_price', $item->unit_price) }}" style="display: {{ $item->unit_price || old('unit_price') ? 'block' : 'none' }};">
         </div>
     </div>
     <div class="row">
@@ -66,8 +73,15 @@
             </select>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="date_acquired-{{ $item->no }}" class="form-label">Date Acquired <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" required>
+            <label for="date_acquired_type-{{ $item->no }}" class="form-label">Date Acquired <span class="text-danger">*</span></label>
+            <div class="input-group">
+                <select class="form-select date_acquired_type-select" id="date_acquired_type-{{ $item->no }}" name="date_acquired_type" data-item-no="{{ $item->no }}" required>
+                    <option value="" disabled>Select Option</option>
+                    <option value="date" {{ $item->date_acquired || old('date_acquired_type') == 'date' ? 'selected' : '' }}>Enter Date</option>
+                    <option value="na" {{ !$item->date_acquired && old('date_acquired_type') == 'na' ? 'selected' : '' }}>NA (No Sticker)</option>
+                </select>
+            </div>
+            <input type="date" class="form-control mt-2" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" style="display: {{ $item->date_acquired || old('date_acquired') ? 'block' : 'none' }};">
         </div>
     </div>
     <div class="mb-3">
@@ -185,6 +199,39 @@ document.addEventListener('DOMContentLoaded', function() {
         employeeSearchInput.value = enduserInput.value;
     }
 
+    // Handle Unit Price Type Toggle for edit modal
+    const unitPriceTypeSelects = document.querySelectorAll('.unit_price_type-select');
+    unitPriceTypeSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const itemNo = this.dataset.itemNo;
+            const unitPriceInput = document.getElementById(`unit_price-${itemNo}`);
+            if (this.value === 'value') {
+                unitPriceInput.style.display = 'block';
+                unitPriceInput.setAttribute('required', 'required');
+            } else if (this.value === 'na') {
+                unitPriceInput.style.display = 'none';
+                unitPriceInput.removeAttribute('required');
+                unitPriceInput.value = '';
+            }
+        });
+    });
+
+    // Handle Date Acquired Type Toggle for edit modal
+    const dateAcquiredTypeSelects = document.querySelectorAll('.date_acquired_type-select');
+    dateAcquiredTypeSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const itemNo = this.dataset.itemNo;
+            const dateAcquiredInput = document.getElementById(`date_acquired-${itemNo}`);
+            if (this.value === 'date') {
+                dateAcquiredInput.style.display = 'block';
+                dateAcquiredInput.setAttribute('required', 'required');
+            } else if (this.value === 'na') {
+                dateAcquiredInput.style.display = 'none';
+                dateAcquiredInput.removeAttribute('required');
+                dateAcquiredInput.value = '';
+            }
+        });
+    });
 
 });
 </script>

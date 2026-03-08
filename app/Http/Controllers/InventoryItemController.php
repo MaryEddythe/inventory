@@ -127,11 +127,25 @@ class InventoryItemController extends Controller
             'property_number' => 'required|string|max:255',
             'description' => 'required|string',
             'serial_number' => 'nullable|string|max:255',
-            'unit_price' => 'required|numeric|min:0',
+            'unit_price' => 'nullable|numeric|min:0',
+            'unit_price_type' => 'required|in:value,na',
             'co_mooe' => 'required|string|max:255',
-            'date_acquired' => 'required|date',
+            'date_acquired' => 'nullable|date',
+            'date_acquired_type' => 'required|in:date,na',
             'remarks' => 'nullable|string',
         ]);
+
+        // Handle NA values
+        if ($request->input('unit_price_type') === 'na') {
+            $validated['unit_price'] = null;
+        }
+        if ($request->input('date_acquired_type') === 'na') {
+            $validated['date_acquired'] = null;
+        }
+
+        // Remove the _type fields from the data to be stored
+        unset($validated['unit_price_type']);
+        unset($validated['date_acquired_type']);
 
         $validated['status'] = $this->calculateStatus($validated['date_acquired']);
 
@@ -183,11 +197,25 @@ class InventoryItemController extends Controller
             'property_number' => 'required|string|max:255',
             'description' => 'required|string',
             'serial_number' => 'nullable|string|max:255',
-            'unit_price' => 'required|numeric|min:0',
+            'unit_price' => 'nullable|numeric|min:0',
+            'unit_price_type' => 'required|in:value,na',
             'co_mooe' => 'required|string|max:255',
-            'date_acquired' => 'required|date',
+            'date_acquired' => 'nullable|date',
+            'date_acquired_type' => 'required|in:date,na',
             'remarks' => 'nullable|string',
         ]);
+
+        // Handle NA values
+        if ($request->input('unit_price_type') === 'na') {
+            $validated['unit_price'] = null;
+        }
+        if ($request->input('date_acquired_type') === 'na') {
+            $validated['date_acquired'] = null;
+        }
+
+        // Remove the _type fields from the data to be stored
+        unset($validated['unit_price_type']);
+        unset($validated['date_acquired_type']);
 
         // Recalculate status based on possibly updated date_acquired
         $validated['status'] = $this->calculateStatus($validated['date_acquired']);

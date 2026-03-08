@@ -61,9 +61,9 @@
             </td>
             <td class="item-serial">{{ $item->serial_number ?? 'N/A' }}</td>
             <td class="item-property">{{ $item->property_number }}</td>
-            <td class="item-price">₱{{ number_format($item->unit_price, 2) }}</td>
+            <td class="item-price">{{ $item->unit_price ? '₱' . number_format($item->unit_price, 2) : 'NA' }}</td>
             <td class="item-comooe">{{ $item->co_mooe }}</td>
-            <td class="item-date">{{ $item->date_acquired->format('M d, Y') }}</td>
+            <td class="item-date">{{ $item->date_acquired ? $item->date_acquired->format('M d, Y') : 'NA' }}</td>
             <td class="item-remarks">{{ Str::limit($item->remarks, 20) ?? 'N/A' }}</td>
             <td>
                 @php

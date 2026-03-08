@@ -1,5 +1,3 @@
-
-
 @if ($errors->any())
     <div class="alert alert-danger">
         <ul class="mb-0">
@@ -50,15 +48,15 @@
             <input type="text" class="form-control" id="serial_number-{{ $item->no }}" name="serial_number" value="{{ old('serial_number', $item->serial_number) }}">
         </div>
         <div class="col-md-6 mb-3">
-            <label for="unit_price_type-{{ $item->no }}" class="form-label">Unit Price <span class="text-danger">*</span></label>
-            <div class="input-group">
-                <select class="form-select unit_price_type-select" id="unit_price_type-{{ $item->no }}" name="unit_price_type" data-item-no="{{ $item->no }}" required>
-                    <option value="" disabled>Select Option</option>
-                    <option value="value" {{ $item->unit_price || old('unit_price_type') == 'value' ? 'selected' : '' }}>Enter Amount</option>
-                    <option value="na" {{ !$item->unit_price && old('unit_price_type') == 'na' ? 'selected' : '' }}>NA (No Sticker)</option>
-                </select>
+            <label for="unit_price-{{ $item->no }}" class="form-label">Unit Price <span class="text-danger">*</span></label>
+            <div class="price-input-wrapper">
+                <input type="number" step="0.01" class="form-control" id="unit_price-{{ $item->no }}" name="unit_price" placeholder="Enter amount" value="{{ old('unit_price', $item->unit_price) }}" {{ !$item->unit_price && old('unit_price_type') == 'na' ? 'disabled' : '' }}>
+                <div class="form-check form-check-inline ms-2">
+                    <input type="checkbox" class="form-check-input unit-price-na-checkbox" id="unit_price_na-{{ $item->no }}" data-item-no="{{ $item->no }}" {{ !$item->unit_price && old('unit_price_type') == 'na' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="unit_price_na-{{ $item->no }}">NA (No Sticker)</label>
+                </div>
             </div>
-            <input type="number" step="0.01" class="form-control mt-2" id="unit_price-{{ $item->no }}" name="unit_price" placeholder="Enter amount" value="{{ old('unit_price', $item->unit_price) }}" style="display: {{ $item->unit_price || old('unit_price') ? 'block' : 'none' }};">
+            <input type="hidden" id="unit_price_type_hidden-{{ $item->no }}" name="unit_price_type" value="{{ $item->unit_price ? 'value' : 'na' }}">
         </div>
     </div>
     <div class="row">
@@ -73,15 +71,15 @@
             </select>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="date_acquired_type-{{ $item->no }}" class="form-label">Date Acquired <span class="text-danger">*</span></label>
-            <div class="input-group">
-                <select class="form-select date_acquired_type-select" id="date_acquired_type-{{ $item->no }}" name="date_acquired_type" data-item-no="{{ $item->no }}" required>
-                    <option value="" disabled>Select Option</option>
-                    <option value="date" {{ $item->date_acquired || old('date_acquired_type') == 'date' ? 'selected' : '' }}>Enter Date</option>
-                    <option value="na" {{ !$item->date_acquired && old('date_acquired_type') == 'na' ? 'selected' : '' }}>NA (No Sticker)</option>
-                </select>
+            <label for="date_acquired-{{ $item->no }}" class="form-label">Date Acquired <span class="text-danger">*</span></label>
+            <div class="date-input-wrapper">
+                <input type="date" class="form-control" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" {{ !$item->date_acquired && old('date_acquired_type') == 'na' ? 'disabled' : '' }}>
+                <div class="form-check form-check-inline ms-2">
+                    <input type="checkbox" class="form-check-input date-acquired-na-checkbox" id="date_acquired_na-{{ $item->no }}" data-item-no="{{ $item->no }}" {{ !$item->date_acquired && old('date_acquired_type') == 'na' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="date_acquired_na-{{ $item->no }}">NA (No Sticker)</label>
+                </div>
             </div>
-            <input type="date" class="form-control mt-2" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" style="display: {{ $item->date_acquired || old('date_acquired') ? 'block' : 'none' }};">
+            <input type="hidden" id="date_acquired_type_hidden-{{ $item->no }}" name="date_acquired_type" value="{{ $item->date_acquired ? 'date' : 'na' }}">
         </div>
     </div>
     <div class="mb-3">
@@ -199,36 +197,42 @@ document.addEventListener('DOMContentLoaded', function() {
         employeeSearchInput.value = enduserInput.value;
     }
 
-    // Handle Unit Price Type Toggle for edit modal
-    const unitPriceTypeSelects = document.querySelectorAll('.unit_price_type-select');
-    unitPriceTypeSelects.forEach(select => {
-        select.addEventListener('change', function() {
+    // Handle Unit Price NA Checkbox Toggle for edit modal
+    const unitPriceNaCheckboxes = document.querySelectorAll('.unit-price-na-checkbox');
+    unitPriceNaCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
             const itemNo = this.dataset.itemNo;
             const unitPriceInput = document.getElementById(`unit_price-${itemNo}`);
-            if (this.value === 'value') {
-                unitPriceInput.style.display = 'block';
-                unitPriceInput.setAttribute('required', 'required');
-            } else if (this.value === 'na') {
-                unitPriceInput.style.display = 'none';
+            const unitPriceTypeHidden = document.getElementById(`unit_price_type_hidden-${itemNo}`);
+            if (this.checked) {
+                unitPriceInput.disabled = true;
                 unitPriceInput.removeAttribute('required');
                 unitPriceInput.value = '';
+                unitPriceTypeHidden.value = 'na';
+            } else {
+                unitPriceInput.disabled = false;
+                unitPriceInput.setAttribute('required', 'required');
+                unitPriceTypeHidden.value = 'value';
             }
         });
     });
 
-    // Handle Date Acquired Type Toggle for edit modal
-    const dateAcquiredTypeSelects = document.querySelectorAll('.date_acquired_type-select');
-    dateAcquiredTypeSelects.forEach(select => {
-        select.addEventListener('change', function() {
+    // Handle Date Acquired NA Checkbox Toggle for edit modal
+    const dateAcquiredNaCheckboxes = document.querySelectorAll('.date-acquired-na-checkbox');
+    dateAcquiredNaCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
             const itemNo = this.dataset.itemNo;
             const dateAcquiredInput = document.getElementById(`date_acquired-${itemNo}`);
-            if (this.value === 'date') {
-                dateAcquiredInput.style.display = 'block';
-                dateAcquiredInput.setAttribute('required', 'required');
-            } else if (this.value === 'na') {
-                dateAcquiredInput.style.display = 'none';
+            const dateAcquiredTypeHidden = document.getElementById(`date_acquired_type_hidden-${itemNo}`);
+            if (this.checked) {
+                dateAcquiredInput.disabled = true;
                 dateAcquiredInput.removeAttribute('required');
                 dateAcquiredInput.value = '';
+                dateAcquiredTypeHidden.value = 'na';
+            } else {
+                dateAcquiredInput.disabled = false;
+                dateAcquiredInput.setAttribute('required', 'required');
+                dateAcquiredTypeHidden.value = 'date';
             }
         });
     });

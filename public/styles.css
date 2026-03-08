@@ -2160,3 +2160,66 @@ mark {
 .dropdown-submenu > a.dropdown-toggle::after {
     display: none !important;
 }
+
+/* ============================================
+   Optional Field Input Wrappers
+   ============================================ */
+.price-input-wrapper,
+.date-input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+}
+
+.price-input-wrapper .form-control,
+.date-input-wrapper .form-control {
+    flex: 1;
+    min-width: 150px;
+}
+
+.price-input-wrapper .form-check,
+.date-input-wrapper .form-check {
+    white-space: nowrap;
+}
+
+.price-input-wrapper .form-check-label,
+.date-input-wrapper .form-check-label {
+    margin-bottom: 0;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.375rem 0;
+}
+
+.price-input-wrapper .form-control:disabled,
+.date-input-wrapper .form-control:disabled {
+    background-color: #e9ecef;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.price-input-wrapper .form-control:disabled::placeholder,
+.date-input-wrapper .form-control:disabled::placeholder {
+    color: #adb5bd;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .price-input-wrapper,
+    .date-input-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .price-input-wrapper .form-control,
+    .date-input-wrapper .form-control {
+        min-width: unset;
+    }
+
+    .price-input-wrapper .form-check,
+    .date-input-wrapper .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+}

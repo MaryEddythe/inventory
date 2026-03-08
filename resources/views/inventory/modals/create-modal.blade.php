@@ -47,15 +47,15 @@
             <input type="text" class="form-control" id="serial_number" name="serial_number" value="{{ old('serial_number') }}">
         </div>
         <div class="col-md-6 mb-3">
-            <label for="unit_price_type" class="form-label">Unit Price <span class="text-danger">*</span></label>
-            <div class="input-group">
-                <select class="form-select" id="unit_price_type" name="unit_price_type" required>
-                    <option value="" disabled {{ old('unit_price_type') ? '' : 'selected' }}>Select Option</option>
-                    <option value="value" {{ old('unit_price_type') == 'value' ? 'selected' : '' }}>Enter Amount</option>
-                    <option value="na" {{ old('unit_price_type') == 'na' ? 'selected' : '' }}>NA (No Sticker)</option>
-                </select>
+            <label for="unit_price" class="form-label">Unit Price <span class="text-danger">*</span></label>
+            <div class="price-input-wrapper">
+                <input type="number" step="0.01" class="form-control" id="unit_price" name="unit_price" placeholder="Enter amount" value="{{ old('unit_price') }}" {{ !old('unit_price_type') || old('unit_price_type') == 'value' ? '' : 'disabled' }}>
+                <div class="form-check form-check-inline ms-2">
+                    <input type="checkbox" class="form-check-input" id="unit_price_na" {{ old('unit_price_type') == 'na' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="unit_price_na">NA (No Sticker)</label>
+                </div>
             </div>
-            <input type="number" step="0.01" class="form-control mt-2" id="unit_price" name="unit_price" placeholder="Enter amount" value="{{ old('unit_price') }}" style="display: {{ old('unit_price_type') == 'value' || old('unit_price') ? 'block' : 'none' }};">
+            <input type="hidden" id="unit_price_type_hidden" name="unit_price_type" value="{{ old('unit_price_type', 'value') }}">
         </div>
     </div>
     <div class="row">
@@ -70,15 +70,15 @@
             </select>
         </div>
         <div class="col-md-6 mb-3">
-            <label for="date_acquired_type" class="form-label">Date Acquired <span class="text-danger">*</span></label>
-            <div class="input-group">
-                <select class="form-select" id="date_acquired_type" name="date_acquired_type" required>
-                    <option value="" disabled {{ old('date_acquired_type') ? '' : 'selected' }}>Select Option</option>
-                    <option value="date" {{ old('date_acquired_type') == 'date' ? 'selected' : '' }}>Enter Date</option>
-                    <option value="na" {{ old('date_acquired_type') == 'na' ? 'selected' : '' }}>NA (No Sticker)</option>
-                </select>
+            <label for="date_acquired" class="form-label">Date Acquired <span class="text-danger">*</span></label>
+            <div class="date-input-wrapper">
+                <input type="date" class="form-control" id="date_acquired" name="date_acquired" value="{{ old('date_acquired') }}" {{ !old('date_acquired_type') || old('date_acquired_type') == 'date' ? '' : 'disabled' }}>
+                <div class="form-check form-check-inline ms-2">
+                    <input type="checkbox" class="form-check-input" id="date_acquired_na" {{ old('date_acquired_type') == 'na' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="date_acquired_na">NA (No Sticker)</label>
+                </div>
             </div>
-            <input type="date" class="form-control mt-2" id="date_acquired" name="date_acquired" value="{{ old('date_acquired') }}" style="display: {{ old('date_acquired_type') == 'date' || old('date_acquired') ? 'block' : 'none' }};">
+            <input type="hidden" id="date_acquired_type_hidden" name="date_acquired_type" value="{{ old('date_acquired_type', 'date') }}">
         </div>
     </div>
     <div class="row">
@@ -239,36 +239,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Handle Unit Price Type Toggle
-    const unitPriceTypeSelect = document.getElementById('unit_price_type');
+    // Handle Unit Price NA Checkbox Toggle
+    const unitPriceNaCheckbox = document.getElementById('unit_price_na');
     const unitPriceInput = document.getElementById('unit_price');
-    
-    if (unitPriceTypeSelect) {
-        unitPriceTypeSelect.addEventListener('change', function() {
-            if (this.value === 'value') {
-                unitPriceInput.style.display = 'block';
-                unitPriceInput.setAttribute('required', 'required');
-            } else if (this.value === 'na') {
-                unitPriceInput.style.display = 'none';
+    const unitPriceTypeHidden = document.getElementById('unit_price_type_hidden');
+
+    if (unitPriceNaCheckbox) {
+        unitPriceNaCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                unitPriceInput.disabled = true;
                 unitPriceInput.removeAttribute('required');
                 unitPriceInput.value = '';
+                unitPriceTypeHidden.value = 'na';
+            } else {
+                unitPriceInput.disabled = false;
+                unitPriceInput.setAttribute('required', 'required');
+                unitPriceTypeHidden.value = 'value';
             }
         });
     }
 
-    // Handle Date Acquired Type Toggle
-    const dateAcquiredTypeSelect = document.getElementById('date_acquired_type');
+    // Handle Date Acquired NA Checkbox Toggle
+    const dateAcquiredNaCheckbox = document.getElementById('date_acquired_na');
     const dateAcquiredInput = document.getElementById('date_acquired');
-    
-    if (dateAcquiredTypeSelect) {
-        dateAcquiredTypeSelect.addEventListener('change', function() {
-            if (this.value === 'date') {
-                dateAcquiredInput.style.display = 'block';
-                dateAcquiredInput.setAttribute('required', 'required');
-            } else if (this.value === 'na') {
-                dateAcquiredInput.style.display = 'none';
+    const dateAcquiredTypeHidden = document.getElementById('date_acquired_type_hidden');
+
+    if (dateAcquiredNaCheckbox) {
+        dateAcquiredNaCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                dateAcquiredInput.disabled = true;
                 dateAcquiredInput.removeAttribute('required');
                 dateAcquiredInput.value = '';
+                dateAcquiredTypeHidden.value = 'na';
+            } else {
+                dateAcquiredInput.disabled = false;
+                dateAcquiredInput.setAttribute('required', 'required');
+                dateAcquiredTypeHidden.value = 'date';
             }
         });
     }
@@ -280,6 +286,26 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             alert('Please select a valid employee from the search results.');
             employeeSearchInput.focus();
+            return false;
+        }
+
+        // Validate unit price
+        const unitPriceNaCheckbox = document.getElementById('unit_price_na');
+        const unitPriceInput = document.getElementById('unit_price');
+        if (!unitPriceNaCheckbox.checked && !unitPriceInput.value) {
+            e.preventDefault();
+            alert('Please enter a unit price or mark as NA.');
+            unitPriceInput.focus();
+            return false;
+        }
+
+        // Validate date acquired
+        const dateAcquiredNaCheckbox = document.getElementById('date_acquired_na');
+        const dateAcquiredInput = document.getElementById('date_acquired');
+        if (!dateAcquiredNaCheckbox.checked && !dateAcquiredInput.value) {
+            e.preventDefault();
+            alert('Please enter a date or mark as NA.');
+            dateAcquiredInput.focus();
             return false;
         }
     });

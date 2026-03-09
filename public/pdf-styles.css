@@ -1,5 +1,5 @@
 @page {
-    margin: 15mm;
+    margin: 8mm;
     size: landscape;
 }
 .badge-new {
@@ -26,48 +26,48 @@
 
 body {
     font-family: "DejaVu Sans", Arial, sans-serif;
-    font-size: 11pt;
+    font-size: 9pt;
     margin: 0;
     padding: 0;
-    line-height: 1.3;
+    line-height: 1.15;
 }
 
 .pdf-header {
     text-align: center;
-    margin-bottom: 10mm;
+    margin-bottom: 5mm;
     border-bottom: 1px solid #000;
-    padding-bottom: 5mm;
+    padding-bottom: 3mm;
 }
 
 .pdf-header h2 {
     margin: 0;
-    font-size: 12pt;
+    font-size: 10pt;
     font-weight: bold;
     text-align: center;
 }
 
 .pdf-header h3 {
-    margin: 2mm 0 0 0;
-    font-size: 11pt;
+    margin: 1mm 0 0 0;
+    font-size: 9pt;
     font-weight: bold;
     text-align: center;
 }
 
 .pdf-header h1 {
-    margin: 3mm 0 0 0;
-    font-size: 14pt;
+    margin: 2mm 0 0 0;
+    font-size: 11pt;
     font-weight: bold;
 }
 
 .pdf-header p {
-    margin: 2mm 0;
-    font-size: 9pt;
+    margin: 1mm 0;
+    font-size: 8pt;
 }
 
 .pdf-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 5mm;
+    margin-top: 3mm;
     page-break-inside: auto;
     table-layout: fixed;
 }
@@ -75,21 +75,21 @@ body {
 .pdf-table th,
 .pdf-table td {
     border: 1px solid #000;
-    padding: 4px 6px;
+    padding: 2px 3px;
     text-align: left;
-    font-size: 8pt;
+    font-size: 7pt;
     vertical-align: top;
     word-wrap: break-word;
 }
 
 .pdf-table tbody td {
-    font-size: 8pt;
+    font-size: 7pt;
 }
 
 .pdf-table th {
     background-color: #d9d9d9;
     font-weight: bolder;
-    font-size: 10pt;
+    font-size: 8pt;
     text-align: center;
     border-bottom: 2px solid #000;
 }
@@ -108,14 +108,14 @@ body {
 }
 
 .pdf-summary-section {
-    margin-top: 15mm;
-    margin-bottom: 8mm;
+    margin-top: 8mm;
+    margin-bottom: 4mm;
     page-break-inside: avoid;
 }
 
 .pdf-summary-table {
     width: 100%;
-    margin-bottom: 8mm;
+    margin-bottom: 4mm;
     border-collapse: collapse;
     border: 2px solid #000;
 }
@@ -123,8 +123,8 @@ body {
 .pdf-summary-table th,
 .pdf-summary-table td {
     border: 1px solid #000;
-    padding: 8px 10px;
-    font-size: 10pt;
+    padding: 4px 6px;
+    font-size: 8pt;
     text-align: center;
 }
 
@@ -132,7 +132,7 @@ body {
     background-color: #2c3e50;
     color: white;
     font-weight: bold;
-    font-size: 11pt;
+    font-size: 8pt;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -140,8 +140,8 @@ body {
 .pdf-summary-header {
     background-color: #2c3e50 !important;
     color: white !important;
-    font-size: 10pt !important;
-    padding: 6px !important;
+    font-size: 8pt !important;
+    padding: 3px !important;
     text-align: center;
     font-weight: bold !important;
     text-transform: uppercase;
@@ -151,15 +151,15 @@ body {
     background-color: #34495e !important;
     color: white !important;
     font-weight: bold !important;
-    padding: 6px 4px !important;
+    padding: 3px 3px !important;
     border: 1px solid #2c3e50 !important;
-    font-size: 9pt !important;
+    font-size: 7pt !important;
 }
 
 .pdf-summary-td {
-    padding: 6px 8px !important;
+    padding: 3px 4px !important;
     border: 1px solid #000 !important;
-    font-size: 9pt !important;
+    font-size: 7pt !important;
     font-weight: 500;
 }
 
@@ -176,9 +176,9 @@ body {
 .pdf-bg-overall-total {
     background-color: #1a5276 !important;
     color: white !important;
-    font-size: 11pt !important;
+    font-size: 8pt !important;
     font-weight: 900 !important;
-    padding: 10px !important;
+    padding: 4px !important;
     border: 2px solid #000 !important;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -307,11 +307,11 @@ body {
 }
 
 .pdf-footer {
-    margin-top: 10mm;
+    margin-top: 5mm;
     text-align: center;
-    font-size: 8pt;
+    font-size: 7pt;
     border-top: 1px solid #000;
-    padding-top: 3mm;
+    padding-top: 2mm;
 }
 
 .pdf-nowrap {
@@ -413,76 +413,76 @@ body {
     font-weight: bold;
 }
 
-.pdf-mt-2 { margin-top: 5mm; }
-.pdf-mt-3 { margin-top: 10mm; }
-.pdf-pt-3 { padding-top: 10mm; }
+.pdf-mt-2 { margin-top: 2mm; }
+.pdf-mt-3 { margin-top: 4mm; }
+.pdf-pt-3 { padding-top: 4mm; }
 
 .pdf-signature-section table {
     border: none;
-    margin-top: 15mm;
+    margin-top: 8mm;
 }
 
 .pdf-signature-section td {
     border: none;
-    padding: 5mm;
+    padding: 2mm;
     vertical-align: top;
-    font-size: 9pt;
+    font-size: 7pt;
 }
 
 .pdf-signature-label {
     font-weight: bold;
-    margin-bottom: 5mm;
+    margin-bottom: 3mm;
     display: block;
 }
 
 .pdf-signature-name {
     font-weight: bold;
     text-transform: uppercase;
-    margin-bottom: 2mm;
+    margin-bottom: 1mm;
 }
 
 /* RPCSP PDF Styles */
 .rpcsp-body {
     font-family: "Arial", sans-serif;
-    font-size: 10px;
+    font-size: 8px;
     margin: 0;
     padding: 0;
-    line-height: 1.2;
+    line-height: 1.1;
 }
 
 .rpcsp-header-info {
     text-align: center;
-    margin: 5px 0 10px 0;
+    margin: 3px 0 5px 0;
 }
 
 .rpcsp-header-info p {
-    margin: 2px 0;
+    margin: 1px 0;
 }
 
 .rpcsp-h1, .rpcsp-h2, .rpcsp-h3 {
-    margin: 3px 0;
+    margin: 2px 0;
     text-align: center;
     padding: 0;
 }
 
 .rpcsp-h1 {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
     text-transform: uppercase;
 }
 
 .rpcsp-h2 {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: bold;
 }
 
 .rpcsp-h3 {
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .rpcsp-meta-row {
-    margin: 5px 0;
-    font-size: 9px;
+    margin: 2px 0;
+    font-size: 7px;
 }
 
 .rpcsp-meta-label {
@@ -494,14 +494,14 @@ body {
     border-collapse: collapse;
     border: 1px solid #000;
     border-right: 1px solid #000;
-    margin-top: 10px;
+    margin-top: 5px;
     table-layout: fixed;
-    font-size: 8px;
+    font-size: 7px;
 }
 
 .rpcsp-table th, .rpcsp-table td {
     border: 1px solid #000;
-    padding: 3px;
+    padding: 2px;
     text-align: left;
     vertical-align: top;
     word-wrap: break-word;
@@ -528,14 +528,14 @@ body {
 }
 
 .rpcsp-note-section {
-    margin-top: 15px;
-    font-size: 10px;
+    margin-top: 8px;
+    font-size: 8px;
     font-weight: bold;
     text-align: center;
 }
 
 .rpcsp-signature-section {
-    margin-top: 30px;
+    margin-top: 15px;
     page-break-inside: avoid;
 }
 

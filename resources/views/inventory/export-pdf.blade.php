@@ -9,7 +9,7 @@
     <table class="pdf-header" style="width: 100%; border: none;">
         <tr>
             <td style="width: 50%; text-align: left; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 100px;">
+                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 60px;">
             </td>
             <td style="width: 60%; text-align: center; vertical-align: middle;">
                 <h2>Mines and Geosciences Bureau</h2>
@@ -18,7 +18,7 @@
                 <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
             </td>
             <td style="width: 50%; text-align: right; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 100px;">
+                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 60px;">
             </td>
         </tr>
     </table>
@@ -275,23 +275,23 @@
             <tr>
                 <!-- Left cell -->
                 <td class="pdf-col-30 pdf-text-left">
-                    <span class="pdf-signature-label">Prepared by:</span><br><br>
+                    <span class="pdf-signature-label">Prepared by:</span><br>
                     <span class="pdf-signature-name">MARY EDDYTHE M. SORNITO</span><br>
                     <span class="pdf-signature-title">Information Systems Analyst II</span>
                 </td>
 
                 <!-- Center cell for Regional Director -->
-                <td class="pdf-col-40 pdf-text-center" style="padding-top: 80px;">
-                    <span class="pdf-signature-label">Approved by:</span><br><br>
+                <td class="pdf-col-40 pdf-text-center" style="padding-top: 40px;">
+                    <span class="pdf-signature-label">Approved by:</span><br>
                     <span class="pdf-signature-name">CECILIA L. OCHAVO-SAYCON</span><br>
                     <span class="pdf-signature-title">Regional Director</span>
                 </td>
 
                 <!-- Right cell -->
-                <td class="pdf-col-30 pdf-text-right" style="padding-right: 40px;">
-                    <span class="pdf-signature-label" style="margin-right: 100px;">Reviewed by:</span><br><br>
+                <td class="pdf-col-30 pdf-text-right" style="padding-right: 20px;">
+                    <span class="pdf-signature-label" style="margin-right: 50px;">Reviewed by:</span><br>
                     <span class="pdf-signature-name">MAY FLORENCE A. PABELONIO</span><br>
-                    <span class="pdf-signature-title" style="margin-right: 50px;">ICT Focal Person</span>
+                    <span class="pdf-signature-title" style="margin-right: 25px;">ICT Focal Person</span>
                 </td>
             </tr>
         </table>

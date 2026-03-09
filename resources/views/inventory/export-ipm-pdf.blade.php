@@ -18,19 +18,19 @@
     </style>
 </head>
 <body>
-    <table class="pdf-header" style="width: 100%; border: none;">
+     <table class="pdf-header" style="width: 100%; border: none;">
         <tr>
             <td style="width: 50%; text-align: left; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 200px;">
+                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 100px;">
             </td>
             <td style="width: 60%; text-align: center; vertical-align: middle;">
                 <h2>Mines and Geosciences Bureau</h2>
                 <h3>Regional Office VI</h3>
-                <h1>IPM REPORT SUMMARY</h1>
+                <h1>INVENTORY REPORT SUMMARY</h1>
                 <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
             </td>
             <td style="width: 50%; text-align: right; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 200px;">
+                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 100px;">
             </td>
         </tr>
     </table>
@@ -92,7 +92,7 @@
         </table>
     </div>
 
-    <!-- Signature Section -->
+   <!-- Signature Section -->
     <div class="pdf-signature-section pdf-mt-3" style="page-break-inside: avoid;">
         <table style="width: 100%; border: none;">
             <tr>
@@ -111,8 +111,8 @@
                 </td>
 
                 <!-- Right cell -->
-                <td class="pdf-col-30 pdf-text-right" style="padding-right: 80px;">
-                    <span class="pdf-signature-label" style="margin-right: 120px;">Reviewed by:</span><br><br>
+                <td class="pdf-col-30 pdf-text-right" style="padding-right: 40px;">
+                    <span class="pdf-signature-label" style="margin-right: 100px;">Reviewed by:</span><br><br>
                     <span class="pdf-signature-name">MAY FLORENCE A. PABELONIO</span><br>
                     <span class="pdf-signature-title" style="margin-right: 50px;">ICT Focal Person</span>
                 </td>

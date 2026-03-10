@@ -23,8 +23,12 @@
         'End'
     ]);
 
-    // Data rows
-    foreach($items as $item) {
+    // Data rows - exclude monitors
+    $filteredItems = $items->filter(function($item) {
+        return stripos($item->classification, 'monitor') === false;
+    });
+
+    foreach($filteredItems as $item) {
         fputcsv($output, [
             $item->no,
             $item->division,

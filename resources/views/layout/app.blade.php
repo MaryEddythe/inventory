@@ -64,6 +64,11 @@
                             <i class="bi bi-clipboard-check"></i> IPM
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('inventory.icm') ? 'active' : '' }}" href="{{ route('inventory.icm') }}">
+                            <i class="bi bi-tools"></i> ICM
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

@@ -119,43 +119,92 @@ class InventoryItemController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'division' => 'required|string|max:255',
-            'enduser' => 'required|string|max:255',
-            'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
-            'classification' => 'required|string|max:255',
-            'property_number' => 'required|string|max:255',
-            'description' => 'required|string',
-            'serial_number' => 'nullable|string|max:255',
-            'unit_price' => 'nullable|numeric|min:0',
-            'unit_price_type' => 'required|in:value,na',
-            'co_mooe' => 'required|string|max:255',
-            'date_acquired' => 'nullable|date',
-            'date_acquired_type' => 'required|in:date,na',
-            'remarks' => 'nullable|string',
-        ]);
+        // Check if this is an ICM submission
+        $isIcmSubmission = $request->filled('icm_type') && $request->filled('priority') && $request->filled('problem_description');
 
-        // Handle NA values
-        if ($request->input('unit_price_type') === 'na') {
-            $validated['unit_price'] = null;
+        if ($isIcmSubmission) {
+            // ICM form validation
+            $validated = $request->validate([
+                'division' => 'required|string|max:255',
+                'requesting_personnel' => 'required|string|max:255',
+                'classification' => 'required|string|max:255',
+                'property_number' => 'required|string|max:255',
+                'problem_description' => 'required|string',
+                'icm_type' => 'required|string|in:Assistance,Troubleshoot',
+                'priority' => 'required|string|in:P1-Critical,P2-Important,P3-Normal,P4-Low',
+                'serial_number' => 'nullable|string|max:255',
+                'brand_model' => 'required|string|max:255',
+                'hardware_software' => 'required|string|in:Hardware,Software',
+                'open_date' => 'required|date',
+                'open_time' => 'required|date_format:H:i',
+                'close_date' => 'nullable|date|after_or_equal:open_date',
+                'close_time' => 'nullable|date_format:H:i',
+                'icm_findings' => 'nullable|string',
+                'actions_taken' => 'nullable|string',
+                'icm_recommendations' => 'nullable|string',
+            ]);
+
+            // Generate ICM number
+            $currentYear = now()->year;
+            $lastIcmNo = InventoryItem::where('icm_no', 'LIKE', "%-{$currentYear}")
+                ->orderBy('icm_no', 'desc')
+                ->first();
+
+            $nextNumber = 1;
+            if ($lastIcmNo) {
+                $parts = explode('-', $lastIcmNo->icm_no);
+                $nextNumber = (int)$parts[0] + 1;
+            }
+
+            $validated['icm_no'] = str_pad($nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $currentYear;
+
+            $item = InventoryItem::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'ICM created successfully with number: ' . $validated['icm_no'],
+                'item'    => $item,
+            ], 201);
+        } else {
+            // Regular inventory form validation
+            $validated = $request->validate([
+                'division' => 'required|string|max:255',
+                'enduser' => 'required|string|max:255',
+                'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
+                'classification' => 'required|string|max:255',
+                'property_number' => 'required|string|max:255',
+                'description' => 'required|string',
+                'serial_number' => 'nullable|string|max:255',
+                'unit_price' => 'nullable|numeric|min:0',
+                'unit_price_type' => 'required|in:value,na',
+                'co_mooe' => 'required|string|max:255',
+                'date_acquired' => 'nullable|date',
+                'date_acquired_type' => 'required|in:date,na',
+                'remarks' => 'nullable|string',
+            ]);
+
+            // Handle NA values
+            if ($request->input('unit_price_type') === 'na') {
+                $validated['unit_price'] = null;
+            }
+            if ($request->input('date_acquired_type') === 'na') {
+                $validated['date_acquired'] = null;
+            }
+
+            // Remove the _type fields from the data to be stored
+            unset($validated['unit_price_type']);
+            unset($validated['date_acquired_type']);
+
+            $validated['status'] = $this->calculateStatus($validated['date_acquired']);
+
+            $item = InventoryItem::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Item created successfully',
+                'item'    => $item,
+            ], 201);
         }
-        if ($request->input('date_acquired_type') === 'na') {
-            $validated['date_acquired'] = null;
-        }
-
-        // Remove the _type fields from the data to be stored
-        unset($validated['unit_price_type']);
-        unset($validated['date_acquired_type']);
-
-        $validated['status'] = $this->calculateStatus($validated['date_acquired']);
-
-        $item = InventoryItem::create($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Item created successfully',
-            'item'    => $item,
-        ], 201);
     }
 
     public function edit(InventoryItem $inventoryItem)
@@ -170,10 +219,31 @@ class InventoryItemController extends Controller
     $item = InventoryItem::findOrFail($id);
     $originalId = $item->id;
 
+    // Check if this is an ICM update (has ICM-specific fields)
+    $isIcmUpdate = $request->hasAny(['icm_type', 'priority', 'problem_description']);
+
     // Check if this is an IPM update (has IPM-specific fields)
     $isIpmUpdate = $request->hasAny(['system_boot_up', 'hardware', 'performance', 'cables_connections', 'peripherals', 'recommendation', 'date_conducted', 'time_started', 'time_ended']);
 
-    if ($isIpmUpdate) {
+    if ($isIcmUpdate) {
+        // ICM update validation
+        $validated = $request->validate([
+            'problem_description' => 'required|string',
+            'icm_type' => 'required|string|in:Assistance,Troubleshoot',
+            'priority' => 'required|string|in:P1-Critical,P2-Important,P3-Normal,P4-Low',
+            'requesting_personnel' => 'required|string|max:255',
+            'classification' => 'required|string|max:255',
+            'brand_model' => 'required|string|max:255',
+            'hardware_software' => 'required|string|in:Hardware,Software',
+            'open_date' => 'required|date',
+            'open_time' => 'required|date_format:H:i',
+            'close_date' => 'nullable|date|after_or_equal:open_date',
+            'close_time' => 'nullable|date_format:H:i',
+            'icm_findings' => 'nullable|string',
+            'actions_taken' => 'nullable|string',
+            'icm_recommendations' => 'nullable|string',
+        ]);
+    } elseif ($isIpmUpdate) {
         // IPM update validation
         $validated = $request->validate([
             'condition' => 'nullable|string|in:New,For Replacement,Functional,Nonfunctional',
@@ -646,5 +716,120 @@ class InventoryItemController extends Controller
 
     public function show(InventoryItem $inventoryItem)
     {
+    }
+
+    public function icm(Request $request)
+    {
+        $query = InventoryItem::active()->whereNotNull('icm_no');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchTerms = array_filter(explode(' ', $search));
+
+            $query->where(function($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function($subQuery) use ($term) {
+                        $subQuery->where('division', 'LIKE', "%{$term}%")
+                                ->orWhere('enduser', 'LIKE', "%{$term}%")
+                                ->orWhere('classification', 'LIKE', "%{$term}%")
+                                ->orWhere('icm_no', 'LIKE', "%{$term}%")
+                                ->orWhere('problem_description', 'LIKE', "%{$term}%")
+                                ->orWhere('requesting_personnel', 'LIKE', "%{$term}%");
+                    });
+                }
+            });
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        if ($request->filled('icm_type')) {
+            $query->where('icm_type', $request->icm_type);
+        }
+
+        if ($request->filled('division')) {
+            $query->where('division', $request->division);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('open_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('open_date', '<=', $request->date_to);
+        }
+
+        $allowedPerPage = [10, 25, 50, 100];
+        $perPage = (int) $request->get('per_page', 10);
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+
+        $items = $query->orderBy('icm_no', 'desc')->paginate($perPage)->withQueryString();
+        $departments = Department::orderBy('department')->get();
+        $employees = Employee::orderBy('firstname')->get();
+
+        if ($request->ajax()) {
+            return view('inventory.table-data-icm', compact('items'))->render();
+        }
+
+        return view('inventory.tabs.icm', compact('items', 'departments', 'employees', 'perPage'));
+    }
+
+    /**
+     * Search employees from employee_db
+     */
+    public function searchEmployees(Request $request)
+    {
+        $search = $request->get('query', '');
+        
+        $employees = Employee::where('status', 'ACTIVE')
+            ->where(function($q) use ($search) {
+                $q->Where('firstname', 'LIKE', "%{$search}%")
+                  ->orWhere('lastname', 'LIKE', "%{$search}%")
+                  ->orWhere('emp_no', 'LIKE', "%{$search}%");
+            })
+            ->leftJoin('inventory.departments', 'employees.department', '=', 'departments.dept_no')
+            ->select('employees.emp_no', 'employees.firstname', 'employees.lastname', 'departments.department')
+            ->limit(10)
+            ->get();
+
+        return response()->json($employees);
+    }
+
+    /**
+     * Get inventory items by requesting personnel (emp_no)
+     */
+    public function getItemsByPersonnel(Request $request)
+    {
+        $empNo = $request->get('emp_no');
+        
+        if (!$empNo) {
+            return response()->json([]);
+        }
+
+        // Get items for this employee grouped by classification
+        $items = InventoryItem::where('emp_no', $empNo)
+            ->active()
+            ->whereNotNull('classification')
+            ->select('no', 'classification', 'brand_model', 'serial_number', 'property_number')
+            ->get()
+            ->groupBy('classification');
+
+        return response()->json($items);
+    }
+
+    /**
+     * Get specific inventory item details by ID
+     */
+    public function getItemDetails(Request $request, $itemId)
+    {
+        $item = InventoryItem::findOrFail($itemId);
+
+        return response()->json([
+            'serial_number' => $item->serial_number,
+            'property_number' => $item->property_number,
+            'brand_model' => $item->brand_model,
+        ]);
     }
 }

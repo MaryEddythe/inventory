@@ -22,7 +22,10 @@
     </thead>
     <tbody>
         @php
-            $groupedItems = $items->groupBy('enduser');
+            $filteredItems = $items->filter(function($item) {
+                return stripos($item->classification, 'monitor') === false;
+            });
+            $groupedItems = $filteredItems->groupBy('enduser');
             $enduserCounter = 0;
         @endphp
         @forelse($groupedItems as $enduser => $userItems)

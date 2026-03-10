@@ -20,7 +20,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])
         ->name('inventory.tabs.dashboard');
     Route::get('/ipm', [InventoryItemController::class, 'ipm'])->name('inventory.ipm');
+    Route::get('/icm', [InventoryItemController::class, 'icm'])->name('inventory.icm');
     Route::get('/inventory/export/{type}', [InventoryItemController::class, 'export'])->name('inventory.export');
+
+    // API Routes for ICM
+    Route::get('/api/search-employees', [InventoryItemController::class, 'searchEmployees'])->name('api.search-employees');
+    Route::get('/api/items-by-personnel', [InventoryItemController::class, 'getItemsByPersonnel'])->name('api.items-by-personnel');
+    Route::get('/api/item-details/{itemId}', [InventoryItemController::class, 'getItemDetails'])->name('api.item-details');
 
     // Profile Routes
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');

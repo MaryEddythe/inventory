@@ -101,7 +101,7 @@ class InventoryItemController extends Controller
         $perPage = 10;
     }
 
-    $items = $query->orderBy('division')->orderByRaw("SUBSTRING_INDEX(enduser, ' ', -1) ASC")->paginate($perPage)->withQueryString();
+    $items = $query->orderByRaw("SUBSTRING_INDEX(enduser, ' ', -1) ASC")->paginate($perPage)->withQueryString();
     $groupedItems = $items->getCollection()->groupBy('enduser');
 
     $departments = Department::orderBy('department')->get();
@@ -216,98 +216,122 @@ class InventoryItemController extends Controller
 
    public function update(Request $request, $id)
 {
-    $item = InventoryItem::findOrFail($id);
-    $originalId = $item->id;
+    try {
+        $item = InventoryItem::findOrFail($id);
+        $originalId = $item->id;
 
-    // Check if this is an ICM update (has ICM-specific fields)
-    $isIcmUpdate = $request->hasAny(['icm_type', 'priority', 'problem_description']);
+        // Check if this is an ICM update (has ICM-specific fields)
+        $isIcmUpdate = $request->hasAny(['icm_type', 'priority', 'problem_description']);
 
-    // Check if this is an IPM update (has IPM-specific fields)
-    $isIpmUpdate = $request->hasAny(['system_boot_up', 'hardware', 'performance', 'cables_connections', 'peripherals', 'recommendation', 'date_conducted', 'time_started', 'time_ended']);
+        // Check if this is an IPM update (has IPM-specific fields)
+        $isIpmUpdate = $request->hasAny(['system_boot_up', 'hardware', 'performance', 'cables_connections', 'peripherals', 'recommendation', 'date_conducted', 'time_started', 'time_ended']);
 
-    if ($isIcmUpdate) {
-        // ICM update validation
-        $validated = $request->validate([
-            'problem_description' => 'required|string',
-            'icm_type' => 'required|string|in:Assistance,Troubleshoot',
-            'priority' => 'required|string|in:P1-Critical,P2-Important,P3-Normal,P4-Low',
-            'requesting_personnel' => 'required|string|max:255',
-            'classification' => 'required|string|max:255',
-            'brand_model' => 'required|string|max:255',
-            'hardware_software' => 'required|string|in:Hardware,Software',
-            'open_date' => 'required|date',
-            'open_time' => 'required|date_format:H:i',
-            'close_date' => 'nullable|date|after_or_equal:open_date',
-            'close_time' => 'nullable|date_format:H:i',
-            'icm_findings' => 'nullable|string',
-            'actions_taken' => 'nullable|string',
-            'icm_recommendations' => 'nullable|string',
-        ]);
-    } elseif ($isIpmUpdate) {
-        // IPM update validation
-        $validated = $request->validate([
-            'condition' => 'nullable|string|in:New,For Replacement,Functional,Nonfunctional',
-            'system_boot_up' => 'nullable|boolean',
-            'hardware' => 'nullable|boolean',
-            'performance' => 'nullable|boolean',
-            'cables_connections' => 'nullable|boolean',
-            'peripherals' => 'nullable|boolean',
-            'recommendation' => 'nullable|string',
-            'date_conducted' => 'nullable|date',
-            'time_started' => 'nullable|date_format:H:i',
-            'time_ended' => 'nullable|date_format:H:i|after:time_started',
-        ]);
-    } else {
-        // Regular inventory update validation
-        $validated = $request->validate([
-            'division' => 'required|string|max:255',
-            'enduser' => 'required|string|max:255',
-            'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
-            'classification' => 'required|string|max:255',
-            'property_number' => 'required|string|max:255',
-            'description' => 'required|string',
-            'serial_number' => 'nullable|string|max:255',
-            'unit_price' => 'nullable|numeric|min:0',
-            'unit_price_type' => 'required|in:value,na',
-            'co_mooe' => 'required|string|max:255',
-            'date_acquired' => 'nullable|date',
-            'date_acquired_type' => 'required|in:date,na',
-            'remarks' => 'nullable|string',
-        ]);
+        if ($isIcmUpdate) {
+            // ICM update validation
+            $validated = $request->validate([
+                'problem_description' => 'required|string',
+                'icm_type' => 'required|string|in:Assistance,Troubleshoot',
+                'priority' => 'required|string|in:P1-Critical,P2-Important,P3-Normal,P4-Low',
+                'requesting_personnel' => 'required|string|max:255',
+                'classification' => 'required|string|max:255',
+                'brand_model' => 'required|string|max:255',
+                'hardware_software' => 'required|string|in:Hardware,Software',
+                'open_date' => 'required|date',
+                'open_time' => 'required|date_format:H:i',
+                'close_date' => 'nullable|date|after_or_equal:open_date',
+                'close_time' => 'nullable|date_format:H:i',
+                'icm_findings' => 'nullable|string',
+                'actions_taken' => 'nullable|string',
+                'icm_recommendations' => 'nullable|string',
+            ]);
+        } elseif ($isIpmUpdate) {
+            // IPM update validation
+            $validated = $request->validate([
+                'condition' => 'nullable|string|in:New,For Replacement,Functional,Nonfunctional',
+                'system_boot_up' => 'nullable|boolean',
+                'hardware' => 'nullable|boolean',
+                'performance' => 'nullable|boolean',
+                'cables_connections' => 'nullable|boolean',
+                'peripherals' => 'nullable|boolean',
+                'recommendation' => 'nullable|string',
+                'date_conducted' => 'nullable|date',
+                'time_started' => 'nullable|date_format:H:i',
+                'time_ended' => 'nullable|date_format:H:i|after:time_started',
+            ]);
+        } else {
+            // Regular inventory update validation
+            $validated = $request->validate([
+                'division' => 'required|string|max:255',
+                'enduser' => 'required|string|max:255',
+                'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
+                'classification' => 'required|string|max:255',
+                'property_number' => 'required|string|max:255',
+                'description' => 'required|string',
+                'serial_number' => 'nullable|string|max:255',
+                'unit_price' => 'nullable|numeric|min:0',
+                'unit_price_type' => 'required|in:value,na',
+                'co_mooe' => 'required|string|max:255',
+                'date_acquired' => 'nullable|date',
+                'date_acquired_type' => 'required|in:date,na',
+                'remarks' => 'nullable|string',
+                'serviceability' => 'nullable|string',
+            ]);
 
-        // Handle NA values
-        if ($request->input('unit_price_type') === 'na') {
-            $validated['unit_price'] = null;
+            // Handle NA values
+            if ($request->input('unit_price_type') === 'na') {
+                $validated['unit_price'] = null;
+            }
+            if ($request->input('date_acquired_type') === 'na') {
+                $validated['date_acquired'] = null;
+            }
+
+            // Remove the _type fields from the data to be stored
+            unset($validated['unit_price_type']);
+            unset($validated['date_acquired_type']);
+
+            // Recalculate status based on possibly updated date_acquired
+            $validated['status'] = $this->calculateStatus($validated['date_acquired']);
         }
-        if ($request->input('date_acquired_type') === 'na') {
-            $validated['date_acquired'] = null;
+
+        // SAVE WHO UPDATED THE ITEM
+        $item->updated_by = auth()->user()->emp_no;
+
+        // Apply validated data
+        $item->update($validated);
+
+        // Set updated_at to current timestamp
+        $item->updated_at = now();
+        $item->save();
+
+        if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Item updated successfully',
+                'item' => $item,
+                'original_id' => $originalId,
+            ], 200);
         }
 
-        // Remove the _type fields from the data to be stored
-        unset($validated['unit_price_type']);
-        unset($validated['date_acquired_type']);
+        return redirect()->route('inventory.index')->with('success', 'Item updated successfully!');
 
-        // Recalculate status based on possibly updated date_acquired
-        $validated['status'] = $this->calculateStatus($validated['date_acquired']);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+        throw $e;
+    } catch (\Exception $e) {
+        if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage(),
+            ], 500);
+        }
+        throw $e;
     }
-
-    // SAVE WHO UPDATED THE ITEM
-    $item->updated_by = auth()->user()->emp_no;
-
-    // Apply validated data
-    $item->update($validated);
-
-    // Set updated_at to current timestamp
-    $item->updated_at = now();
-
-    $item->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Item updated successfully',
-        'item'    => $item,
-        'original_id' => $originalId,
-    ]);
 }
 
 

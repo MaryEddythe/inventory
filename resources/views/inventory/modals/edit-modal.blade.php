@@ -237,5 +237,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Handle form submission via AJAX
+    const form = document.getElementById('edit-inventory-form-{{ $item->no }}');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const itemNo = '{{ $item->no }}';
+            const url = "{{ route('inventory.update', $item->no) }}";
+
+            fetch(url, {
+                method: 'PUT',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`HTTP ${response.status}: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Item updated successfully!');
+                    
+                    const modalElement = document.getElementById('editModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    alert(data.message || 'An error occurred while updating the item.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred: ' + error.message);
+            });
+        });
+    }
+
 });
 </script>

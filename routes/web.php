@@ -16,6 +16,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::get('/dashboard', [InventoryItemController::class, 'dashboard'])->name('inventory.dashboard');
+    Route::put('/inventory/{inventory}', [InventoryItemController::class, 'update'])->name('inventory.update');
     Route::resource('inventory', InventoryItemController::class);
     Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])
         ->name('inventory.tabs.dashboard');

@@ -7,24 +7,24 @@
         :root { --total-records: "{{ $items->count() }}"; }
         
         @page {
-            size: 8.5in 14in;
-            margin: 0.5in 0.5in 0.5in 0.5in;
+            size: 14in 8.5in landscape;
+            margin: 0.25in 0.25in 0.25in 0.25in;
         }
-        
+
         @media print {
             @page {
-                size: 8.5in 14in;
-                margin: 0.5in 0.5in 0.5in 0.5in;
+                size: 14in 8.5in landscape;
+                margin: 0.25in 0.25in 0.25in 0.25in;
             }
-            
+
             * {
                 margin: 0 !important;
                 padding: 0 !important;
             }
-            
+
             body {
                 margin: 0 !important;
-                padding: 0.5in 0.5in !important;
+                padding: 0.25in 0.25in !important;
             }
             
             html {
@@ -40,7 +40,7 @@
         
         body {
             margin: 0;
-            padding: 0.5in 0.5in;
+            padding: 0.25in 0.25in;
             font-size: 11px;
             font-family: Arial, sans-serif;
         }

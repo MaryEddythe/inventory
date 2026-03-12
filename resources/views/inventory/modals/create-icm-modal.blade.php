@@ -29,8 +29,8 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label for="brand_model" class="form-label">Brand/Model <span class="text-danger">*</span></label>
-            <input type="text" class="form-control form-control-sm" id="brand_model" name="brand_model" placeholder="Enter brand and model" required disabled>
+            <label for="brand_model" class="form-label">Item <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="brand_model" name="brand_model" placeholder="Select classification first" required disabled>
         </div>
     </div>
 
@@ -229,34 +229,76 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // Helper function to get first 5 words of description
+    function getFirstFiveWords(text) {
+        if (!text) return '';
+        const words = text.trim().split(/\s+/).slice(0, 5);
+        return words.join(' ');
+    }
+
     // Handle classification selection
     classificationSelect.addEventListener('change', function() {
         const selectedClassification = this.value;
-        
+        const brandModelField = document.getElementById('brand_model');
+
         if (selectedClassification && itemsData[selectedClassification]) {
-            // Enable brand/model input
-            document.getElementById('brand_model').disabled = false;
-            document.getElementById('brand_model').focus();
-            
-            // Get the first item of this classification to fetch serial and property numbers
-            const firstItem = itemsData[selectedClassification][0];
-            
-            // Fetch item details to get serial and property numbers
-            fetch(`{{ route('api.item-details', ':id') }}`.replace(':id', firstItem.no))
-                .then(response => response.json())
-                .then(item => {
-                    serialNumberInput.value = item.serial_number || '';
-                    propertyNumberInput.value = item.property_number || '';
-                })
-                .catch(error => {
-                    console.error('Error fetching item details:', error);
-                    serialNumberInput.value = firstItem.serial_number || '';
-                    propertyNumberInput.value = firstItem.property_number || '';
+            const items = itemsData[selectedClassification];
+
+            // Convert brand_model to a select dropdown for better UX
+            if (brandModelField.tagName !== 'SELECT') {
+                const newSelect = document.createElement('select');
+                newSelect.className = 'form-select form-select-sm';
+                newSelect.id = 'brand_model';
+                newSelect.name = 'brand_model';
+                newSelect.required = true;
+
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Select item';
+                newSelect.appendChild(placeholder);
+
+                items.forEach((item, index) => {
+                    const option = document.createElement('option');
+                    option.value = item.no;
+                    // Show description (first 5 words) or brand_model as fallback
+                    const displayText = getFirstFiveWords(item.description) || item.brand_model || `Item ${index + 1}`;
+                    option.textContent = displayText;
+                    option.dataset.serialNumber = item.serial_number || '';
+                    option.dataset.propertyNumber = item.property_number || '';
+                    option.dataset.brandModel = item.brand_model || '';
+                    newSelect.appendChild(option);
                 });
-            
-            // Clear brand/model input
-            document.getElementById('brand_model').value = '';
+
+                // Replace the input with the select
+                brandModelField.parentNode.replaceChild(newSelect, brandModelField);
+
+                // Re-assign the reference
+                const newBrandModelField = document.getElementById('brand_model');
+                newBrandModelField.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption.value) {
+                        serialNumberInput.value = selectedOption.dataset.serialNumber || '';
+                        propertyNumberInput.value = selectedOption.dataset.propertyNumber || '';
+                    } else {
+                        serialNumberInput.value = '';
+                        propertyNumberInput.value = '';
+                    }
+                });
+
+                newBrandModelField.disabled = false;
+                newBrandModelField.focus();
+            }
+
+            // Automatically populate with first item if only one exists
+            if (items.length === 1) {
+                const firstItem = items[0];
+                const brandModelSelectField = document.getElementById('brand_model');
+                brandModelSelectField.value = firstItem.no;
+                serialNumberInput.value = firstItem.serial_number || '';
+                propertyNumberInput.value = firstItem.property_number || '';
+            }
         } else {
+            // Reset if no classification selected
             document.getElementById('brand_model').disabled = true;
             serialNumberInput.value = '';
             propertyNumberInput.value = '';

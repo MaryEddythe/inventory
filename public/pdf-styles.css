@@ -1,6 +1,6 @@
 @page {
-    margin: 8mm;
-    size: landscape;
+    margin: 0.25in;
+    size: 14in 8.5in landscape;
 }
 .badge-new {
     background: #28a745 !important;
@@ -446,7 +446,7 @@ body {
     font-family: "Arial", sans-serif;
     font-size: 8px;
     margin: 0;
-    padding: 0;
+    padding: 0.25in;
     line-height: 1.1;
 }
 

@@ -806,15 +806,14 @@ class InventoryItemController extends Controller
     public function searchEmployees(Request $request)
     {
         $search = $request->get('query', '');
-        
-        $employees = Employee::where('status', 'ACTIVE')
+
+        $employees = Employee::where('status', 'active')
             ->where(function($q) use ($search) {
-                $q->Where('firstname', 'LIKE', "%{$search}%")
+                $q->where('firstname', 'LIKE', "%{$search}%")
                   ->orWhere('lastname', 'LIKE', "%{$search}%")
                   ->orWhere('emp_no', 'LIKE', "%{$search}%");
             })
-            ->leftJoin('inventory.departments', 'employees.department', '=', 'departments.dept_no')
-            ->select('employees.emp_no', 'employees.firstname', 'employees.lastname', 'departments.department')
+            ->select('employees.emp_no', 'employees.firstname', 'employees.lastname', 'employees.department')
             ->limit(10)
             ->get();
 
@@ -827,7 +826,7 @@ class InventoryItemController extends Controller
     public function getItemsByPersonnel(Request $request)
     {
         $empNo = $request->get('emp_no');
-        
+
         if (!$empNo) {
             return response()->json([]);
         }
@@ -836,7 +835,7 @@ class InventoryItemController extends Controller
         $items = InventoryItem::where('emp_no', $empNo)
             ->active()
             ->whereNotNull('classification')
-            ->select('no', 'classification', 'brand_model', 'serial_number', 'property_number')
+            ->select('no', 'classification', 'description', 'brand_model', 'serial_number', 'property_number')
             ->get()
             ->groupBy('classification');
 

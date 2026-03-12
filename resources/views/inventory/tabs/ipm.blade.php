@@ -131,7 +131,7 @@
                             @if($itemCount > 1)
                                 <span class="badge bg-light text-dark">{{ $itemCount }} items</span>
                             @else
-                                {{ $item->no }}
+                                <span class="badge bg-light text-dark">1 item</span>
                             @endif
                         </td>
                         <td rowspan="{{ $itemCount }}">

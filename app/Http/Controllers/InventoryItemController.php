@@ -727,7 +727,7 @@ class InventoryItemController extends Controller
             $perPage = 10;
         }
 
-        $items = $query->orderBy('no', 'desc')->paginate($perPage)->withQueryString();
+        $items = $query->orderByRaw("SUBSTRING_INDEX(enduser, ' ', -1) ASC")->paginate($perPage)->withQueryString();
         $departments = Department::orderBy('department')->get();
         $employees = Employee::orderBy('firstname')->get();
 

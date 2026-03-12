@@ -3,48 +3,96 @@
 <head>
     <meta charset="utf-8">
     <title>Inventory Report</title>
-    <style>:root { --total-records: "{{ $items->count() }}"; } {{ $css }}</style>
+    <style>
+        :root { --total-records: "{{ $items->count() }}"; }
+        
+        @page {
+            size: 8.5in 14in;
+            margin: 0.5in 0.5in 0.5in 0.5in;
+        }
+        
+        @media print {
+            @page {
+                size: 8.5in 14in;
+                margin: 0.5in 0.5in 0.5in 0.5in;
+            }
+            
+            * {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            body {
+                margin: 0 !important;
+                padding: 0.5in 0.5in !important;
+            }
+            
+            html {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0.5in 0.5in;
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        {{ $css }}
+    </style>
 </head>
 <body>
-    <table class="pdf-header" style="width: 100%; border: none;">
+    <table class="pdf-header" style="width: 100%; border: none; margin-bottom: 8px;">
         <tr>
-            <td style="width: 50%; text-align: left; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 60px;">
+            <td style="width: 50%; text-align: left; vertical-align: middle; padding: 0 5px;">
+                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 50px;">
             </td>
-            <td style="width: 60%; text-align: center; vertical-align: middle;">
-                <h2>Mines and Geosciences Bureau</h2>
-                <h3>Regional Office VI</h3>
-                <h1>INVENTORY REPORT SUMMARY</h1>
-                <p>Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
+            <td style="width: 60%; text-align: center; vertical-align: middle; padding: 0 5px;">
+                <h2 style="margin: 2px 0; font-size: 16px;">Mines and Geosciences Bureau</h2>
+                <h3 style="margin: 2px 0; font-size: 13px;">Regional Office VI</h3>
+                <h1 style="margin: 2px 0; font-size: 14px;">INVENTORY REPORT SUMMARY</h1>
+                <p style="margin: 2px 0; font-size: 10px;">Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }} to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}</p>
             </td>
-            <td style="width: 50%; text-align: right; vertical-align: middle;">
-                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 60px;">
+            <td style="width: 50%; text-align: right; vertical-align: middle; padding: 0 5px;">
+                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 50px;">
             </td>
         </tr>
     </table>
-    <hr>
+    <hr style="margin: 4px 0; border: none; border-top: 1px solid #000;">
 
     <!-- Detailed Inventory -->
-    <div class="pdf-mt-3">
-        <table class="pdf-table pdf-table-striped">
+    <div class="pdf-mt-3" style="margin: 8px 0;">
+        <table class="pdf-table pdf-table-striped" style="font-size: 10px;">
             <thead>
                 <tr>
-                    <th colspan="13" class="pdf-bg-dark">DETAILED INVENTORY LISTING</th>
+                    <th colspan="13" class="pdf-bg-dark" style="padding: 4px; background-color: #333; color: white;">DETAILED INVENTORY LISTING</th>
                 </tr>
-                <tr>
-                    <th class="pdf-col-2 pdf-text-center" style="width: 0.5%;">No</th>
-                    <th class="pdf-col-10">Department</th>
-                    <th class="pdf-col-10">End User</th>
-                    <th class="pdf-col-9" style="width: 10%;">Classification</th>
-                    <th class="pdf-col-15">Description</th>
-                    <th class="pdf-col-8">Serial No</th>
-                    <th class="pdf-col-8">Property No</th>
-                    <th class="pdf-col-8 pdf-text-right">Unit Price</th>
-                    <th class="pdf-col-5">CO/MOOE</th>
-                    <th class="pdf-col-6 pdf-text-center">Date Acquired</th>
-                    <th class="pdf-col-12">Remarks</th>
-                    <th class="pdf-col-5 pdf-text-center">Status</th>
-                    <th class="pdf-col-8 pdf-text-center">Serviceability</th>
+                <tr style="background-color: #f0f0f0;">
+                    <th class="pdf-col-2 pdf-text-center" style="width: 3%; padding: 4px; border: 1px solid #ccc;">No</th>
+                    <th class="pdf-col-10" style="width: 7%; padding: 4px; border: 1px solid #ccc;">Department</th>
+                    <th class="pdf-col-10" style="width: 7%; padding: 4px; border: 1px solid #ccc;">End User</th>
+                    <th class="pdf-col-9" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Classification</th>
+                    <th class="pdf-col-15" style="width: 13%; padding: 4px; border: 1px solid #ccc;">Description</th>
+                    <th class="pdf-col-8" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Serial No</th>
+                    <th class="pdf-col-8" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Property No</th>
+                    <th class="pdf-col-8 pdf-text-right" style="width: 9%; padding: 4px; border: 1px solid #ccc;">Unit Price</th>
+                    <th class="pdf-col-5" style="width: 6%; padding: 4px; border: 1px solid #ccc;">CO/MOOE</th>
+                    <th class="pdf-col-6 pdf-text-center" style="width: 7%; padding: 4px; border: 1px solid #ccc;">Date Acquired</th>
+                    <th class="pdf-col-12" style="width: 9%; padding: 4px; border: 1px solid #ccc;">Remarks</th>
+                    <th class="pdf-col-5 pdf-text-center" style="width: 5%; padding: 4px; border: 1px solid #ccc;">Status</th>
+                    <th class="pdf-col-8 pdf-text-center" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Serviceability</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,7 +104,7 @@
 
                 @foreach($groupedItems as $division => $divisionItems)
                     <tr>
-                        <td colspan="13" style="background:#efefef;"><strong>Division: {{ $division ?? 'N/A' }}</strong></td>
+                        <td colspan="13" style="background:#efefef; padding: 4px; font-weight: bold; border: 1px solid #ccc;">Division: {{ $division ?? 'N/A' }}</td>
                     </tr>
 
                     @foreach($divisionItems as $item)
@@ -64,24 +112,24 @@
                             $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
                             $pdfBadgeClass = $yearsSinceAcquisition <= 5 ? 'pdf-status-new' : 'pdf-status-replace';
                         @endphp
-                        <tr>
-                            <td class="pdf-text-center">{{ $rowNumber++ }}</td>
-                            <td>{{ $item->department_name ?? $item->division }}</td>
-                            <td>{!! $item->enduser ?? 'N/A' !!}</td>
-                            <td>{{ $item->classification }}</td>
-                            <td>{{ $item->description }}</td>
-                            <td>{{ $item->serial_number ?? 'N/A' }}</td>
-                            <td>{{ $item->property_number }}</td>
-                            <td class="pdf-text-right">{{ number_format($item->unit_price, 2) }}</td>
-                            <td>{{ $item->co_mooe }}</td>
-                            <td class="pdf-text-center pdf-nowrap">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
-                            <td>{{ $item->remarks ?? 'N/A' }}</td>
-                            <td class="pdf-text-center">
+                        <tr style="border-bottom: 1px solid #ccc;">
+                            <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">{{ $rowNumber++ }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->department_name ?? $item->division }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{!! $item->enduser ?? 'N/A' !!}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->classification }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->description }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->serial_number ?? 'N/A' }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->property_number }}</td>
+                            <td class="pdf-text-right" style="padding: 3px; border: 1px solid #ccc;">{{ number_format($item->unit_price, 2) }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->co_mooe }}</td>
+                            <td class="pdf-text-center pdf-nowrap" style="padding: 3px; border: 1px solid #ccc; white-space: nowrap;">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->remarks ?? 'N/A' }}</td>
+                            <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">
                                 <span class="{{ $pdfBadgeClass }}">
                                     {{ $yearsSinceAcquisition <= 5 ? '<= 5' : '> 5' }}
                                 </span>
                             </td>
-                            <td class="pdf-text-center">{{ $item->serviceability ?? 'N/A' }}</td>
+                            <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">{{ $item->serviceability ?? 'N/A' }}</td>
                         </tr>
                     @endforeach
                 @endforeach
@@ -90,17 +138,17 @@
     </div>
 
     <!-- Executive Summary -->
-    <div class="pdf-summary-section pdf-mt-3" style="page-break-before: always;">
-        <table class="pdf-summary-table pdf-table-striped">
+    <div class="pdf-summary-section pdf-mt-3" style="page-break-before: always; margin: 8px 0;">
+        <table class="pdf-summary-table pdf-table-striped" style="font-size: 11px;">
             <thead>
                 <tr>
-                    <th colspan="4" class="pdf-bg-dark pdf-summary-header">EXECUTIVE SUMMARY BY DEPARTMENT</th>
+                    <th colspan="4" class="pdf-bg-dark pdf-summary-header" style="padding: 6px; background-color: #333; color: white;">EXECUTIVE SUMMARY BY DEPARTMENT</th>
                 </tr>
-                <tr class="pdf-bg-primary">
-                    <th class="pdf-col-40 pdf-summary-th">Department</th>
-                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-new-col">New Items</th>
-                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-replace-col">For Replacement</th>
-                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-total-col">Total Items</th>
+                <tr class="pdf-bg-primary" style="background-color: #007bff; color: white;">
+                    <th class="pdf-col-40 pdf-summary-th" style="width: 40%; padding: 6px; border: 1px solid #ccc;">Department</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-new-col" style="width: 20%; padding: 6px; border: 1px solid #ccc;">New Items</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-replace-col" style="width: 20%; padding: 6px; border: 1px solid #ccc;">For Replacement</th>
+                    <th class="pdf-col-20 pdf-text-center pdf-summary-th pdf-total-col" style="width: 20%; padding: 6px; border: 1px solid #ccc;">Total Items</th>
                 </tr>
             </thead>
             <tbody>
@@ -132,42 +180,42 @@
                     $grandTotalItems = $departmentSummaries->sum('total');
                 @endphp
                 @foreach($departmentSummaries as $summary)
-                    <tr class="pdf-summary-row">
-                        <td class="pdf-summary-td pdf-dept-name"><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center pdf-summary-td pdf-new-count">{{ $summary['new'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-replace-count">{{ $summary['replacement'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
+                    <tr class="pdf-summary-row" style="border-bottom: 1px solid #ccc;">
+                        <td class="pdf-summary-td pdf-dept-name" style="padding: 5px; border: 1px solid #ccc;"><strong>{{ $summary['name'] }}</strong></td>
+                        <td class="pdf-text-center pdf-summary-td pdf-new-count" style="padding: 5px; border: 1px solid #ccc;">{{ $summary['new'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-replace-count" style="padding: 5px; border: 1px solid #ccc;">{{ $summary['replacement'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-total-count" style="padding: 5px; border: 1px solid #ccc;">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total">
-                    <td class="pdf-summary-td"><strong>OVERALL TOTAL</strong></td>
-                    <td class="pdf-text-center pdf-summary-td pdf-new-total">{{ $totalNew }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-replace-total">{{ $totalReplacement }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalItems }}</td>
+                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total" style="background-color: #e9ecef; font-weight: bold;">
+                    <td class="pdf-summary-td" style="padding: 5px; border: 1px solid #ccc;"><strong>OVERALL TOTAL</strong></td>
+                    <td class="pdf-text-center pdf-summary-td pdf-new-total" style="padding: 5px; border: 1px solid #ccc;">{{ $totalNew }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-replace-total" style="padding: 5px; border: 1px solid #ccc;">{{ $totalReplacement }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-grand-total" style="padding: 5px; border: 1px solid #ccc;">{{ $grandTotalItems }}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
 
     <!-- Item Type Summary -->
-    <div class="pdf-summary-section pdf-mt-3" style="page-break-after: always;">
-        <table class="pdf-summary-table pdf-table-striped">
+    <div class="pdf-summary-section pdf-mt-3" style="page-break-after: always; margin: 8px 0;">
+        <table class="pdf-summary-table pdf-table-striped" style="font-size: 10px;">
             <thead>
                 <tr>
-                    <th colspan="9" class="pdf-bg-dark pdf-summary-header">ITEM TYPE SUMMARY BY DEPARTMENT</th>
+                    <th colspan="9" class="pdf-bg-dark pdf-summary-header" style="padding: 6px; background-color: #333; color: white;">ITEM TYPE SUMMARY BY DEPARTMENT</th>
                 </tr>
-                <tr class="pdf-bg-primary">
-                    <th class="pdf-col-15 pdf-summary-th">Department</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-laptop-col">Laptops</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-printer-col">Printers</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-desktop-col">Desktops</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-scanner-col">Scanners</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-photocopier-col">Photocopiers</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-monitor-col">Monitors</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-other-col">Others</th>
-                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-total-col">Total</th>
+                <tr class="pdf-bg-primary" style="background-color: #007bff; color: white;">
+                    <th class="pdf-col-15 pdf-summary-th" style="width: 15%; padding: 4px; border: 1px solid #ccc;">Department</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-laptop-col" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Laptops</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-printer-col" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Printers</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-desktop-col" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Desktops</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-scanner-col" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Scanners</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-photocopier-col" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Photocopiers</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-monitor-col" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Monitors</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-other-col" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Others</th>
+                    <th class="pdf-col-10 pdf-text-center pdf-summary-th pdf-total-col" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -240,65 +288,67 @@
                     $grandTotalTypes = $itemTypeSummaries->sum('total');
                 @endphp
                 @foreach($itemTypeSummaries as $summary)
-                    <tr class="pdf-summary-row">
-                        <td class="pdf-summary-td pdf-dept-name"><strong>{{ $summary['name'] }}</strong></td>
-                        <td class="pdf-text-center pdf-summary-td pdf-laptop-count">{{ $summary['laptops'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-printer-count">{{ $summary['printers'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-desktop-count">{{ $summary['desktops'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-scanner-count">{{ $summary['scanners'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-photocopier-count">{{ $summary['photocopiers'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-monitor-count">{{ $summary['monitors'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-other-count">{{ $summary['others'] }}</td>
-                        <td class="pdf-text-center pdf-summary-td pdf-total-count">{{ $summary['total'] }}</td>
+                    <tr class="pdf-summary-row" style="border-bottom: 1px solid #ccc;">
+                        <td class="pdf-summary-td pdf-dept-name" style="padding: 4px; border: 1px solid #ccc;"><strong>{{ $summary['name'] }}</strong></td>
+                        <td class="pdf-text-center pdf-summary-td pdf-laptop-count" style="padding: 4px; border: 1px solid #ccc;">{{ $summary['laptops'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-printer-count" style="padding: 4px; border: 1px solid #ccc;">{{ $summary['printers'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-desktop-count" style="padding: 4px; border: 1px solid #ccc;">{{ $summary['desktops'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-scanner-count" style="padding: 4px; border: 1px solid #ccc;">{{ $summary['scanners'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-photocopier-count" style="padding: 4px; border: 1px solid #ccc;">{{ $summary['photocopiers'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-monitor-count" style="padding: 4px; border: 1px solid #ccc;">{{ $summary['monitors'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-other-count" style="padding: 4px; border: 1px solid #ccc;">{{ $summary['others'] }}</td>
+                        <td class="pdf-text-center pdf-summary-td pdf-total-count" style="padding: 4px; border: 1px solid #ccc;">{{ $summary['total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
-                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total">
-                    <td class="pdf-summary-td"><strong>OVERALL TOTAL</strong></td>
-                    <td class="pdf-text-center pdf-summary-td pdf-laptop-total">{{ $totalLaptops }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-printer-total">{{ $totalPrinters }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-desktop-total">{{ $totalDesktops }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-scanner-total">{{ $totalScanners }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-photocopier-total">{{ $totalPhotocopiers }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-monitor-total">{{ $totalMonitors }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-other-total">{{ $totalOthers }}</td>
-                    <td class="pdf-text-center pdf-summary-td pdf-grand-total">{{ $grandTotalTypes }}</td>
+                <tr class="pdf-bg-overall-total pdf-font-bold pdf-summary-footer pdf-overall-total" style="background-color: #e9ecef; font-weight: bold;">
+                    <td class="pdf-summary-td" style="padding: 4px; border: 1px solid #ccc;"><strong>OVERALL TOTAL</strong></td>
+                    <td class="pdf-text-center pdf-summary-td pdf-laptop-total" style="padding: 4px; border: 1px solid #ccc;">{{ $totalLaptops }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-printer-total" style="padding: 4px; border: 1px solid #ccc;">{{ $totalPrinters }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-desktop-total" style="padding: 4px; border: 1px solid #ccc;">{{ $totalDesktops }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-scanner-total" style="padding: 4px; border: 1px solid #ccc;">{{ $totalScanners }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-photocopier-total" style="padding: 4px; border: 1px solid #ccc;">{{ $totalPhotocopiers }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-monitor-total" style="padding: 4px; border: 1px solid #ccc;">{{ $totalMonitors }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-other-total" style="padding: 4px; border: 1px solid #ccc;">{{ $totalOthers }}</td>
+                    <td class="pdf-text-center pdf-summary-td pdf-grand-total" style="padding: 4px; border: 1px solid #ccc;">{{ $grandTotalTypes }}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
 
     <!-- Signature Section -->
-    <div class="pdf-signature-section pdf-mt-3" style="page-break-inside: avoid;">
-        <table style="width: 100%; border: none;">
+    <div class="pdf-signature-section pdf-mt-3" style="page-break-inside: avoid; margin: 8px 0;">
+        <table style="width: 100%; border: none; margin-top: 20px;">
             <tr>
                 <!-- Left cell -->
-                <td class="pdf-col-30 pdf-text-left">
-                    <span class="pdf-signature-label">Prepared by:</span><br>
-                    <span class="pdf-signature-name">MARY EDDYTHE M. SORNITO</span><br>
-                    <span class="pdf-signature-title">Information Systems Analyst II</span>
+                <td class="pdf-col-30 pdf-text-left" style="width: 30%; text-align: left; padding-right: 10px;">
+                    <span class="pdf-signature-label" style="font-weight: bold; font-size: 11px;">Prepared by:</span><br>
+                    <span class="pdf-signature-name" style="font-weight: bold; margin-top: 30px; display: block;">HERO JOHN E. LAPORGA</span><br>
+                    <span class="pdf-signature-title" style="font-size: 10px;">Senior IT Support Specialist</span><br><br><br><br><br><br>
+                    <span class="pdf-signature-name" style="font-weight: bold; display: block;">MARY EDDYTHE M. SORNITO</span><br>
+                    <span class="pdf-signature-title" style="font-size: 10px;">Computer Maintenance Technologist I</span>
                 </td>
 
                 <!-- Center cell for Regional Director -->
-                <td class="pdf-col-40 pdf-text-center" style="padding-top: 40px;">
-                    <span class="pdf-signature-label">Approved by:</span><br>
-                    <span class="pdf-signature-name">CECILIA L. OCHAVO-SAYCON</span><br>
-                    <span class="pdf-signature-title">Regional Director</span>
+                <td class="pdf-col-40 pdf-text-center" style="width: 40%; text-align: center;">
+                    <span class="pdf-signature-label" style="font-weight: bold; font-size: 11px;">Reviewed by:</span><br>
+                    <span class="pdf-signature-name" style="font-weight: bold; margin-top: 30px; display: block;">MAY FLORENCE A. PABELONIO</span><br>
+                    <span class="pdf-signature-title" style="font-size: 10px;">ICT Focal Person</span>
                 </td>
 
                 <!-- Right cell -->
-                <td class="pdf-col-30 pdf-text-right" style="padding-right: 20px;">
-                    <span class="pdf-signature-label" style="margin-right: 50px;">Reviewed by:</span><br>
-                    <span class="pdf-signature-name">MAY FLORENCE A. PABELONIO</span><br>
-                    <span class="pdf-signature-title" style="margin-right: 25px;">ICT Focal Person</span>
+                <td class="pdf-col-30 pdf-text-right" style="width: 30%; text-align: right; padding-left: 10px;">
+                    <span class="pdf-signature-label" style="font-weight: bold; font-size: 11px;">Approved by:</span><br>
+                    <span class="pdf-signature-name" style="font-weight: bold; margin-top: 30px; display: block;">CECILIA L. OCHAVO-SAYCON</span><br>
+                    <span class="pdf-signature-title" style="font-size: 10px;">Regional Director</span>
                 </td>
             </tr>
         </table>
     </div>
 
-    <div class="pdf-footer pdf-mt-2">
-        Total Records: {{ $items->count() }} | Generated by Inventory Management System - MGB</p>
+    <div class="pdf-footer pdf-mt-2" style="margin-top: 8px; font-size: 10px; text-align: center; border-top: 1px solid #ccc; padding-top: 5px;">
+        Total Records: {{ $items->count() }} | Generated by Inventory Management System - MGB
     </div>
 </body>
 </html>

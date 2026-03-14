@@ -1,140 +1,240 @@
 <form id="add-icm-form" class="add-icm-form" enctype="multipart/form-data">
     @csrf
     
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="division" class="form-label">Division <span class="text-danger">*</span></label>
-            <select class="form-select form-select-sm" id="division" name="division" required>
-                <option value="">Select Division</option>
-                @foreach($departments as $dept)
-                    <option value="{{ $dept->department }}">{{ $dept->department }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label for="requesting_personnel" class="form-label">Requesting Personnel <span class="text-danger">*</span></label>
-            <div class="position-relative">
-                <input type="text" class="form-control form-control-sm" id="requesting_personnel" name="requesting_personnel" placeholder="Search personnel..." required autocomplete="off">
-                <div id="personnel_suggestions" class="position-absolute bg-white border border-light shadow-sm rounded mt-1" style="display:none; width: 100%; max-height: 200px; overflow-y: auto; z-index: 1000;"></div>
+    <!-- Step Indicator -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between mb-3">
+            <div class="step-indicator active" id="step1-indicator">
+                <div class="step-number">1</div>
+                <div class="step-label">Personnel Details</div>
             </div>
-            <small class="text-muted">Start typing to search for personnel</small>
+            <div class="step-line"></div>
+            <div class="step-indicator" id="step2-indicator">
+                <div class="step-number">2</div>
+                <div class="step-label">Item Details</div>
+            </div>
         </div>
     </div>
 
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="classification" class="form-label">Item Classification <span class="text-danger">*</span></label>
-            <select class="form-select form-select-sm" id="classification" name="classification" required disabled>
-                <option value="">Select classification after choosing personnel</option>
-            </select>
+    <!-- STEP 1: PERSONNEL DETAILS -->
+    <div id="step1" class="step-content active">
+        <h6 class="mb-4">Step 1: Personnel Details</h6>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="division" class="form-label">Division <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" id="division" name="division" required>
+                    <option value="">Select Division</option>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept->department }}">{{ $dept->department }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="requesting_personnel" class="form-label">Requesting Personnel <span class="text-danger">*</span></label>
+                <div class="position-relative">
+                    <input type="text" class="form-control form-control-sm" id="requesting_personnel" name="requesting_personnel" placeholder="Search personnel..." required autocomplete="off">
+                    <div id="personnel_suggestions" class="position-absolute bg-white border border-light shadow-sm rounded mt-1" style="display:none; width: 100%; max-height: 200px; overflow-y: auto; z-index: 1000;"></div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6">
-            <label for="brand_model" class="form-label">Item <span class="text-danger">*</span></label>
-            <input type="text" class="form-control form-control-sm" id="brand_model" name="brand_model" placeholder="Select classification first" required disabled>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="icm_type" class="form-label">Type <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" id="icm_type" name="icm_type" required>
+                    <option value="">Select Type</option>
+                    <option value="Assistance">Assistance</option>
+                    <option value="Troubleshoot">Troubleshoot</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" id="priority" name="priority" required>
+                    <option value="">Select Priority</option>
+                    <option value="P1-Critical">P1-Critical</option>
+                    <option value="P2-Important">P2-Important</option>
+                    <option value="P3-Normal">P3-Normal</option>
+                    <option value="P4-Low">P4-Low</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="hardware_software" class="form-label">Hardware or Software <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" id="hardware_software" name="hardware_software" required>
+                    <option value="">Select Type</option>
+                    <option value="Hardware">Hardware</option>
+                    <option value="Software">Software</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="serial_number" class="form-label">Serial Number <span class="text-danger">*</span></label>
-            <input type="text" class="form-control form-control-sm" id="serial_number" name="serial_number" readonly required>
+    <!-- STEP 2: ITEM DETAILS -->
+    <div id="step2" class="step-content" style="display:none;">
+        <h6 class="mb-4">Step 2: Item & Issue Details</h6>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="classification" class="form-label">Item Classification <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" id="classification" name="classification" required disabled>
+                    <option value="">Select classification after choosing personnel</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="brand_model" class="form-label">Item <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-sm" id="brand_model" name="brand_model" placeholder="Select classification first" required disabled>
+            </div>
         </div>
-        <div class="col-md-6">
-            <label for="property_number" class="form-label">Property Number <span class="text-danger">*</span></label>
-            <input type="text" class="form-control form-control-sm" id="property_number" name="property_number" readonly required>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="serial_number" class="form-label">Serial Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-sm" id="serial_number" name="serial_number" readonly required>
+            </div>
+            <div class="col-md-6">
+                <label for="property_number" class="form-label">Property Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-sm" id="property_number" name="property_number" readonly required>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label for="problem_description" class="form-label">Problem/Assistance Description <span class="text-danger">*</span></label>
+                <textarea class="form-control form-control-sm" id="problem_description" name="problem_description" rows="3" required></textarea>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="open_date" class="form-label">Open Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control form-control-sm" id="open_date" name="open_date" required>
+            </div>
+            <div class="col-md-6">
+                <label for="open_time" class="form-label">Open Time <span class="text-danger">*</span></label>
+                <input type="time" class="form-control form-control-sm" id="open_time" name="open_time" required>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="close_date" class="form-label">Close Date</label>
+                <input type="date" class="form-control form-control-sm" id="close_date" name="close_date">
+            </div>
+            <div class="col-md-6">
+                <label for="close_time" class="form-label">Close Time</label>
+                <input type="time" class="form-control form-control-sm" id="close_time" name="close_time">
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label for="icm_findings" class="form-label">Findings</label>
+                <textarea class="form-control form-control-sm" id="icm_findings" name="icm_findings" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label for="actions_taken" class="form-label">Actions Taken</label>
+                <textarea class="form-control form-control-sm" id="actions_taken" name="actions_taken" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label for="icm_recommendations" class="form-label">Recommendations</label>
+                <textarea class="form-control form-control-sm" id="icm_recommendations" name="icm_recommendations" rows="3"></textarea>
+            </div>
         </div>
     </div>
 
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="hardware_software" class="form-label">Hardware or Software <span class="text-danger">*</span></label>
-            <select class="form-select form-select-sm" id="hardware_software" name="hardware_software" required>
-                <option value="">Select Type</option>
-                <option value="Hardware">Hardware</option>
-                <option value="Software">Software</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-12">
-            <label for="problem_description" class="form-label">Problem/Assistance Description <span class="text-danger">*</span></label>
-            <textarea class="form-control form-control-sm" id="problem_description" name="problem_description" rows="3" required></textarea>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="icm_type" class="form-label">Type <span class="text-danger">*</span></label>
-            <select class="form-select form-select-sm" id="icm_type" name="icm_type" required>
-                <option value="">Select Type</option>
-                <option value="Assistance">Assistance</option>
-                <option value="Troubleshoot">Troubleshoot</option>
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
-            <select class="form-select form-select-sm" id="priority" name="priority" required>
-                <option value="">Select Priority</option>
-                <option value="P1-Critical">P1-Critical</option>
-                <option value="P2-Important">P2-Important</option>
-                <option value="P3-Normal">P3-Normal</option>
-                <option value="P4-Low">P4-Low</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="open_date" class="form-label">Open Date <span class="text-danger">*</span></label>
-            <input type="date" class="form-control form-control-sm" id="open_date" name="open_date" required>
-        </div>
-        <div class="col-md-6">
-            <label for="open_time" class="form-label">Open Time <span class="text-danger">*</span></label>
-            <input type="time" class="form-control form-control-sm" id="open_time" name="open_time" required>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="close_date" class="form-label">Close Date</label>
-            <input type="date" class="form-control form-control-sm" id="close_date" name="close_date">
-        </div>
-        <div class="col-md-6">
-            <label for="close_time" class="form-label">Close Time</label>
-            <input type="time" class="form-control form-control-sm" id="close_time" name="close_time">
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-12">
-            <label for="icm_findings" class="form-label">Findings</label>
-            <textarea class="form-control form-control-sm" id="icm_findings" name="icm_findings" rows="3"></textarea>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-12">
-            <label for="actions_taken" class="form-label">Actions Taken</label>
-            <textarea class="form-control form-control-sm" id="actions_taken" name="actions_taken" rows="3"></textarea>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-12">
-            <label for="icm_recommendations" class="form-label">Recommendations</label>
-            <textarea class="form-control form-control-sm" id="icm_recommendations" name="icm_recommendations" rows="3"></textarea>
-        </div>
-    </div>
-
-    <div class="text-end">
+    <!-- Form Buttons -->
+    <div class="text-end mt-4">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" class="btn btn-primary btn-sm">Add ICM</button>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="prevBtn" style="display:none;">Previous</button>
+        <button type="button" class="btn btn-primary btn-sm" id="nextBtn">Next</button>
+        <button type="submit" class="btn btn-success btn-sm" id="submitBtn" style="display:none;">Submit</button>
     </div>
 </form>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Step navigation
+    let currentStep = 1;
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const step1Indicator = document.getElementById('step1-indicator');
+    const step2Indicator = document.getElementById('step2-indicator');
+
+    // Step 1 required fields
+    const step1Fields = ['division', 'requesting_personnel', 'icm_type', 'priority', 'hardware_software'];
+
+    nextBtn.addEventListener('click', function() {
+        if (currentStep === 1) {
+            if (validateStep1()) {
+                currentStep = 2;
+                updateStepDisplay();
+            }
+        }
+    });
+
+    prevBtn.addEventListener('click', function() {
+        if (currentStep === 2) {
+            currentStep = 1;
+            updateStepDisplay();
+        }
+    });
+
+    function validateStep1() {
+        let isValid = true;
+        for (let fieldId of step1Fields) {
+            const field = document.getElementById(fieldId);
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        }
+        return isValid;
+    }
+
+    function updateStepDisplay() {
+        if (currentStep === 1) {
+            step1.style.display = 'block';
+            step2.style.display = 'none';
+            nextBtn.style.display = 'inline-block';
+            prevBtn.style.display = 'none';
+            submitBtn.style.display = 'none';
+            step1Indicator.classList.add('active');
+            step2Indicator.classList.remove('active');
+        } else if (currentStep === 2) {
+            step1.style.display = 'none';
+            step2.style.display = 'block';
+            nextBtn.style.display = 'none';
+            prevBtn.style.display = 'inline-block';
+            submitBtn.style.display = 'inline-block';
+            step1Indicator.classList.remove('active');
+            step2Indicator.classList.add('active');
+        }
+    }
+
+    // Remove invalid class on input
+    step1Fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('change', function() {
+                this.classList.remove('is-invalid');
+            });
+        }
+    });
+
     const personnelInput = document.getElementById('requesting_personnel');
     const suggestionContainer = document.getElementById('personnel_suggestions');
     const classificationSelect = document.getElementById('classification');
@@ -307,9 +407,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<style>
-.hover-effect:hover {
-    background-color: #f0f0f0;
-}
-</style>

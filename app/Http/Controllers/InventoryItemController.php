@@ -162,6 +162,24 @@ class InventoryItemController extends Controller
 
             $validated['icm_no'] = str_pad($nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $currentYear;
 
+            // brand_model holds the inventory_items.no of the selected item.
+            // Look it up and denormalise description → brand_model (for display)
+            // and pull serial_number / property_number so the ICM record is
+            // self-contained even if the inventory item changes later.
+            if (!empty($validated['brand_model'])) {
+                $linkedItem = InventoryItem::where('no', (int) $validated['brand_model'])
+                    ->select('no', 'description', 'serial_number', 'property_number')
+                    ->first();
+
+                if ($linkedItem) {
+                    // Store the human-readable description in brand_model column
+                    $validated['brand_model']    = $linkedItem->description;
+                    // Overwrite serial/property with the authoritative values from inventory
+                    $validated['serial_number']  = $linkedItem->serial_number;
+                    $validated['property_number'] = $linkedItem->property_number;
+                }
+            }
+
             $item = Icm::create($validated);
 
             return response()->json([
@@ -844,10 +862,11 @@ class InventoryItemController extends Controller
             return response()->json([]);
         }
 
-        $items = InventoryItem::where('emp_no', (int) $empNo)
-            ->where('x', 'active')
+        // Get items for this employee grouped by classification
+        $items = InventoryItem::where('emp_no', $empNo)
+            ->active()
             ->whereNotNull('classification')
-            ->select('no', 'classification', 'description', 'serial_number', 'property_number')
+            ->select('no', 'classification', 'description', 'brand_model', 'serial_number', 'property_number')
             ->get()
             ->groupBy('classification');
 

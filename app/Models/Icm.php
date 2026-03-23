@@ -42,4 +42,9 @@ protected $connection = 'mysql';
         'close_date' => 'date',
         'date_conducted' => 'date',
     ];
+
+    public function inventoryItem()
+{
+    return $this->belongsTo(\App\Models\InventoryItem::class, 'inventory_item_id', 'no');
+}
 }

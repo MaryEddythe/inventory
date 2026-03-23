@@ -28,7 +28,7 @@
                     {{ $item->division }}
                 </span>
             </td>
-            <td class="item-personnel">{{ $item->requesting_personnel ?? 'N/A' }}</td>
+            <td class="item-personnel">{{ preg_replace('/\\s*\\(\\d+\\)$/', '', $item->requesting_personnel ?? 'N/A') }}</td>
             <td class="item-problem">
                 @if(request('search'))
                     {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->problem_description ?? ''), 12) !!}
@@ -42,13 +42,23 @@
                 </span>
             </td>
             <td>
-                <span class="badge {{ $item->priority === 'P1-Critical' ? 'bg-danger' : ($item->priority === 'P2-Important' ? 'bg-warning text-dark' : ($item->priority === 'P3-Normal' ? 'bg-info' : 'bg-secondary')) }} fw-normal">
-                    {{ $item->priority ?? 'N/A' }}
+                <span class="badge {{ 
+                    $item->priority === 'P1-Critical' ? 'bg-danger' : 
+                    ($item->priority === 'P2-Important' ? 'bg-warning text-dark' : 
+                    ($item->priority === 'P3-Normal' ? 'bg-info' : 
+                    ($item->priority === 'P4-Low' ? 'bg-success' : 
+                    ($item->priority === 'P5-Very Low' ? 'bg-secondary' : 'bg-secondary')))) 
+                }} fw-normal">
+                    {{ substr($item->priority ?? '', 0, 2) ?: 'N/A' }}
                 </span>
             </td>
             <td>{{ $item->hardware_software ?? 'N/A' }}</td>
-            <td>{{ $item->brand_model ?? 'N/A' }}</td>
-            <td class="item-serial">{{ $item->serial_number ?? 'N/A' }}</td>
+            <td class="item-brand-model">
+                {{ Str::limit($item->brand_model ?? 'N/A', 15) }}
+            </td>
+            <td class="item-serial">
+                {{ Str::limit($item->serial_number ?? 'N/A', 12) }}
+            </td>
             <td class="item-property">{{ $item->property_number ?? 'N/A' }}</td>
             <td class="item-open-date">{{ $item->open_date ? $item->open_date->format('M d, Y') : 'N/A' }}</td>
             <td class="item-close-date">{{ $item->close_date ? $item->close_date->format('M d, Y') : 'N/A' }}</td>
@@ -75,17 +85,19 @@
         </tr>
         @empty
         <tr>
-            <td colspan="16" class="text-center py-4">No ICM items found.</td>
+            <td colspan="17" class="text-center py-4">No ICM items found.</td>
         </tr>
         @endforelse
     </tbody>
 </table>
+
 <div class="d-flex justify-content-between align-items-center mt-4">
     <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
     <div>
         {{ $items->links('vendor.pagination.bootstrap-5') }}
     </div>
 </div>
+
 @foreach($items as $item)
     <!-- Edit ICM Modal -->
     <div class="modal fade" id="editIcmModal{{ $item->id }}" tabindex="-1" aria-labelledby="editIcmModalLabel{{ $item->id }}" aria-hidden="true">

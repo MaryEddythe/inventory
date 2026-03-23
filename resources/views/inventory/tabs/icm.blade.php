@@ -129,7 +129,9 @@
                     </td>
                     <td>{{ $item->hardware_software ?? 'N/A' }}</td>
                     <td>{{ $item->brand_model ?? 'N/A' }}</td>
-                    <td class="item-serial">{{ $item->serial_number ?? 'N/A' }}</td>
+                    <td class="item-serial">
+                        {{ Str::limit($item->serial_number ?? 'N/A', 12) }}
+                    </td>
                     <td class="item-property">{{ $item->property_number ?? 'N/A' }}</td>
                     <td class="item-open-date">{{ $item->open_date ? $item->open_date->format('M d, Y') : 'N/A' }}</td>
                     <td class="item-close-date">{{ $item->close_date ? $item->close_date->format('M d, Y') : 'N/A' }}</td>

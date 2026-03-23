@@ -326,7 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     classificationSelect.innerHTML = '<option value="">No items found for this personnel</option>';
                 }
 
-                // Reset brand/model and item fields
                 brandModelSelect.innerHTML = '<option value="">Select classification first</option>';
                 brandModelSelect.disabled = true;
                 serialNumberInput.value = '';
@@ -343,7 +342,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return text.trim().substring(0, 15);
     }
 
-    // Handle classification selection
     classificationSelect.addEventListener('change', function() {
         const selectedClassification = this.value;
 

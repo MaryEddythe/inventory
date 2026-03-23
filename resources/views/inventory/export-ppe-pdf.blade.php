@@ -67,15 +67,12 @@
     </thead>
     <tbody>
         @php
-            // Debug: Check what data we have
             $totalItems = $items->count();
-            // Use a single threshold for semi-expendable qualification
             $threshold = 50000;
             $filteredItems = $items->filter(function($item) use ($threshold) {
                 return ($item->unit_price >= $threshold) && ($item->co_mooe === 'CO');
             });
 
-            // Group by classification
             $classificationItems = $filteredItems->groupBy('classification');
 
             $totalGrandValue = 0;
@@ -87,15 +84,12 @@
             @foreach($classificationItems as $classification => $groupedItems)
                 @foreach($groupedItems as $item)
                     @php
-                        // Determine Unit of Measure based on description
                         $uom = 'unit';
                         $desc = strtolower($item->description ?? '');
 
-                        // If a monitor has an unusually high unit price it is likely part of a computer set â€" treat as 'set'
                         if (str_contains($desc, 'desktop') || str_contains($desc, 'set')) {
                             $uom = 'set';
                         } elseif (str_contains($desc, 'monitor') && $item->unit_price >= $threshold) {
-                            // High-priced monitor -> part of a COMPUTER set
                             $uom = 'set';
                         } elseif (str_contains($desc, 'monitor') ||
                                   str_contains($desc, 'printer') ||
@@ -108,7 +102,6 @@
                             $uom = 'pair';
                         }
 
-                        // Format remarks: enduser / division
                         $remarks = '';
                         if ($item->enduser && $item->division) {
                             $remarks = $item->enduser . ' / ' . $item->division;
@@ -118,16 +111,13 @@
                             $remarks = $item->division;
                         }
 
-                        // Calculate total value (unit_price Ã— 1 since quantity is 1)
                         $totalValue = $item->unit_price;
                         $totalGrandValue += $totalValue;
                         $totalUnitValue += $item->unit_price;
                         $itemCount++;
 
-                        // Format classification - convert DESKTOP to COMPUTER
                         $article = $classification;
                         $clsUp = strtoupper($classification ?? '');
-                        // Treat DESKTOP or high-priced MONITOR entries as COMPUTER
                         if ($clsUp === 'DESKTOP' || ($clsUp !== '' && stripos($desc, 'monitor') !== false && $item->unit_price >= $threshold)) {
                             $article = 'COMPUTER';
                         }

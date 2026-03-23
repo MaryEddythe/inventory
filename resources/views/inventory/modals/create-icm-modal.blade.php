@@ -292,7 +292,16 @@ document.addEventListener('DOMContentLoaded', function() {
         personnelInput.value = `${employee.firstname} ${employee.lastname} (${employee.emp_no})`;
         selectedPersonnelEmpNo = employee.emp_no;
         suggestionContainer.style.display = 'none';
-        
+
+        // Auto-populate Division using department_name (the resolved string from the
+        // departments table JOIN). The raw employee.department is an integer FK and
+        // would never match the <select> option values which are department name strings.
+        const divisionSelect = document.getElementById('division');
+        if (divisionSelect && employee.department_name) {
+            divisionSelect.value = employee.department_name;
+            divisionSelect.classList.remove('is-invalid');
+        }
+
         // Load items for this personnel
         loadItemsForPersonnel(employee.emp_no);
     }
@@ -329,80 +338,82 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Helper function to get first 5 words of description
-    function getFirstFiveWords(text) {
+    function getFirstFiveChars(text) {
         if (!text) return '';
-        const words = text.trim().split(/\s+/).slice(0, 5);
-        return words.join(' ');
+        return text.trim().substring(0, 15);
     }
 
     // Handle classification selection
     classificationSelect.addEventListener('change', function() {
         const selectedClassification = this.value;
-        const brandModelField = document.getElementById('brand_model');
 
         if (selectedClassification && itemsData[selectedClassification]) {
             const items = itemsData[selectedClassification];
 
-            // Convert brand_model to a select dropdown for better UX
-            if (brandModelField.tagName !== 'SELECT') {
-                const newSelect = document.createElement('select');
-                newSelect.className = 'form-select form-select-sm';
-                newSelect.id = 'brand_model';
-                newSelect.name = 'brand_model';
-                newSelect.required = true;
+            // Always rebuild the brand_model select (convert input→select on first run,
+            // or repopulate options on subsequent classification changes)
+            let brandModelField = document.getElementById('brand_model');
 
-                const placeholder = document.createElement('option');
-                placeholder.value = '';
-                placeholder.textContent = 'Select item';
-                newSelect.appendChild(placeholder);
+            // Create a fresh select element each time so options are always current
+            const newSelect = document.createElement('select');
+            newSelect.className = 'form-select form-select-sm';
+            newSelect.id = 'brand_model';
+            newSelect.name = 'brand_model';
+            newSelect.required = true;
 
-                items.forEach((item, index) => {
-                    const option = document.createElement('option');
-                    option.value = item.no;
-                    // Show description (first 5 words) or brand_model as fallback
-                    const displayText = getFirstFiveWords(item.description) || item.brand_model || `Item ${index + 1}`;
-                    option.textContent = displayText;
-                    option.dataset.serialNumber = item.serial_number || '';
-                    option.dataset.propertyNumber = item.property_number || '';
-                    option.dataset.brandModel = item.brand_model || '';
-                    newSelect.appendChild(option);
-                });
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = items.length > 1 ? 'Select item' : '';
+            newSelect.appendChild(placeholder);
 
-                // Replace the input with the select
-                brandModelField.parentNode.replaceChild(newSelect, brandModelField);
+            items.forEach((item, index) => {
+                const option = document.createElement('option');
+                option.value = item.no;
+                // First 5 chars of description as the compact label; full text on hover
+                const displayText = getFirstFiveChars(item.description) || `Item ${index + 1}`;
+                option.textContent = displayText;
+                option.title = item.description || '';  // full description tooltip
+                option.dataset.serialNumber = item.serial_number || '';
+                option.dataset.propertyNumber = item.property_number || '';
+                newSelect.appendChild(option);
+            });
 
-                // Re-assign the reference
-                const newBrandModelField = document.getElementById('brand_model');
-                newBrandModelField.addEventListener('change', function() {
-                    const selectedOption = this.options[this.selectedIndex];
-                    if (selectedOption.value) {
-                        serialNumberInput.value = selectedOption.dataset.serialNumber || '';
-                        propertyNumberInput.value = selectedOption.dataset.propertyNumber || '';
-                    } else {
-                        serialNumberInput.value = '';
-                        propertyNumberInput.value = '';
-                    }
-                });
+            // Replace the existing field (input or old select) with the fresh select
+            brandModelField.parentNode.replaceChild(newSelect, brandModelField);
 
-                newBrandModelField.disabled = false;
-                newBrandModelField.focus();
-            }
+            // Attach change listener so selecting an item populates serial/property
+            newSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    serialNumberInput.value = selectedOption.dataset.serialNumber || '';
+                    propertyNumberInput.value = selectedOption.dataset.propertyNumber || '';
+                } else {
+                    serialNumberInput.value = '';
+                    propertyNumberInput.value = '';
+                }
+            });
 
-            // Automatically populate with first item if only one exists
+            newSelect.disabled = false;
+
+            // If only one item exists, auto-select it and populate serial/property immediately
             if (items.length === 1) {
                 const firstItem = items[0];
-                const brandModelSelectField = document.getElementById('brand_model');
-                brandModelSelectField.value = firstItem.no;
+                newSelect.value = firstItem.no;
                 serialNumberInput.value = firstItem.serial_number || '';
                 propertyNumberInput.value = firstItem.property_number || '';
+            } else {
+                // Reset serial/property when classification changes and multiple items exist
+                serialNumberInput.value = '';
+                propertyNumberInput.value = '';
+                newSelect.focus();
             }
         } else {
             // Reset if no classification selected
-            document.getElementById('brand_model').disabled = true;
+            const brandModelField = document.getElementById('brand_model');
+            brandModelField.disabled = true;
+            brandModelField.value = '';
             serialNumberInput.value = '';
             propertyNumberInput.value = '';
-            document.getElementById('brand_model').value = '';
         }
     });
 });

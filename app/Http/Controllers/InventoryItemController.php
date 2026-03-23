@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InventoryItem;
+use App\Models\Icm;
 use App\Models\Department;
 use App\Models\Employee;
 use Illuminate\Http\Request;
@@ -142,11 +143,14 @@ class InventoryItemController extends Controller
                 'icm_findings' => 'nullable|string',
                 'actions_taken' => 'nullable|string',
                 'icm_recommendations' => 'nullable|string',
+                'date_conducted' => 'nullable|date',
+                'time_started' => 'nullable|date_format:H:i',
+                'time_ended' => 'nullable|date_format:H:i|after:time_started',
             ]);
 
             // Generate ICM number
             $currentYear = now()->year;
-            $lastIcmNo = InventoryItem::where('icm_no', 'LIKE', "%-{$currentYear}")
+            $lastIcmNo = Icm::where('icm_no', 'LIKE', "%-{$currentYear}")
                 ->orderBy('icm_no', 'desc')
                 ->first();
 
@@ -158,7 +162,7 @@ class InventoryItemController extends Controller
 
             $validated['icm_no'] = str_pad($nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $currentYear;
 
-            $item = InventoryItem::create($validated);
+            $item = Icm::create($validated);
 
             return response()->json([
                 'success' => true,
@@ -217,9 +221,6 @@ class InventoryItemController extends Controller
    public function update(Request $request, $id)
 {
     try {
-        $item = InventoryItem::findOrFail($id);
-        $originalId = $item->id;
-
         // Check if this is an ICM update (has ICM-specific fields)
         $isIcmUpdate = $request->hasAny(['icm_type', 'priority', 'problem_description']);
 
@@ -227,6 +228,9 @@ class InventoryItemController extends Controller
         $isIpmUpdate = $request->hasAny(['system_boot_up', 'hardware', 'performance', 'cables_connections', 'peripherals', 'recommendation', 'date_conducted', 'time_started', 'time_ended']);
 
         if ($isIcmUpdate) {
+            // Update in ICM table
+            $item = Icm::findOrFail($id);
+            
             // ICM update validation
             $validated = $request->validate([
                 'problem_description' => 'required|string',
@@ -243,72 +247,82 @@ class InventoryItemController extends Controller
                 'icm_findings' => 'nullable|string',
                 'actions_taken' => 'nullable|string',
                 'icm_recommendations' => 'nullable|string',
-            ]);
-        } elseif ($isIpmUpdate) {
-            // IPM update validation
-            $validated = $request->validate([
-                'condition' => 'nullable|string|in:New,For Replacement,Functional,Nonfunctional',
-                'system_boot_up' => 'nullable|boolean',
-                'hardware' => 'nullable|boolean',
-                'performance' => 'nullable|boolean',
-                'cables_connections' => 'nullable|boolean',
-                'peripherals' => 'nullable|boolean',
-                'recommendation' => 'nullable|string',
                 'date_conducted' => 'nullable|date',
                 'time_started' => 'nullable|date_format:H:i',
                 'time_ended' => 'nullable|date_format:H:i|after:time_started',
             ]);
+
+            $item->update($validated);
         } else {
-            // Regular inventory update validation
-            $validated = $request->validate([
-                'division' => 'required|string|max:255',
-                'enduser' => 'required|string|max:255',
-                'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
-                'classification' => 'required|string|max:255',
-                'property_number' => 'required|string|max:255',
-                'description' => 'required|string',
-                'serial_number' => 'nullable|string|max:255',
-                'unit_price' => 'nullable|numeric|min:0',
-                'unit_price_type' => 'required|in:value,na',
-                'co_mooe' => 'required|string|max:255',
-                'date_acquired' => 'nullable|date',
-                'date_acquired_type' => 'required|in:date,na',
-                'remarks' => 'nullable|string',
-                'serviceability' => 'nullable|string',
-            ]);
+            // Update in InventoryItem table
+            $item = InventoryItem::findOrFail($id);
+            $originalId = $item->id;
 
-            // Handle NA values
-            if ($request->input('unit_price_type') === 'na') {
-                $validated['unit_price'] = null;
+            if ($isIpmUpdate) {
+                // IPM update validation
+                $validated = $request->validate([
+                    'condition' => 'nullable|string|in:New,For Replacement,Functional,Nonfunctional',
+                    'system_boot_up' => 'nullable|boolean',
+                    'hardware' => 'nullable|boolean',
+                    'performance' => 'nullable|boolean',
+                    'cables_connections' => 'nullable|boolean',
+                    'peripherals' => 'nullable|boolean',
+                    'recommendation' => 'nullable|string',
+                    'date_conducted' => 'nullable|date',
+                    'time_started' => 'nullable|date_format:H:i',
+                    'time_ended' => 'nullable|date_format:H:i|after:time_started',
+                ]);
+            } else {
+                // Regular inventory update validation
+                $validated = $request->validate([
+                    'division' => 'required|string|max:255',
+                    'enduser' => 'required|string|max:255',
+                    'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
+                    'classification' => 'required|string|max:255',
+                    'property_number' => 'required|string|max:255',
+                    'description' => 'required|string',
+                    'serial_number' => 'nullable|string|max:255',
+                    'unit_price' => 'nullable|numeric|min:0',
+                    'unit_price_type' => 'required|in:value,na',
+                    'co_mooe' => 'required|string|max:255',
+                    'date_acquired' => 'nullable|date',
+                    'date_acquired_type' => 'required|in:date,na',
+                    'remarks' => 'nullable|string',
+                    'serviceability' => 'nullable|string',
+                ]);
+
+                // Handle NA values
+                if ($request->input('unit_price_type') === 'na') {
+                    $validated['unit_price'] = null;
+                }
+                if ($request->input('date_acquired_type') === 'na') {
+                    $validated['date_acquired'] = null;
+                }
+
+                // Remove the _type fields from the data to be stored
+                unset($validated['unit_price_type']);
+                unset($validated['date_acquired_type']);
+
+                // Recalculate status based on possibly updated date_acquired
+                $validated['status'] = $this->calculateStatus($validated['date_acquired']);
             }
-            if ($request->input('date_acquired_type') === 'na') {
-                $validated['date_acquired'] = null;
-            }
 
-            // Remove the _type fields from the data to be stored
-            unset($validated['unit_price_type']);
-            unset($validated['date_acquired_type']);
+            // SAVE WHO UPDATED THE ITEM
+            $item->updated_by = auth()->user()->emp_no;
 
-            // Recalculate status based on possibly updated date_acquired
-            $validated['status'] = $this->calculateStatus($validated['date_acquired']);
+            // Apply validated data
+            $item->update($validated);
+
+            // Set updated_at to current timestamp
+            $item->updated_at = now();
+            $item->save();
         }
-
-        // SAVE WHO UPDATED THE ITEM
-        $item->updated_by = auth()->user()->emp_no;
-
-        // Apply validated data
-        $item->update($validated);
-
-        // Set updated_at to current timestamp
-        $item->updated_at = now();
-        $item->save();
 
         if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'success' => true,
                 'message' => 'Item updated successfully',
                 'item' => $item,
-                'original_id' => $originalId,
             ], 200);
         }
 
@@ -744,7 +758,7 @@ class InventoryItemController extends Controller
 
     public function icm(Request $request)
     {
-        $query = InventoryItem::active()->whereNotNull('icm_no');
+        $query = Icm::query();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -754,7 +768,6 @@ class InventoryItemController extends Controller
                 foreach ($searchTerms as $term) {
                     $q->where(function($subQuery) use ($term) {
                         $subQuery->where('division', 'LIKE', "%{$term}%")
-                                ->orWhere('enduser', 'LIKE', "%{$term}%")
                                 ->orWhere('classification', 'LIKE', "%{$term}%")
                                 ->orWhere('icm_no', 'LIKE', "%{$term}%")
                                 ->orWhere('problem_description', 'LIKE', "%{$term}%")
@@ -831,11 +844,10 @@ class InventoryItemController extends Controller
             return response()->json([]);
         }
 
-        // Get items for this employee grouped by classification
-        $items = InventoryItem::where('emp_no', $empNo)
-            ->active()
+        $items = InventoryItem::where('emp_no', (int) $empNo)
+            ->where('x', 'active')
             ->whereNotNull('classification')
-            ->select('no', 'classification', 'description', 'brand_model', 'serial_number', 'property_number')
+            ->select('no', 'classification', 'description', 'serial_number', 'property_number')
             ->get()
             ->groupBy('classification');
 

@@ -1,4 +1,4 @@
-<form id="edit-icm-form-{{ $item->no }}" class="edit-icm-form" enctype="multipart/form-data">
+<form id="edit-icm-form-{{ $item->id }}" class="edit-icm-form" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     

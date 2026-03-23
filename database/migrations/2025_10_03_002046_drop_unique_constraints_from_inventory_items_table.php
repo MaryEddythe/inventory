@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inventory_items', function (Blueprint $table) {
-            $table->dropIndex('inventory_items_serial_number_unique');
-            $table->dropIndex('inventory_items_property_number_unique');
+            if (Schema::hasColumn('inventory_items', 'serial_number') && Schema::getColumnListing('inventory_items_serial_number_unique')) {
+                $table->dropIndex('inventory_items_serial_number_unique');
+            }
+            if (Schema::hasColumn('inventory_items', 'property_number') && Schema::getColumnListing('inventory_items_property_number_unique')) {
+                $table->dropIndex('inventory_items_property_number_unique');
+            }
         });
     }
 

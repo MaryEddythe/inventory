@@ -69,7 +69,7 @@
             </td>
             <td>
                 <div class="d-flex gap-1">
-                    <button type="button" class="btn btn-outline-primary btn-sm" title="Edit ICM" data-bs-toggle="modal" data-bs-target="#editIcmModal{{ $item->no }}"><i class="bi bi-pencil"></i></button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" title="Edit ICM" data-bs-toggle="modal" data-bs-target="#editIcmModal{{ $item->id }}"><i class="bi bi-pencil"></i></button>
                 </div>
             </td>
         </tr>
@@ -88,11 +88,11 @@
 </div>
 @foreach($items as $item)
     <!-- Edit ICM Modal -->
-    <div class="modal fade" id="editIcmModal{{ $item->no }}" tabindex="-1" aria-labelledby="editIcmModalLabel{{ $item->no }}" aria-hidden="true">
+    <div class="modal fade" id="editIcmModal{{ $item->id }}" tabindex="-1" aria-labelledby="editIcmModalLabel{{ $item->id }}" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editIcmModalLabel{{ $item->no }}">Edit ICM {{ $item->icm_no }}</h5>
+                    <h5 class="modal-title" id="editIcmModalLabel{{ $item->id }}">Edit ICM {{ $item->icm_no }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

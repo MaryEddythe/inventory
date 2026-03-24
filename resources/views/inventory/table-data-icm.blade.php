@@ -28,7 +28,7 @@
                     {{ $item->division }}
                 </span>
             </td>
-            <td class="item-personnel">{{ preg_replace('/\\s*\\(\\d+\\)$/', '', $item->requesting_personnel ?? 'N/A') }}</td>
+            <td class="item-personnel">{{ preg_replace('/\s*\(\d+\)$/', '', $item->requesting_personnel ?? 'N/A') }}</td>
             <td class="item-problem">
                 @if(request('search'))
                     {!! Str::limit(preg_replace('/('.preg_quote(request('search'), '/').')/i', '<mark>$1</mark>', $item->problem_description ?? ''), 12) !!}

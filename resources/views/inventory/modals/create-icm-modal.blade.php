@@ -289,53 +289,119 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function selectPersonnel(employee) {
-        personnelInput.value = `${employee.firstname} ${employee.lastname} (${employee.emp_no})`;
-        selectedPersonnelEmpNo = employee.emp_no;
-        suggestionContainer.style.display = 'none';
+    console.log('Selected employee:', employee);
+    
+    // Store the emp_no as string for consistency
+    selectedPersonnelEmpNo = String(employee.emp_no);
+    
+    // Display the full name with emp_no
+    personnelInput.value = `${employee.firstname} ${employee.lastname} (${employee.emp_no})`;
+    suggestionContainer.style.display = 'none';
 
-        // Auto-populate Division using department_name (the resolved string from the
-        // departments table JOIN). The raw employee.department is an integer FK and
-        // would never match the <select> option values which are department name strings.
-        const divisionSelect = document.getElementById('division');
-        if (divisionSelect && employee.department_name) {
-            divisionSelect.value = employee.department_name;
+    // Auto-populate Division using department_name
+    const divisionSelect = document.getElementById('division');
+    if (divisionSelect) {
+        const divisionValue = employee.department_name || employee.department;
+        if (divisionValue) {
+            divisionSelect.value = divisionValue;
             divisionSelect.classList.remove('is-invalid');
+            console.log('Division set to:', divisionValue);
+        } else {
+            console.warn('No department found for employee');
         }
-
-        // Load items for this personnel
-        loadItemsForPersonnel(employee.emp_no);
     }
+
+    // Load items for this personnel
+    if (selectedPersonnelEmpNo) {
+        console.log('Loading items for emp_no:', selectedPersonnelEmpNo);
+        loadItemsForPersonnel(selectedPersonnelEmpNo);
+    } else {
+        console.error('No emp_no found for employee');
+        classificationSelect.disabled = true;
+        classificationSelect.innerHTML = '<option value="">No emp_no found for this employee</option>';
+    }
+}
 
     function loadItemsForPersonnel(empNo) {
-        fetch(`{{ route('api.items-by-personnel') }}?emp_no=${encodeURIComponent(empNo)}`)
-            .then(response => response.json())
-            .then(items => {
-                itemsData = items;
-                classificationSelect.innerHTML = '<option value="">Select item classification</option>';
-                
-                if (Object.keys(items).length > 0) {
-                    Object.keys(items).forEach(classification => {
-                        const option = document.createElement('option');
-                        option.value = classification;
-                        option.textContent = classification;
-                        classificationSelect.appendChild(option);
-                    });
-                    classificationSelect.disabled = false;
-                } else {
-                    classificationSelect.disabled = true;
-                    classificationSelect.innerHTML = '<option value="">No items found for this personnel</option>';
-                }
-
-                brandModelSelect.innerHTML = '<option value="">Select classification first</option>';
-                brandModelSelect.disabled = true;
-                serialNumberInput.value = '';
-                propertyNumberInput.value = '';
-            })
-            .catch(error => {
-                console.error('Error fetching items:', error);
-                classificationSelect.disabled = true;
+    console.log('Loading items for emp_no:', empNo);
+    
+    classificationSelect.innerHTML = '<option value="">Loading items...</option>';
+    classificationSelect.disabled = true;
+    
+    const url = `/api/items-by-personnel?emp_no=${encodeURIComponent(empNo)}`;
+    console.log('Fetching URL:', url);
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP ${response.status}: ${text}`);
             });
-    }
+        }
+        return response.json();
+    })
+    .then(items => {
+        console.log('Items received:', items);
+        
+        itemsData = items;
+        classificationSelect.innerHTML = '';
+        
+        const classifications = Object.keys(items);
+        console.log('Classifications:', classifications);
+        
+        if (classifications.length > 0) {
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = '';
+            placeholderOption.textContent = 'Select item classification';
+            classificationSelect.appendChild(placeholderOption);
+            
+            classifications.forEach(classification => {
+                const option = document.createElement('option');
+                option.value = classification;
+                option.textContent = classification;
+                const itemCount = items[classification].length;
+                if (itemCount > 1) {
+                    option.textContent += ` (${itemCount} items)`;
+                }
+                classificationSelect.appendChild(option);
+            });
+            
+            classificationSelect.disabled = false;
+        } else {
+            classificationSelect.innerHTML = '<option value="">No items found for this personnel</option>';
+            classificationSelect.disabled = true;
+        }
+        
+        // Reset the item select field
+        const brandModelField = document.getElementById('brand_model');
+        if (brandModelField) {
+            brandModelField.disabled = true;
+            brandModelField.value = '';
+        }
+        serialNumberInput.value = '';
+        propertyNumberInput.value = '';
+    })
+    .catch(error => {
+        console.error('Error fetching items:', error);
+        classificationSelect.innerHTML = `<option value="">Error: ${error.message.substring(0, 100)}</option>`;
+        classificationSelect.disabled = true;
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Error Loading Items',
+            text: error.message,
+            toast: true,
+            timer: 5000
+        });
+    });
+}
 
     function getFirstFiveChars(text) {
         if (!text) return '';
@@ -343,76 +409,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     classificationSelect.addEventListener('change', function() {
-        const selectedClassification = this.value;
+    const selectedClassification = this.value;
+    console.log('Selected classification:', selectedClassification);
 
-        if (selectedClassification && itemsData[selectedClassification]) {
-            const items = itemsData[selectedClassification];
+    if (selectedClassification && itemsData[selectedClassification]) {
+        const items = itemsData[selectedClassification];
+        console.log('Items for this classification:', items);
 
-            // Always rebuild the brand_model select (convert input→select on first run,
-            // or repopulate options on subsequent classification changes)
-            let brandModelField = document.getElementById('brand_model');
+        // Create select element for items
+        const newSelect = document.createElement('select');
+        newSelect.className = 'form-select form-select-sm';
+        newSelect.id = 'brand_model';
+        newSelect.name = 'brand_model';
+        newSelect.required = true;
 
-            // Create a fresh select element each time so options are always current
-            const newSelect = document.createElement('select');
-            newSelect.className = 'form-select form-select-sm';
-            newSelect.id = 'brand_model';
-            newSelect.name = 'brand_model';
-            newSelect.required = true;
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = items.length > 1 ? 'Select item' : '';
+        newSelect.appendChild(placeholder);
 
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.textContent = items.length > 1 ? 'Select item' : '';
-            newSelect.appendChild(placeholder);
+        items.forEach((item, index) => {
+            const option = document.createElement('option');
+            option.value = item.no;
+            // Use description instead of brand_model
+            const displayText = getFirstFiveChars(item.description) || `Item ${index + 1}`;
+            option.textContent = displayText;
+            option.title = item.description || '';  // full description tooltip
+            option.dataset.serialNumber = item.serial_number || '';
+            option.dataset.propertyNumber = item.property_number || '';
+            newSelect.appendChild(option);
+        });
 
-            items.forEach((item, index) => {
-                const option = document.createElement('option');
-                option.value = item.no;
-                // First 5 chars of description as the compact label; full text on hover
-                const displayText = getFirstFiveChars(item.description) || `Item ${index + 1}`;
-                option.textContent = displayText;
-                option.title = item.description || '';  // full description tooltip
-                option.dataset.serialNumber = item.serial_number || '';
-                option.dataset.propertyNumber = item.property_number || '';
-                newSelect.appendChild(option);
-            });
+        // Replace the existing field
+        const brandModelContainer = document.getElementById('brand_model');
+        if (brandModelContainer) {
+            brandModelContainer.parentNode.replaceChild(newSelect, brandModelContainer);
+        }
 
-            // Replace the existing field (input or old select) with the fresh select
-            brandModelField.parentNode.replaceChild(newSelect, brandModelField);
-
-            // Attach change listener so selecting an item populates serial/property
-            newSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption.value) {
-                    serialNumberInput.value = selectedOption.dataset.serialNumber || '';
-                    propertyNumberInput.value = selectedOption.dataset.propertyNumber || '';
-                } else {
-                    serialNumberInput.value = '';
-                    propertyNumberInput.value = '';
-                }
-            });
-
-            newSelect.disabled = false;
-
-            // If only one item exists, auto-select it and populate serial/property immediately
-            if (items.length === 1) {
-                const firstItem = items[0];
-                newSelect.value = firstItem.no;
-                serialNumberInput.value = firstItem.serial_number || '';
-                propertyNumberInput.value = firstItem.property_number || '';
+        // Attach change listener
+        newSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                serialNumberInput.value = selectedOption.dataset.serialNumber || '';
+                propertyNumberInput.value = selectedOption.dataset.propertyNumber || '';
+                console.log('Selected item:', {
+                    id: selectedOption.value,
+                    serial: serialNumberInput.value,
+                    property: propertyNumberInput.value
+                });
             } else {
-                // Reset serial/property when classification changes and multiple items exist
                 serialNumberInput.value = '';
                 propertyNumberInput.value = '';
-                newSelect.focus();
             }
+        });
+
+        newSelect.disabled = false;
+
+        // If only one item exists, auto-select it
+        if (items.length === 1) {
+            const firstItem = items[0];
+            newSelect.value = firstItem.no;
+            serialNumberInput.value = firstItem.serial_number || '';
+            propertyNumberInput.value = firstItem.property_number || '';
+            console.log('Auto-selected single item:', firstItem);
         } else {
-            // Reset if no classification selected
-            const brandModelField = document.getElementById('brand_model');
-            brandModelField.disabled = true;
-            brandModelField.value = '';
+            // Reset serial/property when multiple items exist
             serialNumberInput.value = '';
             propertyNumberInput.value = '';
         }
-    });
+    } else {
+        // Reset if no classification selected
+        const brandModelField = document.getElementById('brand_model');
+        if (brandModelField) {
+            brandModelField.disabled = true;
+            brandModelField.value = '';
+        }
+        serialNumberInput.value = '';
+        propertyNumberInput.value = '';
+    }
+});
 });
 </script>

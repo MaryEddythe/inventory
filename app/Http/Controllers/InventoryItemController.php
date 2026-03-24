@@ -835,44 +835,85 @@ class InventoryItemController extends Controller
      * Search employees from employee_db
      */
     public function searchEmployees(Request $request)
-    {
-        $search = $request->get('query', '');
+{
+    $search = $request->get('query', '');
+    
+    \Log::info('searchEmployees called', ['search' => $search]);
 
-        $employees = Employee::where('status', 'active')
-            ->where(function($q) use ($search) {
-                $q->where('firstname', 'LIKE', "%{$search}%")
-                  ->orWhere('lastname', 'LIKE', "%{$search}%")
-                  ->orWhere('emp_no', 'LIKE', "%{$search}%");
-            })
-            ->select('employees.emp_no', 'employees.firstname', 'employees.lastname', 'employees.department')
-            ->limit(10)
-            ->get();
+    $employees = Employee::where('status', 'active')
+        ->where(function($q) use ($search) {
+            $q->where('firstname', 'LIKE', "%{$search}%")
+              ->orWhere('lastname', 'LIKE', "%{$search}%")
+              ->orWhere('emp_no', 'LIKE', "%{$search}%");
+        })
+        ->with('departmentInfo')
+        ->limit(10)
+        ->get()
+        ->map(function($employee) {
+            // Add department_name and ensure emp_no is properly formatted
+            return [
+                'emp_no' => (string)$employee->emp_no,  // Convert to string for consistency
+                'firstname' => $employee->firstname,
+                'lastname' => $employee->lastname,
+                'department' => $employee->department,
+                'department_name' => $employee->departmentInfo ? $employee->departmentInfo->department : $employee->department,
+                'fullname' => $employee->firstname . ' ' . $employee->lastname
+            ];
+        });
 
-        return response()->json($employees);
-    }
+    \Log::info('Employees found', ['count' => $employees->count(), 'employees' => $employees->toArray()]);
+
+    return response()->json($employees);
+}
 
     /**
      * Get inventory items by requesting personnel (emp_no)
      */
-    public function getItemsByPersonnel(Request $request)
-    {
+   public function getItemsByPersonnel(Request $request)
+{
+    try {
         $empNo = $request->get('emp_no');
+        
+        \Log::info('getItemsByPersonnel called', [
+            'emp_no' => $empNo, 
+            'type' => gettype($empNo)
+        ]);
 
         if (!$empNo) {
             return response()->json([]);
         }
 
-        // Get items for this employee grouped by classification
+        // Remove 'brand_model' from the select - it doesn't exist in your table
         $items = InventoryItem::where('emp_no', $empNo)
+            ->orWhere('emp_no', (string)$empNo)
+            ->orWhere('emp_no', (int)$empNo)
             ->active()
             ->whereNotNull('classification')
-            ->select('no', 'classification', 'description', 'brand_model', 'serial_number', 'property_number')
-            ->get()
-            ->groupBy('classification');
-
-        return response()->json($items);
+            ->select('no', 'classification', 'description', 'serial_number', 'property_number')
+            ->get();
+        
+        \Log::info('Items found', [
+            'count' => $items->count(),
+            'items' => $items->toArray()
+        ]);
+        
+        // Group by classification
+        $groupedItems = $items->groupBy('classification');
+        
+        return response()->json($groupedItems);
+        
+    } catch (\Exception $e) {
+        \Log::error('Error in getItemsByPersonnel', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return response()->json([
+            'error' => 'Failed to fetch items',
+            'message' => $e->getMessage()
+        ], 500);
     }
-
+}
     /**
      * Get specific inventory item details by ID
      */

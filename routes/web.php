@@ -24,7 +24,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/icm', [InventoryItemController::class, 'icm'])->name('inventory.icm');
     Route::get('/inventory/export/{type}', [InventoryItemController::class, 'export'])->name('inventory.export');
 
-    // API Routes for ICM
+    // API Routes for ICM - Keep only one version
     Route::get('/api/search-employees', [InventoryItemController::class, 'searchEmployees'])->name('api.search-employees');
     Route::get('/api/items-by-personnel', [InventoryItemController::class, 'getItemsByPersonnel'])->name('api.items-by-personnel');
     Route::get('/api/item-details/{itemId}', [InventoryItemController::class, 'getItemDetails'])->name('api.item-details');
@@ -33,5 +33,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
-
 });

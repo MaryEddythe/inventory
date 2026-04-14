@@ -53,7 +53,7 @@
                 <input type="number" step="0.01" class="form-control" id="unit_price-{{ $item->no }}" name="unit_price" placeholder="Enter amount" value="{{ old('unit_price', $item->unit_price) }}" {{ !$item->unit_price && old('unit_price_type') == 'na' ? 'disabled' : '' }}>
                 <div class="form-check form-check-inline ms-2">
                     <input type="checkbox" class="form-check-input unit-price-na-checkbox" id="unit_price_na-{{ $item->no }}" data-item-no="{{ $item->no }}" {{ !$item->unit_price && old('unit_price_type') == 'na' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="unit_price_na-{{ $item->no }}">NA (No Sticker)</label>
+                    <label class="form-check-label" for="unit_price_na-{{ $item->no }}">NA</label>
                 </div>
             </div>
             <input type="hidden" id="unit_price_type_hidden-{{ $item->no }}" name="unit_price_type" value="{{ $item->unit_price ? 'value' : 'na' }}">
@@ -73,10 +73,13 @@
         <div class="col-md-6 mb-3">
             <label for="date_acquired-{{ $item->no }}" class="form-label">Date Acquired <span class="text-danger">*</span></label>
             <div class="date-input-wrapper">
-                <input type="date" class="form-control" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" {{ !$item->date_acquired && old('date_acquired_type') == 'na' ? 'disabled' : '' }}>
-                <div class="form-check form-check-inline ms-2">
+                <div class="input-group">
+                    <span class="input-group-text cursor-pointer date-picker-icon" data-item-no="{{ $item->no }}" style="cursor: pointer;"><i class="bi bi-calendar-date"></i></span>
+                    <input type="date" class="form-control date-acquired-input" id="date_acquired-{{ $item->no }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" data-item-no="{{ $item->no }}" {{ !$item->date_acquired && old('date_acquired_type') == 'na' ? 'disabled' : '' }}>
+                </div>
+                <div class="form-check mt-2">
                     <input type="checkbox" class="form-check-input date-acquired-na-checkbox" id="date_acquired_na-{{ $item->no }}" data-item-no="{{ $item->no }}" {{ !$item->date_acquired && old('date_acquired_type') == 'na' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="date_acquired_na-{{ $item->no }}">NA (No Sticker)</label>
+                    <label class="form-check-label" for="date_acquired_na-{{ $item->no }}">NA</label>
                 </div>
             </div>
             <input type="hidden" id="date_acquired_type_hidden-{{ $item->no }}" name="date_acquired_type" value="{{ $item->date_acquired ? 'date' : 'na' }}">
@@ -103,12 +106,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const employees = [
-        @foreach($employees as $employee)
-            { emp_no: '{{ $employee->emp_no }}', name: '{{ $employee->firstname }} {{ $employee->lastname }}', department: '{{ $employee->department }}', department_name: '{{ $employee->departmentInfo ? $employee->departmentInfo->department : '' }}' },
-        @endforeach
-    ];
-
     const employeeSearchInput = document.getElementById('employee_search-{{ $item->no }}');
     const suggestionsDiv = document.getElementById('employee_suggestions-{{ $item->no }}');
     const empNoInput = document.getElementById('emp_no-{{ $item->no }}');
@@ -117,49 +114,62 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!empNoInput) return;
 
     employeeSearchInput.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
+        const query = this.value.trim();
         suggestionsDiv.innerHTML = '';
-        if (query.length === 0) {
+        if (query.length < 2) { // Only search after 2 characters
             suggestionsDiv.style.display = 'none';
-            empNoInput.value = '';
-            enduserInput.value = '';
             return;
         }
 
-        const filteredEmployees = employees.filter(emp =>
-            emp.name.toLowerCase().includes(query) || emp.emp_no.toLowerCase().includes(query)
-        );
-
-        if (filteredEmployees.length > 0) {
-            suggestionsDiv.style.display = 'block';
-            filteredEmployees.forEach(emp => {
-                const suggestionItem = document.createElement('div');
-                suggestionItem.className = 'suggestion-item';
-                suggestionItem.textContent = `${emp.name} (${emp.emp_no})`;
-                suggestionItem.addEventListener('click', function() {
-                    employeeSearchInput.value = `${emp.name} (${emp.emp_no})`;
-                    empNoInput.value = emp.emp_no;
-                    enduserInput.value = emp.name;
-
-                    // Auto-select division based on employee's department name
-                    const divisionSelect = document.getElementById('division-{{ $item->no }}');
-                    if (divisionSelect && emp.department_name) {
-                        const options = divisionSelect.options;
-                        for (let i = 0; i < options.length; i++) {
-                            if (options[i].value === emp.department_name) {
-                                options[i].selected = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    suggestionsDiv.style.display = 'none';
-                });
-                suggestionsDiv.appendChild(suggestionItem);
+// 🔍 ULTIMATE DEBUG - RED GLOWING BOX FOR EDIT MODAL TOO!
+console.log('🔍 EDIT: Searching employees for:', query);
+fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
+    method: 'GET',
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content')
+    }
+})
+.then(response => {
+    console.log('📡 EDIT Response:', response.status);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+})
+.then(data => {
+    console.log('✅ EDIT Employees:', data.length, data);
+    suggestionsDiv.innerHTML = '';
+    
+    if (data && data.length > 0) {
+        // 🔥 MASSIVE RED GLOW - IMPOSSIBLE TO MISS!
+        suggestionsDiv.style.border = '5px solid red !important';
+        suggestionsDiv.style.background = 'linear-gradient(45deg, #ff0000, #ff4444) !important';
+        suggestionsDiv.style.boxShadow = '0 0 0 3px orange, 0 8px 32px rgba(255,0,0,0.6) !important';
+        suggestionsDiv.style.display = 'block';
+        
+        data.forEach(emp => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'suggestion-item';
+            suggestionItem.innerHTML = `<strong>${emp.fullname || emp.name || 'N/A'}</strong><br><small>(${emp.emp_no}) ${emp.department_name || 'N/A'}</small>`;
+            suggestionItem.addEventListener('click', function() {
+                employeeSearchInput.value = emp.fullname || emp.name;
+                empNoInput.value = emp.emp_no;
+                enduserInput.value = emp.fullname || emp.name;
+                suggestionsDiv.style.display = 'none';
             });
-        } else {
-            suggestionsDiv.style.display = 'none';
-        }
+            suggestionsDiv.appendChild(suggestionItem);
+        });
+    } else {
+        suggestionsDiv.style.display = 'none';
+    }
+})
+.catch(error => {
+    console.error('💥 EDIT AJAX ERROR:', error);
+    suggestionsDiv.innerHTML = '<div class=\"p-3 text-white\"><strong>ERROR</strong><br>Error: ' + error.message + '</div>';
+    suggestionsDiv.style.border = '5px solid #ff0000 !important';
+    suggestionsDiv.style.background = '#ff4444';
+    suggestionsDiv.style.display = 'block';
+});
     });
 
     // Prevent form submission on Enter key if no employee selected
@@ -182,18 +192,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Set initial values if emp_no is pre-filled
-    if (empNoInput.value) {
-        const selectedEmployee = employees.find(emp => emp.emp_no === empNoInput.value);
-        if (selectedEmployee) {
-            employeeSearchInput.value = `${selectedEmployee.name} (${selectedEmployee.emp_no})`;
-            enduserInput.value = selectedEmployee.name;
-        } else {
-            // Employee not found in list, use stored enduser
-            employeeSearchInput.value = enduserInput.value;
-        }
-    } else if (enduserInput.value) {
-        // For items without emp_no (legacy items), populate search with enduser name
+    // Set initial value from the form data
+    if (enduserInput.value) {
         employeeSearchInput.value = enduserInput.value;
     }
 
@@ -233,6 +233,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 dateAcquiredInput.disabled = false;
                 dateAcquiredInput.setAttribute('required', 'required');
                 dateAcquiredTypeHidden.value = 'date';
+            }
+        });
+    });
+
+    // Handle Date Picker Icon Click for edit modal
+    const datePickerIcons = document.querySelectorAll('.date-picker-icon');
+    datePickerIcons.forEach(icon => {
+        icon.addEventListener('click', function() {
+            const itemNo = this.dataset.itemNo;
+            const dateInput = document.getElementById(`date_acquired-${itemNo}`);
+            if (dateInput && !dateInput.disabled) {
+                dateInput.showPicker();
             }
         });
     });

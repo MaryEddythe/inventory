@@ -299,8 +299,50 @@
 
 @push('scripts')
 <script>
+    // ── Helper: apply a metrics object to the dashboard DOM ───────────────────
+    function applyMetricsToDom(metrics) {
+        if (!metrics) return;
+
+        const map = {
+            totalItemsCount:     { value: metrics.totalItems,     currency: false },
+            rpcspValueCount:     { value: metrics.rpcspValue,     currency: true  },
+            ppeValueCount:       { value: metrics.ppeValue,       currency: true  },
+            itemsThisMonthCount: { value: metrics.itemsThisMonth, currency: false },
+            totalDivisionsCount: { value: metrics.totalDivisions, currency: false },
+        };
+
+        Object.entries(map).forEach(([id, cfg]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.setAttribute('data-target', cfg.value);
+            animateCountUp(el, cfg.value);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
+        // If another tab (e.g. Inventory) wrote fresh metrics into sessionStorage
+        // while this tab was open, apply them immediately so the dashboard
+        // reflects the latest data without needing a page reload.
+        try {
+            const cached = sessionStorage.getItem('inventoryMetrics');
+            if (cached) {
+                applyMetricsToDom(JSON.parse(cached));
+            } else {
+                document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
+            }
+        } catch (e) {
+            document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
+        }
+
+        // Also react whenever the tab regains focus (user switches back to this tab
+        // in the browser after adding items on the Inventory tab).
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState !== 'visible') return;
+            try {
+                const cached = sessionStorage.getItem('inventoryMetrics');
+                if (cached) applyMetricsToDom(JSON.parse(cached));
+            } catch (e) { /* ignore */ }
+        });
 
         document.getElementById('refresh-btn').addEventListener('click', function() {
             location.reload();
@@ -381,14 +423,18 @@
 
     function animateCountUp(el, targetValue) {
         const target = targetValue !== undefined ? parseFloat(targetValue) : parseFloat(el.getAttribute('data-target'));
-        const isCurrency = el.closest('#totalValueCount') !== null;
-        let start = 0;
-                const currentText = el.textContent.replace(/[^0-9.]/g, '');
-        if (currentText && !isNaN(parseFloat(currentText))) {
-            start = parseFloat(currentText);
-        }
+        if (isNaN(target)) return;
 
-        const duration = 1000; 
+        // Detect currency elements by ID — rpcspValueCount and ppeValueCount hold peso values
+        const currencyIds = ['rpcspValueCount', 'ppeValueCount', 'totalValueCount'];
+        const isCurrency = currencyIds.includes(el.id);
+
+        // Always animate FROM 0 so the count-up is always visible.
+        // (Parsing the existing formatted text as a "start" value caused start===target
+        // when the page first loads, resulting in no visible animation.)
+        const start = 0;
+
+        const duration = 1000;
         let startTime;
 
         function step(timestamp) {
@@ -398,7 +444,7 @@
             const currentValue = start + (target - start) * ratio;
 
             if (isCurrency) {
-                el.textContent = currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                el.textContent = currentValue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             } else {
                 el.textContent = Math.round(currentValue).toLocaleString();
             }

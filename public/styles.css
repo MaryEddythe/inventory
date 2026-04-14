@@ -864,20 +864,54 @@ main.container-fluid {
     color: #ffffff !important;
 }
 
-.suggestions-list {
-    position: absolute;
+.suggestions-list, .suggestions-list #employee_suggestions {
+    position: absolute !important;
     background: white;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-top: none;
+    border-radius: 0 0 8px 8px !important;
     max-height: 200px;
     overflow-y: auto;
     width: 100%;
     box-sizing: border-box;
-    z-index: 1000;
+    z-index: 1061 !important;  /* Above modal 1055 */
     display: none;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+    margin-top: 1px;
 }
+.suggestions-list::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #ddd;
+    z-index: 1;
+}
+.modal .suggestions-list {
+    z-index: 1062 !important;
+}
+.suggestion-item {
+    padding: 12px 16px !important;
+    cursor: pointer !important;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+    font-size: 0.95rem;
+}
+.suggestion-item:hover {
+    background: #f8f9fa !important;
+}
+.suggestion-item:last-child {
+    border-bottom: none !important;
+}
+.suggestion-item.highlighted {
+    background: #0d6efd !important;
+    color: white !important;
+}
+
 .suggestion-item {
     padding: 8px 12px;
     cursor: pointer;

@@ -96,7 +96,8 @@
                     <th title="Open Date">Open Date</th>
                     <th title="Close Date">Close Date</th>
                     <th title="Findings">Findings</th>
-                    <th title="Actions Taken">Actions</th>
+                    <th title="Actions TakeP
+                    n">Actions</th>
                     <th title="Recommendations">Recommendations</th>
                 </tr>
             </thead>
@@ -208,6 +209,67 @@
 
 @push('scripts')
 <script>
+    // Function to update dashboard metrics if dashboard page exists/is open
+    function updateDashboardMetrics(metrics) {
+        if (!metrics) return;
+        
+        // Update dashboard if visible
+        const totalItemsEl = document.getElementById('totalItemsCount');
+        const rpcspValueEl = document.getElementById('rpcspValueCount');
+        const ppeValueEl = document.getElementById('ppeValueCount');
+        const itemsThisMonthEl = document.getElementById('itemsThisMonthCount');
+
+        if (totalItemsEl) {
+            totalItemsEl.setAttribute('data-target', metrics.totalItems);
+            animateCountUp(totalItemsEl, metrics.totalItems);
+        }
+        if (rpcspValueEl) {
+            rpcspValueEl.setAttribute('data-target', metrics.rpcspValue);
+            animateCountUp(rpcspValueEl, metrics.rpcspValue);
+        }
+        if (ppeValueEl) {
+            ppeValueEl.setAttribute('data-target', metrics.ppeValue);
+            animateCountUp(ppeValueEl, metrics.ppeValue);
+        }
+        if (itemsThisMonthEl) {
+            itemsThisMonthEl.setAttribute('data-target', metrics.itemsThisMonth);
+            animateCountUp(itemsThisMonthEl, metrics.itemsThisMonth);
+        }
+    }
+
+    // Function to animate count up (copied from dashboard - needed for metric updates)
+    function animateCountUp(el, targetValue) {
+        const target = targetValue !== undefined ? parseFloat(targetValue) : parseFloat(el.getAttribute('data-target'));
+        const isCurrency = el.closest('#totalValueCount') !== null;
+        let start = 0;
+        const currentText = el.textContent.replace(/[^0-9.]/g, '');
+        if (currentText && !isNaN(parseFloat(currentText))) {
+            start = parseFloat(currentText);
+        }
+
+        const duration = 1000;
+        let startTime;
+
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = timestamp - startTime;
+            const ratio = Math.min(progress / duration, 1);
+            const currentValue = start + (target - start) * ratio;
+
+            if (isCurrency) {
+                el.textContent = currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else {
+                el.textContent = Math.round(currentValue);
+            }
+
+            if (ratio < 1) {
+                window.requestAnimationFrame(step);
+            }
+        }
+
+        window.requestAnimationFrame(step);
+    }
+
 document.addEventListener('DOMContentLoaded', function() {
     let searchTimer;
     const searchInput = document.querySelector('input[name="search"]');
@@ -273,6 +335,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     Swal.close();
 
                     if (data.success) {
+                        // Update dashboard metrics if available
+                        if (data.metrics) {
+                            updateDashboardMetrics(data.metrics);
+                        }
                         Swal.fire({
                             icon: 'success',
                             title: 'Success!',
@@ -343,6 +409,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     Swal.close();
                     if (data.success) {
+                        // Update dashboard metrics if available
+                        if (data.metrics) {
+                            updateDashboardMetrics(data.metrics);
+                        }
                         Swal.fire({
                             icon: 'success',
                             title: 'Success!',

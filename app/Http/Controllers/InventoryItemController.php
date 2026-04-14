@@ -57,6 +57,31 @@ class InventoryItemController extends Controller
         }
     }
 
+    private function getDashboardMetrics()
+    {
+        $query = InventoryItem::active();
+
+        $totalItems = $query->count();
+        $totalValue = $query->sum('unit_price');
+        $rpcspValue = (clone $query)->where('unit_price', '<=', 49999)
+            ->where('co_mooe', 'CO')
+            ->sum('unit_price');
+        $ppeValue = (clone $query)->where('unit_price', '>=', 50000)
+            ->where('co_mooe', 'CO')
+            ->sum('unit_price');
+        $itemsThisMonth = (clone $query)->whereMonth('date_acquired', now()->month)
+            ->whereYear('date_acquired', now()->year)
+            ->count();
+
+        return [
+            'totalItems' => $totalItems,
+            'totalValue' => $totalValue,
+            'rpcspValue' => $rpcspValue,
+            'ppeValue' => $ppeValue,
+            'itemsThisMonth' => $itemsThisMonth,
+        ];
+    }
+
     public function index(Request $request)
 {
     $query = InventoryItem::active();
@@ -181,11 +206,13 @@ class InventoryItemController extends Controller
             }
 
             $item = Icm::create($validated);
+            $metrics = $this->getDashboardMetrics();
 
             return response()->json([
                 'success' => true,
                 'message' => 'ICM created successfully with number: ' . $validated['icm_no'],
                 'item'    => $item,
+                'metrics' => $metrics,
             ], 201);
         } else {
             // Regular inventory form validation
@@ -220,11 +247,13 @@ class InventoryItemController extends Controller
             $validated['status'] = $this->calculateStatus($validated['date_acquired']);
 
             $item = InventoryItem::create($validated);
+            $metrics = $this->getDashboardMetrics();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Item created successfully',
                 'item'    => $item,
+                'metrics' => $metrics,
             ], 201);
         }
     }
@@ -337,10 +366,12 @@ class InventoryItemController extends Controller
         }
 
         if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            $metrics = $this->getDashboardMetrics();
             return response()->json([
                 'success' => true,
                 'message' => 'Item updated successfully',
                 'item' => $item,
+                'metrics' => $metrics,
             ], 200);
         }
 
@@ -374,9 +405,12 @@ class InventoryItemController extends Controller
         $item->updated_at = now();
         $item->save();
 
+        $metrics = $this->getDashboardMetrics();
+
         return response()->json([
             'success' => true,
-            'message' => 'Item deleted successfully'
+            'message' => 'Item deleted successfully',
+            'metrics' => $metrics,
         ]);
     }
 
@@ -419,12 +453,12 @@ class InventoryItemController extends Controller
         $query->whereDate('date_acquired', '<=', $request->date_to);
     }
 
-    if ($request->tab === 'ipm') {
+    // GET THE SUBTYPE FROM REQUEST (must be declared before any use of $subtype)
+    $subtype = $request->get('subtype', 'inventory');
+
+    if ($request->tab === 'ipm' && $subtype === 'inventory') {
         $query->where('classification', '!=', 'Monitor');
     }
-
-    // GET THE SUBTYPE FROM REQUEST
-    $subtype = $request->get('subtype', 'inventory');
     
     if ($subtype === 'rpcsp') {
         $query->where('unit_price', '<=', 49999)
@@ -440,7 +474,9 @@ class InventoryItemController extends Controller
         $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
     }
 
-    $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
+    // NOTE: do NOT reassign $items after this point — the line below was removed
+    // because it was clobbering the filtered result set, causing RPCSP/PPE PDF
+    // exports to include ALL items instead of only those matching the subtype filter.
 
     $tab = $request->tab ?? 'inventory';
     $css = File::get(public_path('pdf-styles.css'));
@@ -578,7 +614,7 @@ class InventoryItemController extends Controller
 
     public function dashboard(Request $request)
 {
-    $filterableQuery = InventoryItem::where('x', 'active');
+    $filterableQuery = InventoryItem::active();
 
     // Apply date filters
     $this->applyDateFilters($request, $filterableQuery);
@@ -835,36 +871,43 @@ class InventoryItemController extends Controller
      * Search employees from employee_db
      */
     public function searchEmployees(Request $request)
-{
-    $search = $request->get('query', '');
-    
-    \Log::info('searchEmployees called', ['search' => $search]);
+    {
+        $search = $request->get('query', '');
 
-    $employees = Employee::where('status', 'active')
-        ->where(function($q) use ($search) {
-            $q->where('firstname', 'LIKE', "%{$search}%")
-              ->orWhere('lastname', 'LIKE', "%{$search}%")
-              ->orWhere('emp_no', 'LIKE', "%{$search}%");
-        })
-        ->with('departmentInfo')
-        ->limit(10)
-        ->get()
-        ->map(function($employee) {
-            // Add department_name and ensure emp_no is properly formatted
-            return [
-                'emp_no' => (string)$employee->emp_no,  // Convert to string for consistency
-                'firstname' => $employee->firstname,
-                'lastname' => $employee->lastname,
-                'department' => $employee->department,
-                'department_name' => $employee->departmentInfo ? $employee->departmentInfo->department : $employee->department,
-                'fullname' => $employee->firstname . ' ' . $employee->lastname
-            ];
-        });
+        \Log::info('searchEmployees called', ['search' => $search]);
 
-    \Log::info('Employees found', ['count' => $employees->count(), 'employees' => $employees->toArray()]);
+        try {
+            $employees = Employee::where('status', 'active')
+                ->where(function($q) use ($search) {
+                    $q->where('firstname', 'LIKE', "%{$search}%")
+                      ->orWhere('lastname', 'LIKE', "%{$search}%")
+                      ->orWhere('emp_no', 'LIKE', "%{$search}%");
+                })
+                ->with('departmentInfo')
+                ->limit(10)
+                ->get();
 
-    return response()->json($employees);
-}
+            \Log::info('Employees query executed', ['count' => $employees->count()]);
+
+            $result = $employees->map(function($employee) {
+                return [
+                    'emp_no' => (string)$employee->emp_no,
+                    'firstname' => $employee->firstname ?? '',
+                    'lastname' => $employee->lastname ?? '',
+                    'department' => $employee->department ?? '',
+                    'department_name' => $employee->departmentInfo ? $employee->departmentInfo->department : ($employee->department ?? 'Unknown'),
+                    'fullname' => trim(($employee->firstname ?? '') . ' ' . ($employee->lastname ?? ''))
+                ];
+            });
+
+            \Log::info('Employees mapped', ['count' => $result->count(), 'result' => $result->toArray()]);
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            \Log::error('Error in searchEmployees', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'Failed to search employees', 'message' => $e->getMessage()], 500);
+        }
+    }
 
     /**
      * Get inventory items by requesting personnel (emp_no)

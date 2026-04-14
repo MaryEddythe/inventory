@@ -52,7 +52,7 @@
                 <input type="number" step="0.01" class="form-control" id="unit_price" name="unit_price" placeholder="Enter amount" value="{{ old('unit_price') }}" {{ !old('unit_price_type') || old('unit_price_type') == 'value' ? '' : 'disabled' }}>
                 <div class="form-check form-check-inline ms-2">
                     <input type="checkbox" class="form-check-input" id="unit_price_na" {{ old('unit_price_type') == 'na' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="unit_price_na">NA (No Sticker)</label>
+                    <label class="form-check-label" for="unit_price_na">NA</label>
                 </div>
             </div>
             <input type="hidden" id="unit_price_type_hidden" name="unit_price_type" value="{{ old('unit_price_type', 'value') }}">
@@ -72,12 +72,15 @@
         <div class="col-md-6 mb-3">
             <label for="date_acquired" class="form-label">Date Acquired <span class="text-danger">*</span></label>
             <div class="date-input-wrapper">
-                <input type="date" class="form-control" id="date_acquired" name="date_acquired" value="{{ old('date_acquired') }}" {{ !old('date_acquired_type') || old('date_acquired_type') == 'date' ? '' : 'disabled' }}>
-                <div class="form-check form-check-inline ms-2">
-                    <input type="checkbox" class="form-check-input" id="date_acquired_na" {{ old('date_acquired_type') == 'na' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="date_acquired_na">NA (No Sticker)</label>
+                <div class="input-group">
+                    <span class="input-group-text cursor-pointer" id="date_picker_icon" style="cursor: pointer;"><i class="bi bi-calendar-date"></i></span>
+                    <input type="date" class="form-control" id="date_acquired" name="date_acquired" value="{{ old('date_acquired', '') }}" {{ !old('date_acquired_type') || old('date_acquired_type') == 'date' ? '' : 'disabled' }}>
                 </div>
-            </div>
+                <div class="form-check mt-2">
+                    <input type="checkbox" class="form-check-input" id="date_acquired_na" {{ old('date_acquired_type') == 'na' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="date_acquired_na">NA</label>
+                </div>
+            </input>
             <input type="hidden" id="date_acquired_type_hidden" name="date_acquired_type" value="{{ old('date_acquired_type', 'date') }}">
         </div>
     </div>
@@ -104,76 +107,146 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const employees = [
-        @foreach($employees as $employee)
-            { emp_no: '{{ $employee->emp_no }}', name: '{{ $employee->firstname }} {{ $employee->lastname }}', department: '{{ $employee->department }}', department_name: '{{ $employee->departmentInfo ? $employee->departmentInfo->department : '' }}' },
-        @endforeach
-    ];
-
     const employeeSearchInput = document.getElementById('employee_search');
     const suggestionsDiv = document.getElementById('employee_suggestions');
     const empNoInput = document.getElementById('emp_no');
     const enduserInput = document.getElementById('enduser');
     let currentIndex = -1;
     let suggestionItems = [];
+    let currentEmployees = [];
 
     employeeSearchInput.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
+        const query = this.value.trim();
         suggestionsDiv.innerHTML = '';
-        if (query.length === 0) {
+        if (query.length < 2) { // Only search after 2 characters
             suggestionsDiv.style.display = 'none';
             empNoInput.value = '';
             enduserInput.value = '';
             return;
         }
 
-        const filteredEmployees = employees.filter(emp =>
-            emp.name.toLowerCase().includes(query) || emp.emp_no.toLowerCase().includes(query)
-        );
+// Make AJAX call to search employees
+console.log('Searching employees for:', query);
+fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
+    method: 'GET',
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+    }
+})
+.then(response => {
+    console.log('Response status:', response.status);
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+})
+.then(data => {
+    console.log('✅ API Response received:', {
+        type: typeof data,
+        isArray: Array.isArray(data),
+        length: data ? data.length : 0,
+        data: data
+    });
+    currentEmployees = data;
+    suggestionsDiv.innerHTML = '';
 
-        if (filteredEmployees.length > 0) {
-            suggestionsDiv.style.display = 'block';
-            suggestionItems = [];
-            filteredEmployees.forEach((emp, index) => {
-                const suggestionItem = document.createElement('div');
-                suggestionItem.className = 'suggestion-item';
-                suggestionItem.textContent = emp.name;
-                suggestionItem.dataset.index = index;
-                suggestionItem.addEventListener('click', function() {
-                    selectEmployee(emp);
+    if (currentEmployees && currentEmployees.length > 0) {
+        console.log('Displaying dropdown with', currentEmployees.length, 'employees');
+        suggestionsDiv.style.display = 'block';
+        suggestionItems = [];
+
+        currentEmployees.forEach((emp, index) => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'suggestion-item';
+            suggestionItem.innerHTML = `
+                <div><strong>${emp.fullname || 'N/A'}</strong></div>
+                <small>(${emp.emp_no || 'N/A'}) - ${emp.department_name || emp.department || 'N/A'}</small>
+            `;
+            suggestionItem.dataset.index = index;
+            suggestionItem.style.cursor = 'pointer';
+
+            // Use closure to properly capture the employee object
+            (function(employee) {
+                suggestionItem.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Selected employee:', employee);
+                    selectEmployee(employee);
                 });
-                suggestionsDiv.appendChild(suggestionItem);
-                suggestionItems.push(suggestionItem);
-            });
-            currentIndex = -1;
-        } else {
-            suggestionsDiv.style.display = 'none';
-            suggestionItems = [];
-            currentIndex = -1;
-        }
+            })(emp);
+
+            suggestionsDiv.appendChild(suggestionItem);
+            suggestionItems.push(suggestionItem);
+        });
+        currentIndex = -1;
+        console.log('🎉 Dropdown populated:', currentEmployees.length, 'items');
+    } else {
+        console.log('❌ No employees found');
+        suggestionsDiv.style.display = 'none';
+        suggestionItems = [];
+        currentIndex = -1;
+    }
+})
+.catch(error => {
+    console.error('Error searching employees:', error);
+    suggestionsDiv.innerHTML = '<div class="p-2 text-danger"><small>Error loading employees</small></div>';
+    suggestionsDiv.style.display = 'block';
+    
+    // 🔔 User-friendly error
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Search Error',
+            text: 'Failed to load employees: ' + error.message,
+            toast: true,
+            position: 'top-end',
+            timer: 5000
+        });
+    }
+});
     });
 
     // Function to select employee
     function selectEmployee(emp) {
-        employeeSearchInput.value = emp.name;
-        empNoInput.value = emp.emp_no;
-        enduserInput.value = emp.name;
+        console.log('Selecting employee:', emp);
 
-        // Auto-select division based on employee's department name
-        const divisionSelect = document.getElementById('division');
-        if (divisionSelect && emp.department_name) {
-            const options = divisionSelect.options;
-            for (let i = 0; i < options.length; i++) {
-                if (options[i].value === emp.department_name) {
-                    options[i].selected = true;
-                    break;
+        if (emp && emp.fullname && emp.emp_no) {
+            // Re-reference DOM elements to ensure we're using the current form
+            const currentSearchInput = document.getElementById('employee_search');
+            const currentEmpNoInput = document.getElementById('emp_no');
+            const currentEnduserInput = document.getElementById('enduser');
+
+            currentSearchInput.value = emp.fullname;
+            currentEmpNoInput.value = emp.emp_no;
+            currentEnduserInput.value = emp.fullname;
+
+            console.log('Employee fields populated:', {
+                searchInput: currentSearchInput.value,
+                empNo: currentEmpNoInput.value,
+                enduser: currentEnduserInput.value
+            });
+
+            // Auto-select division based on employee's department name
+            const divisionSelect = document.getElementById('division');
+            if (divisionSelect && emp.department_name) {
+                const options = divisionSelect.options;
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].value === emp.department_name) {
+                        options[i].selected = true;
+                        console.log('Division auto-selected:', emp.department_name);
+                        break;
+                    }
                 }
             }
-        }
 
-        suggestionsDiv.style.display = 'none';
-        currentIndex = -1;
-        suggestionItems.forEach(item => item.classList.remove('highlighted'));
+            suggestionsDiv.style.display = 'none';
+            currentIndex = -1;
+            suggestionItems.forEach(item => item.classList.remove('highlighted'));
+        } else {
+            console.error('Invalid employee object:', emp);
+            alert('Error: Invalid employee data');
+        }
     }
 
     // Function to update highlight
@@ -201,9 +274,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateHighlight();
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                if (currentIndex >= 0 && currentIndex < filteredEmployees.length) {
-                    selectEmployee(filteredEmployees[currentIndex]);
+                if (currentIndex >= 0 && currentIndex < currentEmployees.length) {
+                    selectEmployee(currentEmployees[currentIndex]);
                 } else if (empNoInput.value) {
+                    // If enter pressed and we have a selected employee, submit form
+                    const form = document.getElementById('add-inventory-form');
                     form.submit();
                 } else {
                     alert('Please select a valid employee from the search results.');
@@ -213,6 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (e.key === 'Enter') {
             e.preventDefault();
             if (empNoInput.value) {
+                const form = document.getElementById('add-inventory-form');
                 form.submit();
             } else {
                 alert('Please select a valid employee from the search results.');
@@ -229,15 +305,6 @@ document.addEventListener('DOMContentLoaded', function() {
             suggestionItems.forEach(item => item.classList.remove('highlighted'));
         }
     });
-
-    // Set initial values if emp_no is pre-filled (e.g., after form validation error)
-    if (empNoInput.value) {
-        const selectedEmployee = employees.find(emp => emp.emp_no === empNoInput.value);
-        if (selectedEmployee) {
-            employeeSearchInput.value = selectedEmployee.name;
-            enduserInput.value = selectedEmployee.name;
-        }
-    }
 
     // Handle Unit Price NA Checkbox Toggle
     const unitPriceNaCheckbox = document.getElementById('unit_price_na');
@@ -263,6 +330,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const dateAcquiredNaCheckbox = document.getElementById('date_acquired_na');
     const dateAcquiredInput = document.getElementById('date_acquired');
     const dateAcquiredTypeHidden = document.getElementById('date_acquired_type_hidden');
+    const datePickerIcon = document.getElementById('date_picker_icon');
+
+    // Click calendar icon to open date picker
+    if (datePickerIcon && dateAcquiredInput) {
+        datePickerIcon.addEventListener('click', function() {
+            if (!dateAcquiredInput.disabled) {
+                dateAcquiredInput.showPicker();
+            }
+        });
+    }
 
     if (dateAcquiredNaCheckbox) {
         dateAcquiredNaCheckbox.addEventListener('change', function() {
@@ -281,8 +358,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Form validation before submission
     const form = document.getElementById('add-inventory-form');
+
     form.addEventListener('submit', function(e) {
-        if (!empNoInput.value) {
+        // Re-reference the emp_no field to ensure we're checking the current DOM element
+        const currentEmpNoInput = document.getElementById('emp_no');
+
+        console.log('Form submission - checking emp_no:', {
+            empNoValue: currentEmpNoInput.value,
+            employeeSearchValue: employeeSearchInput.value
+        });
+
+        if (!currentEmpNoInput.value || currentEmpNoInput.value.trim() === '') {
             e.preventDefault();
             alert('Please select a valid employee from the search results.');
             employeeSearchInput.focus();

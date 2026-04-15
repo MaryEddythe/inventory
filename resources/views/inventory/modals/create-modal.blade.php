@@ -276,23 +276,7 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
                 e.preventDefault();
                 if (currentIndex >= 0 && currentIndex < currentEmployees.length) {
                     selectEmployee(currentEmployees[currentIndex]);
-                } else if (empNoInput.value) {
-                    // If enter pressed and we have a selected employee, submit form
-                    const form = document.getElementById('add-inventory-form');
-                    form.submit();
-                } else {
-                    alert('Please select a valid employee from the search results.');
-                    this.focus();
                 }
-            }
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (empNoInput.value) {
-                const form = document.getElementById('add-inventory-form');
-                form.submit();
-            } else {
-                alert('Please select a valid employee from the search results.');
-                this.focus();
             }
         }
     });
@@ -356,44 +340,5 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
         });
     }
 
-    // Form validation before submission
-    const form = document.getElementById('add-inventory-form');
-
-    form.addEventListener('submit', function(e) {
-        // Re-reference the emp_no field to ensure we're checking the current DOM element
-        const currentEmpNoInput = document.getElementById('emp_no');
-
-        console.log('Form submission - checking emp_no:', {
-            empNoValue: currentEmpNoInput.value,
-            employeeSearchValue: employeeSearchInput.value
-        });
-
-        if (!currentEmpNoInput.value || currentEmpNoInput.value.trim() === '') {
-            e.preventDefault();
-            alert('Please select a valid employee from the search results.');
-            employeeSearchInput.focus();
-            return false;
-        }
-
-        // Validate unit price
-        const unitPriceNaCheckbox = document.getElementById('unit_price_na');
-        const unitPriceInput = document.getElementById('unit_price');
-        if (!unitPriceNaCheckbox.checked && !unitPriceInput.value) {
-            e.preventDefault();
-            alert('Please enter a unit price or mark as NA.');
-            unitPriceInput.focus();
-            return false;
-        }
-
-        // Validate date acquired
-        const dateAcquiredNaCheckbox = document.getElementById('date_acquired_na');
-        const dateAcquiredInput = document.getElementById('date_acquired');
-        if (!dateAcquiredNaCheckbox.checked && !dateAcquiredInput.value) {
-            e.preventDefault();
-            alert('Please enter a date or mark as NA.');
-            dateAcquiredInput.focus();
-            return false;
-        }
-    });
 });
 </script>

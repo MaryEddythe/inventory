@@ -239,21 +239,38 @@ document.addEventListener('DOMContentLoaded', function() {
     function attachFormListeners() {
         // Client-side validation for add inventory form
         const addInventoryForm = document.getElementById('add-inventory-form');
-        if (addInventoryForm) {
+        if (addInventoryForm && !addInventoryForm._listenerAttached) {
+            // Only attach once per form instance
+            addInventoryForm._listenerAttached = true;
+
             addInventoryForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                console.log('🔴 FORM SUBMIT EVENT FIRED');
+
+                // Prevent duplicate submissions
+                if (this._isSubmitting) {
+                    console.warn('❌ BLOCKED: Form submission already in progress - preventing duplicate');
+                    return;
+                }
+                this._isSubmitting = true;
+                console.log('✅ Submission guard activated - _isSubmitting = true');
+
                 const empNoInput = this.querySelector('input[name="emp_no"]');
                 if (!empNoInput) {
                     console.error('emp_no input not found in add form');
+                    this._isSubmitting = false;
                     return;
                 }
                 const empNo = empNoInput.value;
                 if (!empNo) {
+                    console.warn('Employee not selected');
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
                         text: 'Please select a valid employee from the search results.'
                     });
+                    this._isSubmitting = false;
                     return;
                 }
 
@@ -275,9 +292,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         title: 'Error!',
                         text: 'CSRF token not found. Please refresh the page.'
                     });
+                    this._isSubmitting = false;
                     return;
                 }
 
+                console.log('📤 Sending FETCH request to /inventory.store');
                 fetch('{{ route("inventory.store") }}', {
                     method: 'POST',
                     body: formData,
@@ -287,10 +306,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('📨 RESPONSE received:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('📦 RESPONSE JSON parsed:', data);
+                    addInventoryForm._isSubmitting = false;
                     Swal.close();
                     if (data.success) {
+                        console.log('✅ SUCCESS - Item created');
                         // Update dashboard metrics if available
                         if (data.metrics) {
                             updateDashboardMetrics(data.metrics);
@@ -302,10 +327,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             timer: 2000,
                             showConfirmButton: false
                         }).then(() => {
+                            console.log('Closing modal and reloading page...');
                             $('#addInventoryModal').modal('hide');
                             location.reload();
                         });
                     } else {
+                        console.error('❌ ERROR - Server returned failure:', data.message);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
@@ -314,6 +341,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
+                    console.error('💥 FETCH ERROR:', error);
+                    addInventoryForm._isSubmitting = false;
                     Swal.close();
                     Swal.fire({
                         icon: 'error',
@@ -326,6 +355,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Client-side validation for edit inventory forms
         document.querySelectorAll('.edit-inventory-form').forEach(form => {
+            // Only attach once per form instance
+            if (form._listenerAttached) return;
+            form._listenerAttached = true;
+
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const empNoInput = this.querySelector('input[name="emp_no"]');
@@ -412,6 +445,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         document.querySelectorAll('.delete-form').forEach(form => {
+            // Only attach once per form instance
+            if (form._listenerAttached) return;
+            form._listenerAttached = true;
+
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
@@ -598,6 +635,27 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             Swal.close();
         }, 2000);
+    }
+
+    // Reset form when modal is hidden
+    const addInventoryModal = document.getElementById('addInventoryModal');
+    if (addInventoryModal) {
+        addInventoryModal.addEventListener('hidden.bs.modal', function(e) {
+            const form = document.getElementById('add-inventory-form');
+            if (form) {
+                // Reset form state
+                form.reset();
+                // Clear the submission flag so fresh submission is allowed
+                form._isSubmitting = false;
+                // Clear all input fields for fresh form
+                form.querySelectorAll('input, textarea, select').forEach(field => {
+                    field.value = '';
+                });
+
+                // Log for debugging
+                console.log('Modal hidden - form reset and _isSubmitting cleared');
+            }
+        });
     }
 });
 </script>

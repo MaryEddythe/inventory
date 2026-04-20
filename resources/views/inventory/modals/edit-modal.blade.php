@@ -56,7 +56,7 @@
                     <label class="form-check-label" for="unit_price_na-{{ $item->no }}">NA</label>
                 </div>
             </div>
-            <input type="hidden" id="unit_price_type_hidden-{{ $item->no }}" name="unit_price_type" value="{{ $item->unit_price ? 'value' : 'na' }}">
+             <input type="hidden" id="unit_price_type_hidden-{{ $item->no }}" name="unit_price_type" value="{{ $item->unit_price !== null ? 'value' : 'na' }}">
         </div>
     </div>
     <div class="row">
@@ -106,12 +106,17 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('edit-inventory-form-{{ $item->no }}');
     const employeeSearchInput = document.getElementById('employee_search-{{ $item->no }}');
     const suggestionsDiv = document.getElementById('employee_suggestions-{{ $item->no }}');
     const empNoInput = document.getElementById('emp_no-{{ $item->no }}');
     const enduserInput = document.getElementById('enduser-{{ $item->no }}');
 
-    if (!empNoInput) return;
+    if (!form || !empNoInput) return;
+    
+    // Prevent double-attachment by checking listener flag
+    if (form._editListenerAttached) return;
+    form._editListenerAttached = true;
 
     employeeSearchInput.addEventListener('input', function() {
         const query = this.value.trim();
@@ -248,56 +253,6 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
             }
         });
     });
-
-    // Handle form submission via AJAX
-    const form = document.getElementById('edit-inventory-form-{{ $item->no }}');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const itemNo = '{{ $item->no }}';
-            const url = "{{ route('inventory.update', $item->no) }}";
-
-            fetch(url, {
-                method: 'PUT',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error(`HTTP ${response.status}: ${text}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    alert('Item updated successfully!');
-                    
-                    const modalElement = document.getElementById('editModal');
-                    if (modalElement) {
-                        const modal = bootstrap.Modal.getInstance(modalElement);
-                        if (modal) {
-                            modal.hide();
-                        }
-                    }
-                    
-                    setTimeout(() => location.reload(), 500);
-                } else {
-                    alert(data.message || 'An error occurred while updating the item.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred: ' + error.message);
-            });
-        });
-    }
 
 });
 </script>

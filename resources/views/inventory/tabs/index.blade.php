@@ -102,7 +102,7 @@
     </div>
 </div>
 
-@include('inventory.modals.filter-modal')
+@include('inventory.modals.filter-modal', ['departments' => $departments])
 @endsection
 
 @push('scripts')
@@ -197,16 +197,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const filterForm = document.getElementById('filterForm');
-    filterForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        updateResults();
-        $('#filterModal').modal('hide');
-    });
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateResults();
+            $('#filterModal').modal('hide');
+        });
 
-    document.getElementById('clearFilters').addEventListener('click', function() {
-        filterForm.reset();
-        updateResults();
-    });
+        document.getElementById('clearFilters').addEventListener('click', function() {
+            filterForm.reset();
+            updateResults();
+        });
+    }
 
     // Handle submenu toggle
     const pdfMenuItem = document.querySelector('.dropdown-submenu .dropdown-toggle');
@@ -361,11 +363,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+                
+                console.log('🔧 EDIT FORM SUBMIT:', {
+                    formId: this.id,
+                    formClass: this.className,
+                    formTag: this.tagName,
+                    formFieldCount: this.querySelectorAll('input, select, textarea').length
+                });
+                
+                // Verify this is the correct form
                 const empNoInput = this.querySelector('input[name="emp_no"]');
-                if (!empNoInput) {
-                    console.error('emp_no input not found in edit form');
+                const classificationInput = this.querySelector('input[name="classification"]');
+                const descriptionInput = this.querySelector('textarea[name="description"]');
+                
+                if (!empNoInput || !classificationInput || !descriptionInput) {
+                    console.error('Required form fields not found', {
+                        empNo: empNoInput?.value,
+                        classification: classificationInput?.value, 
+                        description: descriptionInput?.value
+                    });
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Form fields not properly initialized. Please refresh and try again.'
+                    });
                     return;
                 }
+                
                 const empNo = empNoInput.value;
                 if (!empNo) {
                     Swal.fire({
@@ -376,8 +400,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
+                // Temporarily enable all disabled fields so they're included in FormData
+                const disabledFields = this.querySelectorAll(':disabled');
+                console.log('🔧 Disabled fields found:', disabledFields.length);
+                disabledFields.forEach(field => field.disabled = false);
+
                 const itemId = this.id.split('-').pop();
+
+                // Debug: Log all form fields BEFORE creating FormData
+                const allFields = this.querySelectorAll('input, select, textarea');
+                console.log('🔍 ALL FORM FIELDS:', allFields.length);
+                allFields.forEach((field, index) => {
+                    console.log(`Field ${index}:`, {
+                        name: field.name,
+                        type: field.type,
+                        value: field.value,
+                        id: field.id,
+                        disabled: field.disabled
+                    });
+                });
+
                 const formData = new FormData(this);
+
+                // Re-disable the fields after FormData is created
+                disabledFields.forEach(field => field.disabled = true);
+
+                // Debug: Log FormData contents
+                console.log('Form ID:', this.id);
+                console.log('Item ID:', itemId);
+                const formDataArray = Array.from(formData.entries());
+                console.log('📦 FormData entries count:', formDataArray.length);
+                console.log('📦 FormData entries:', formDataArray);
 
                 Swal.fire({
                     title: 'Updating Item...',
@@ -426,15 +479,25 @@ document.addEventListener('DOMContentLoaded', function() {
                             location.reload();
                         });
                     } else {
+                        // Show validation errors if present
+                        let errorMessage = data.message || 'An error occurred while updating the item';
+                        if (data.errors) {
+                            const errorList = Object.entries(data.errors)
+                                .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
+                                .join('\n');
+                            errorMessage += '\n\n' + errorList;
+                        }
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error!',
-                            text: data.message || 'An error occurred while updating the item'
+                            title: 'Validation Error!',
+                            text: errorMessage
                         });
+                        console.error('Validation errors:', data.errors);
                     }
                 })
                 .catch(error => {
                     Swal.close();
+                    console.error('Request error:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Network Error!',

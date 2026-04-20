@@ -215,6 +215,14 @@ class InventoryItemController extends Controller
                 'metrics' => $metrics,
             ], 201);
         } else {
+            // Convert empty strings to null for proper validation
+            if ($request->input('unit_price') === '') {
+                $request->merge(['unit_price' => null]);
+            }
+            if ($request->input('date_acquired') === '') {
+                $request->merge(['date_acquired' => null]);
+            }
+
             // Regular inventory form validation
             $validated = $request->validate([
                 'division' => 'required|string|max:255',
@@ -320,11 +328,23 @@ class InventoryItemController extends Controller
                     'time_ended' => 'nullable|date_format:H:i|after:time_started',
                 ]);
             } else {
-                // Regular inventory update validation
+                // Pre-process NA values and log request data
+                $inputData = $request->all();
+                \Log::info('Raw update request for item ' . $id . ':', $inputData);
+                
+                if (isset($inputData['unit_price_type']) && $inputData['unit_price_type'] === 'na') {
+                    $inputData['unit_price'] = null;
+                }
+                if (isset($inputData['date_acquired_type']) && $inputData['date_acquired_type'] === 'na') {
+                    $inputData['date_acquired'] = null;
+                }
+                $request->merge($inputData);
+
+                // Regular inventory update validation (loosened emp_no validation)
                 $validated = $request->validate([
                     'division' => 'required|string|max:255',
                     'enduser' => 'required|string|max:255',
-                    'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
+                    'emp_no' => 'required|string|max:255', // Removed exists check to allow updates
                     'classification' => 'required|string|max:255',
                     'property_number' => 'required|string|max:255',
                     'description' => 'required|string',
@@ -337,6 +357,8 @@ class InventoryItemController extends Controller
                     'remarks' => 'nullable|string',
                     'serviceability' => 'nullable|string',
                 ]);
+                
+                \Log::info('Update validation passed for item ID: ' . $id, ['data' => $validated]);
 
                 // Handle NA values
                 if ($request->input('unit_price_type') === 'na') {

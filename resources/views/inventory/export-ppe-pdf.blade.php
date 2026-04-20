@@ -166,47 +166,59 @@
     </tbody>
 </table>
 
-<div class="signature-section" style="margin-top: 20px; text-align: center;">
-    <table style="width: 100%; border: none; margin-bottom: 20px;">
-        <tr>
-            <td style="width: 30%; text-align: center; vertical-align: top;">
-                <span style="font-size: 8px; font-style: italic;">Certified Correct by</span><br>
-                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
-                <strong>GLENN L. UMIPIG</strong><br>
-                <span style="font-size: 9px;">OIC Chief, FAD in Concurrent Capacity as</span><br>
-                <span style="font-size: 9px;">Chief, Finance Section</span>
-            </td>
-            <td style="width: 30%; text-align: center; vertical-align: top;">
-                <span style="font-size: 8px; font-style: italic;">Approved by</span><br>
-                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
-                <strong>DELILAH P. AGUILAR</strong><br>
-                <span style="font-size: 9px;">Administrative Assistant III</span><br>
-                <span style="font-size: 9px;">Member</span>
-            </td>
-            <td style="width: 30%; text-align: center; vertical-align: top;">
-                <span style="font-size: 8px; font-style: italic;">Witnessed by</span><br>
-                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
-                <strong>CECILIA L. OCHAVO-SAYCON</strong><br>
-                <span style="font-size: 9px;">OIC Regional Director</span><br>
-                <span style="font-size: 9px;">Signature over Printed of COA</span><br>
-                <span style="font-size: 9px;">Representative</span>
-            </td>
-        </tr>
-    </table>
-
+<div class="signature-section" style="margin-top: 20px;">
     <table style="width: 100%; border: none;">
         <tr>
-            <td style="width: 45%; text-align: center; vertical-align: top;">
-                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
-                <strong>PRUDENCIO C. BULAWAN IV</strong><br>
-                <span style="font-size: 9px;">D./Prop. Inspector</span><br>
-                <span style="font-size: 9px;">Member</span>
+            <!-- COLUMN 1: Certified Correct by -->
+            <td style="width: 45%; text-align: left; vertical-align: top; padding-right: 15px;">
+                <span style="font-size: 8px;">Certified Correct by:</span><br><br>
+                <table style="width: 100%; border: none;">
+                    <tr>
+                        <td style="width: 50%; text-align: left; vertical-align: top; padding-right: 8px;">
+                            <div style="border-bottom: 1px solid #000; height: 35px;"></div>
+                            <strong style="font-size: 9px;">GLENN L. UMIPIG</strong><br>
+                            <span style="font-size: 9px;">OIC Chief, FAD in Concurrent Capacity as</span><br>
+                            <span style="font-size: 9px;">Chief, Finance Section</span>
+                        </td>
+                        <td style="width: 50%; text-align: left; vertical-align: top;">
+                            <div style="border-bottom: 1px solid #000; height: 35px;"></div>
+                            <strong style="font-size: 9px;">DELILAH P. AGUILAR</strong><br>
+                            <span style="font-size: 9px;">Administrative Assistant II</span><br>
+                            <span style="font-size: 9px;">Member</span>
+                        </td>
+                    </tr>
+                    <tr><td colspan="2" style="height: 10px;"></td></tr>
+                    <tr>
+                        <td style="width: 50%; text-align: left; vertical-align: top; padding-right: 8px;">
+                            <div style="border-bottom: 1px solid #000; height: 35px;"></div>
+                            <strong style="font-size: 9px;">PRUDENCIO C. BULAWAN IV</strong><br>
+                            <span style="font-size: 9px;">D./Prop. Inspector</span><br>
+                            <span style="font-size: 9px;">Member</span>
+                        </td>
+                        <td style="width: 50%; text-align: left; vertical-align: top;">
+                            <div style="border-bottom: 1px solid #000; height: 35px;"></div>
+                            <strong style="font-size: 9px;">MAY FLORENCE A. PABELONIO</strong><br>
+                            <span style="font-size: 9px;">Acting Supply Officer II, GSS</span><br>
+                            <span style="font-size: 9px;">Member</span>
+                        </td>
+                    </tr>
+                </table>
             </td>
-            <td style="width: 45%; text-align: center; vertical-align: top;">
-                <div style="border-bottom: 1px solid #000; margin: 5px 0; height: 40px;"></div>
-                <strong>MAY FLORENCE A. PABELENONIO</strong><br>
-                <span style="font-size: 9px;">Supply Officer II/GSS</span><br>
-                <span style="font-size: 9px;">Member</span>
+
+            <!-- COLUMN 2: Approved by -->
+            <td style="width: 30%; text-align: left; vertical-align: top; padding-right: 15px;">
+                <span style="font-size: 8px;">Approved by:</span><br><br>
+                <div style="border-bottom: 1px solid #000; height: 35px;"></div>
+                <strong style="font-size: 9px;">CECILIA L. OCHAVO-SAYCON</strong><br>
+                <span style="font-size: 9px;">OIC Regional Director</span>
+            </td>
+
+            <!-- COLUMN 3: Witnessed by -->
+            <td style="width: 25%; text-align: left; vertical-align: top;">
+                <span style="font-size: 8px;">Witnessed by:</span><br><br>
+                <div style="border-bottom: 1px solid #000; height: 35px;"></div>
+                <span style="font-size: 9px;">Signature over Printed of COA</span><br>
+                <span style="font-size: 9px;">Representative</span>
             </td>
         </tr>
     </table>

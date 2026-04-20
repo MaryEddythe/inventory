@@ -63,9 +63,9 @@ class InventoryItemController extends Controller
 
         $totalItems = $query->count();
         $totalValue = $query->sum('unit_price');
-        $rpcspValue = (clone $query)->where('unit_price', '<=', 49999)
-            ->where('co_mooe', 'CO')
-            ->sum('unit_price');
+       $rpcspValue = (clone $query)->where('unit_price', '<=', 49999)
+        ->whereNotNull('unit_price')
+        ->sum('unit_price');
         $ppeValue = (clone $query)->where('unit_price', '>=', 50000)
             ->where('co_mooe', 'CO')
             ->sum('unit_price');
@@ -644,8 +644,8 @@ class InventoryItemController extends Controller
     $totalItems = $filterableQuery->count();
     $totalValue = $filterableQuery->sum('unit_price');
     $rpcspValue = (clone $filterableQuery)->where('unit_price', '<=', 49999)
-        ->where('co_mooe', 'CO')
-        ->sum('unit_price');
+    ->whereNotNull('unit_price')
+    ->sum('unit_price');
     $ppeValue = (clone $filterableQuery)->where('unit_price', '>=', 50000)
         ->where('co_mooe', 'CO')
         ->sum('unit_price');

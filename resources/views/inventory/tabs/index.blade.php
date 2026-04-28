@@ -34,10 +34,11 @@
                 </select>
             </div>
 
-            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#filterModal">
-                <i class="bi bi-funnel"></i> Filter
-            </button>
-            
+                <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                    id="openFilterBtn">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                            
             <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-download me-1"></i> Export
@@ -195,19 +196,44 @@ document.addEventListener('DOMContentLoaded', function() {
             updateResults();
         });
     }
-
+    const openFilterBtn = document.getElementById('openFilterBtn');
+    if (openFilterBtn) {
+        openFilterBtn.addEventListener('click', function () {
+            const filterModalEl = document.getElementById('filterModal');
+            let modal = bootstrap.Modal.getInstance(filterModalEl);
+            if (!modal) {
+                modal = new bootstrap.Modal(filterModalEl);
+            }
+            modal.show();
+        });
+    }
     const filterForm = document.getElementById('filterForm');
     if (filterForm) {
+        // Handle form submission
         filterForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('📋 Filter form submitted');
             updateResults();
-            $('#filterModal').modal('hide');
+            
+            // Close modal
+            const filterModalEl = document.getElementById('filterModal');
+            let modal = bootstrap.Modal.getInstance(filterModalEl);
+            if (!modal) modal = new bootstrap.Modal(filterModalEl);
+            modal.hide();
         });
 
-        document.getElementById('clearFilters').addEventListener('click', function() {
-            filterForm.reset();
-            updateResults();
-        });
+        // Handle Clear Filters button
+        const clearFiltersBtn = document.getElementById('clearFilters');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🔄 Clear filters clicked');
+                filterForm.reset();
+                updateResults();
+            });
+        }
+    } else {
+        console.warn('⚠️ Filter form not found - filter modal may not be working properly');
     }
 
     // Handle submenu toggle
@@ -631,10 +657,13 @@ document.addEventListener('DOMContentLoaded', function() {
             searchParams.append('search', searchInput.value);
         }
 
-        const formData = new FormData(filterForm);
-        for (let pair of formData.entries()) {
-            if (pair[1]) {
-                searchParams.append(pair[0], pair[1]);
+        // Only process filter form if it exists
+        if (filterForm) {
+            const formData = new FormData(filterForm);
+            for (let pair of formData.entries()) {
+                if (pair[1]) {
+                    searchParams.append(pair[0], pair[1]);
+                }
             }
         }
 
@@ -668,10 +697,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function exportData(type, subtype = null) {
         const searchParams = new URLSearchParams(window.location.search);
 
-        const formData = new FormData(filterForm);
-        for (let pair of formData.entries()) {
-            if (pair[1]) {
-                searchParams.append(pair[0], pair[1]);
+        // Only process filter form if it exists
+        if (filterForm) {
+            const formData = new FormData(filterForm);
+            for (let pair of formData.entries()) {
+                if (pair[1]) {
+                    searchParams.append(pair[0], pair[1]);
+                }
             }
         }
 

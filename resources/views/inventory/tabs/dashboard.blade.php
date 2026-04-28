@@ -26,6 +26,22 @@
                         <li><a class="dropdown-item filter-option" href="#" data-filter="year" id="filter-year">This Year</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#" id="custom-range">Custom Range</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="px-3 py-2 border-top">
+                            <small class="text-muted d-block mb-2">Item Classification</small>
+                            <div class="form-check">
+                                <input class="form-check-input classification-filter" type="checkbox" id="filter-rpcsp" value="rpcsp">
+                                <label class="form-check-label" for="filter-rpcsp">
+                                    <span class="badge bg-success">RPCSP</span> Regular Supplies (≤ ₱49,999)
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input classification-filter" type="checkbox" id="filter-ppe" value="ppe">
+                                <label class="form-check-label" for="filter-ppe">
+                                    <span class="badge bg-info">PPE</span> Equipment (≥ ₱50,000)
+                                </label>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -211,8 +227,13 @@
         <div class="col-12">
             <div class="section-card">
                 <div class="section-header">
-                    <h3 class="section-title"><i class="bi bi-list-columns-reverse me-2"></i>Division Breakdown by Classification</h3>
-                    <p class="section-subtitle">Detailed item distribution across divisions and types</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="section-title"><i class="bi bi-list-columns-reverse me-2"></i>Division Breakdown by Classification</h3>
+                            <p class="section-subtitle">Detailed item distribution across divisions and types</p>
+                        </div>
+                        <div id="active-classification-badges"></div>
+                    </div>
                 </div>
                 <div class="section-body">
                     <div class="row g-3" id="division-breakdown-cards">
@@ -319,6 +340,19 @@
         });
     }
 
+    // Track active filters
+    let activeFilter = 'none';
+    let selectedClassifications = [];
+
+    function getSelectedClassifications() {
+        const rpcspChecked = document.getElementById('filter-rpcsp').checked;
+        const ppeChecked = document.getElementById('filter-ppe').checked;
+        const classifications = [];
+        if (rpcspChecked) classifications.push('rpcsp');
+        if (ppeChecked) classifications.push('ppe');
+        return classifications;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // If another tab (e.g. Inventory) wrote fresh metrics into sessionStorage
         // while this tab was open, apply them immediately so the dashboard
@@ -353,7 +387,16 @@
                 e.preventDefault();
                 const filterType = this.getAttribute('data-filter');
                 const filterText = this.textContent;
+                activeFilter = filterType;
                 applyFilter(filterType, filterText);
+            });
+        });
+
+        // Add event listeners for classification filters
+        document.querySelectorAll('.classification-filter').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                selectedClassifications = getSelectedClassifications();
+                applyFilter(activeFilter, null, selectedClassifications);
             });
         });
 
@@ -382,7 +425,11 @@
 
             document.getElementById('current-filter-text').textContent = `Custom: ${startDate} to ${endDate}`;
 
-            fetch(`/dashboard?filter=custom&date_from=${startDate}&date_to=${endDate}`, {
+            activeFilter = 'custom';
+            selectedClassifications = getSelectedClassifications();
+            const classParams = selectedClassifications.length > 0 ? `&classifications=${selectedClassifications.join(',')}` : '';
+
+            fetch(`/dashboard?filter=custom&date_from=${startDate}&date_to=${endDate}${classParams}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -463,10 +510,14 @@
 
     // Table functions removed as charts are replaced with cards
 
-    function applyFilter(filterType, filterText) {
-        document.getElementById('current-filter-text').textContent = filterText === 'All Time (Clear Filter)' ? 'Filters' : filterText;
+    function applyFilter(filterType, filterText, classifications = []) {
+        if (filterText) {
+            document.getElementById('current-filter-text').textContent = filterText === 'All Time (Clear Filter)' ? 'Filters' : filterText;
+        }
 
-        fetch(`/dashboard?filter=${filterType}`, {
+        const classParams = classifications.length > 0 ? `&classifications=${classifications.join(',')}` : '';
+
+        fetch(`/dashboard?filter=${filterType}${classParams}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
@@ -507,6 +558,22 @@
     function updateDivisionBreakdownCards(divisionBreakdown) {
         const container = document.getElementById('division-breakdown-cards');
         container.innerHTML = '';
+
+        // Update classification badges
+        const selectedClassifications = getSelectedClassifications();
+        const badgesContainer = document.getElementById('active-classification-badges');
+        badgesContainer.innerHTML = '';
+        
+        if (selectedClassifications.length > 0) {
+            const badgeHtml = selectedClassifications.map(classification => {
+                if (classification === 'rpcsp') {
+                    return '<span class="badge bg-success ms-2">RPCSP (≤ ₱49,999)</span>';
+                } else if (classification === 'ppe') {
+                    return '<span class="badge bg-info ms-2">PPE (≥ ₱50,000)</span>';
+                }
+            }).join('');
+            badgesContainer.innerHTML = '<small class="text-muted">Showing:</small>' + badgeHtml;
+        }
 
         Object.keys(divisionBreakdown).forEach((division, index) => {
             const breakdown = divisionBreakdown[division];
@@ -633,7 +700,6 @@
         });
     }
 
-    // Chart update functions removed as charts are replaced with cards
 </script>
 @endpush
 @endsection

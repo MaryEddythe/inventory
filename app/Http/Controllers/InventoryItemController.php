@@ -484,7 +484,7 @@ class InventoryItemController extends Controller
     
     if ($subtype === 'rpcsp') {
         $query->where('unit_price', '<=', 49999)
-              ->where('co_mooe', 'CO');
+              ->whereNotNull('unit_price');
     } elseif ($subtype === 'ppe') {
         $query->where('unit_price', '>=', 50000)
               ->where('co_mooe', 'CO');
@@ -516,7 +516,9 @@ class InventoryItemController extends Controller
         } else {
             $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
         }
-        $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo'))
+        $rpcspValue = InventoryItem::active()->where('unit_price', '<=', 49999)->whereNotNull('unit_price')->sum('unit_price');
+        $rpcspCount = InventoryItem::active()->where('unit_price', '<=', 49999)->whereNotNull('unit_price')->count();
+        $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo', 'rpcspValue', 'rpcspCount'))
             ->setPaper('landscape');
         return $pdf->download($subtype . '.pdf');
     }
@@ -640,6 +642,27 @@ class InventoryItemController extends Controller
 
     // Apply date filters
     $this->applyDateFilters($request, $filterableQuery);
+
+    // Apply classification filters (RPCSP and PPE)
+    $classifications = $request->get('classifications');
+    if ($classifications) {
+        $classArray = explode(',', $classifications);
+        $filterableQuery->where(function ($query) use ($classArray) {
+            foreach ($classArray as $classification) {
+                if ($classification === 'rpcsp') {
+                    $query->orWhere(function ($q) {
+                        $q->where('unit_price', '<=', 49999)
+                          ->whereNotNull('unit_price');
+                    });
+                } elseif ($classification === 'ppe') {
+                    $query->orWhere(function ($q) {
+                        $q->where('unit_price', '>=', 50000)
+                          ->where('co_mooe', 'CO');
+                    });
+                }
+            }
+        });
+    }
 
     $totalItems = $filterableQuery->count();
     $totalValue = $filterableQuery->sum('unit_price');

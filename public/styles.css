@@ -2346,5 +2346,20 @@ mark {
 .modal-dialog-centered {
     display: flex !important;
     align-items: center !important;
+    justify-content: center !important;
     min-height: calc(100% - 1rem) !important;
+}
+
+.modal-dialog-centered .modal-content {
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 90vh;
+}
+
+.modal-dialog-centered .modal-body {
+    overflow-y: auto;
+}
+
+.modal-dialog-centered .modal-footer {
+    flex-shrink: 0;
 }

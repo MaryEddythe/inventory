@@ -11,7 +11,7 @@
     <h1 class="rpcsp-h1">REPORT ON THE PHYSICAL COUNT OF SEMI-EXPENDABLE PROPERTY</h1>
     <h2 class="rpcsp-h2">OTHER PROPERTY PLANT AND EQUIPMENT</h2>
     <h3 class="rpcsp-h3">(Type of Semi-Expendable Property)</h3>
-    <p><strong>As at December 31, 2024</strong></p>
+    <p><strong>As at December 31, 2025</strong></p>
 </div>
 
 <div class="rpcsp-meta-row">
@@ -70,7 +70,7 @@
             // Debug: Check what data we have
             $totalItems = $items->count();
             $filteredItems = $items->filter(function($item) {
-                $isValid = $item->unit_price <= 49999 && $item->co_mooe === 'CO';
+                $isValid = $item->unit_price <= 49999 && !is_null($item->unit_price);
                 return $isValid;
             });
 
@@ -154,7 +154,7 @@
             <tr>
                 <td colspan="12" class="no-data">
                     No qualifying semi-expendable property items found.<br>
-                    Criteria: Unit Price ≥ ₱49,999.00 AND CO/MOOE = 'CO'<br>
+                    Criteria: Unit Price ≤ ₱49,999.00<br>
                     Total items in database: {{ $totalItems }}<br>
                     @if($totalItems > 0)
                         Sample items:

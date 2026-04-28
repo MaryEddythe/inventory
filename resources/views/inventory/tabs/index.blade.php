@@ -34,10 +34,14 @@
                 </select>
             </div>
 
+            <!-- Filter Button with Dropdown -->
+            <div style="position: relative;">
                 <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
                     id="openFilterBtn">
                     <i class="bi bi-funnel"></i> Filter
                 </button>
+                @include('inventory.modals.filter-modal', ['departments' => $departments])
+            </div>
                             
             <div class="dropdown">
                 <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -196,17 +200,34 @@ document.addEventListener('DOMContentLoaded', function() {
             updateResults();
         });
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Filter dropdown toggle
+    // ─────────────────────────────────────────────────────────────────────────
     const openFilterBtn = document.getElementById('openFilterBtn');
-    if (openFilterBtn) {
-        openFilterBtn.addEventListener('click', function () {
-            const filterModalEl = document.getElementById('filterModal');
-            let modal = bootstrap.Modal.getInstance(filterModalEl);
-            if (!modal) {
-                modal = new bootstrap.Modal(filterModalEl);
-            }
-            modal.show();
+    const filterDropdown = document.getElementById('filterDropdown');
+    
+    if (openFilterBtn && filterDropdown) {
+        // Toggle dropdown on button click
+        openFilterBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isVisible = filterDropdown.style.display !== 'none';
+            filterDropdown.style.display = isVisible ? 'none' : 'block';
+            console.log('🔍 Filter dropdown toggled:', filterDropdown.style.display);
         });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!filterDropdown.contains(e.target) && !openFilterBtn.contains(e.target)) {
+                filterDropdown.style.display = 'none';
+            }
+        });
+        
+        // Position dropdown relative to button
+        openFilterBtn.style.position = 'relative';
     }
+
     const filterForm = document.getElementById('filterForm');
     if (filterForm) {
         // Handle form submission
@@ -215,11 +236,10 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('📋 Filter form submitted');
             updateResults();
             
-            // Close modal
-            const filterModalEl = document.getElementById('filterModal');
-            let modal = bootstrap.Modal.getInstance(filterModalEl);
-            if (!modal) modal = new bootstrap.Modal(filterModalEl);
-            modal.hide();
+            // Close dropdown
+            if (filterDropdown) {
+                filterDropdown.style.display = 'none';
+            }
         });
 
         // Handle Clear Filters button
@@ -230,10 +250,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('🔄 Clear filters clicked');
                 filterForm.reset();
                 updateResults();
+                
+                // Close dropdown after clearing
+                if (filterDropdown) {
+                    filterDropdown.style.display = 'none';
+                }
             });
         }
     } else {
-        console.warn('⚠️ Filter form not found - filter modal may not be working properly');
+        console.warn('⚠️ Filter form not found - filter may not be working properly');
     }
 
     // Handle submenu toggle

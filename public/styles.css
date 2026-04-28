@@ -2363,3 +2363,40 @@ mark {
 .modal-dialog-centered .modal-footer {
     flex-shrink: 0;
 }
+
+/* Filter Dropdown Styles */
+.filter-dropdown-panel {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e9ecef !important;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-dropdown-panel .form-label {
+    margin-bottom: 0.4rem !important;
+    font-size: 0.875rem;
+}
+
+.filter-dropdown-panel .form-select,
+.filter-dropdown-panel .form-control {
+    font-size: 0.875rem !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.filter-dropdown-panel .btn {
+    font-size: 0.875rem !important;
+}
+
+.filter-dropdown-panel .border-top {
+    border-top-color: #dee2e6 !important;
+}

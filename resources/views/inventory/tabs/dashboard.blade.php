@@ -14,19 +14,27 @@
                     <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                 </button>
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                         <i class="bi bi-funnel me-1"></i><span id="current-filter-text">Filters</span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item filter-option" href="#" data-filter="none">All Time (Clear Filter)</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item filter-option" href="#" data-filter="today" id="filter-today">Today</a></li>
-                        <li><a class="dropdown-item filter-option" href="#" data-filter="week" id="filter-week">This Week</a></li>
-                        <li><a class="dropdown-item filter-option" href="#" data-filter="month" id="filter-month">This Month</a></li>
-                        <li><a class="dropdown-item filter-option" href="#" data-filter="year" id="filter-year">This Year</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" id="custom-range">Custom Range</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                    <ul class="dropdown-menu dropdown-menu-end dashboard-filter-menu">
+                        <li class="px-3 py-2">
+                            <small class="text-muted d-block mb-2">Date Range</small>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label for="start_date" class="form-label small text-muted mb-1">Start</label>
+                                    <input type="date" class="form-control form-control-sm" id="start_date">
+                                </div>
+                                <div class="col-6">
+                                    <label for="end_date" class="form-label small text-muted mb-1">End</label>
+                                    <input type="date" class="form-control form-control-sm" id="end_date">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm w-100 mt-2" id="apply-custom-range">
+                                <i class="bi bi-check2 me-1"></i>Apply date range
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
                         <li class="px-3 py-2 border-top">
                             <small class="text-muted d-block mb-2">Item Classification</small>
                             <div class="form-check">
@@ -290,34 +298,6 @@
     </div>
 </div>
 
-<!-- Custom Range Modal -->
-<div class="modal fade" id="customRangeModal" tabindex="-1" aria-labelledby="customRangeModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="customRangeModalLabel">Select Custom Date Range</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="start_date" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="start_date" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="end_date" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="end_date" required>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="apply-custom-range">Apply</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 @push('scripts')
 <script>
     // ── Helper: apply a metrics object to the dashboard DOM ───────────────────
@@ -400,11 +380,6 @@
             });
         });
 
-        document.getElementById('custom-range').addEventListener('click', function() {
-            var customRangeModal = new bootstrap.Modal(document.getElementById('customRangeModal'));
-            customRangeModal.show();
-        });
-
         document.getElementById('apply-custom-range').addEventListener('click', function() {
             var startDate = document.getElementById('start_date').value;
             var endDate = document.getElementById('end_date').value;
@@ -419,9 +394,8 @@
                 return;
             }
 
-            var customRangeModalEl = document.getElementById('customRangeModal');
-            var customRangeModal = bootstrap.Modal.getInstance(customRangeModalEl);
-            customRangeModal.hide();
+            var filterDropdown = bootstrap.Dropdown.getOrCreateInstance(document.getElementById('filterDropdown'));
+            filterDropdown.hide();
 
             document.getElementById('current-filter-text').textContent = `Custom: ${startDate} to ${endDate}`;
 

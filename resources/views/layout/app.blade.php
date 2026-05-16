@@ -17,7 +17,7 @@
 </head>
 <body>
     <div class="app-shell">
-        <aside class="app-sidebar">
+        <aside class="app-sidebar" id="appSidebar">
             <a class="sidebar-brand" href="{{ route('inventory.dashboard') }}">
                 <span class="sidebar-brand-icon"><i class="bi bi-box-seam"></i></span>
                 <span>
@@ -68,10 +68,17 @@
             </div>
             @endauth
         </aside>
+        <button class="sidebar-backdrop" type="button" data-sidebar-close aria-label="Close sidebar"></button>
 
         <!-- Main Content -->
         <main class="app-main bg-light">
-            <div class="container-fluid px-4 py-4">
+            <div class="app-main-toolbar">
+                <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-controls="appSidebar" aria-expanded="true" aria-label="Toggle sidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <div class="container-fluid px-4 pb-4">
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ session('success') }}
@@ -91,5 +98,76 @@
         </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const body = document.body;
+            const toggle = document.getElementById('sidebarToggle');
+            const closeButtons = document.querySelectorAll('[data-sidebar-close]');
+            const sidebarLinks = document.querySelectorAll('.sidebar-nav-link');
+            const mobileQuery = window.matchMedia('(max-width: 991.98px)');
+            const storageKey = 'inventorySidebarCollapsed';
+
+            function isCollapsed() {
+                return mobileQuery.matches
+                    ? !body.classList.contains('sidebar-open')
+                    : body.classList.contains('sidebar-collapsed');
+            }
+
+            function syncToggle() {
+                toggle.setAttribute('aria-expanded', String(!isCollapsed()));
+            }
+
+            function closeSidebar() {
+                if (mobileQuery.matches) {
+                    body.classList.remove('sidebar-open');
+                } else {
+                    body.classList.add('sidebar-collapsed');
+                    localStorage.setItem(storageKey, 'true');
+                }
+                syncToggle();
+            }
+
+            function openSidebar() {
+                if (mobileQuery.matches) {
+                    body.classList.add('sidebar-open');
+                } else {
+                    body.classList.remove('sidebar-collapsed');
+                    localStorage.setItem(storageKey, 'false');
+                }
+                syncToggle();
+            }
+
+            if (!mobileQuery.matches && localStorage.getItem(storageKey) === 'true') {
+                body.classList.add('sidebar-collapsed');
+            }
+
+            toggle.addEventListener('click', function () {
+                isCollapsed() ? openSidebar() : closeSidebar();
+            });
+
+            closeButtons.forEach(button => button.addEventListener('click', closeSidebar));
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    if (mobileQuery.matches) closeSidebar();
+                });
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && mobileQuery.matches && body.classList.contains('sidebar-open')) {
+                    closeSidebar();
+                }
+            });
+
+            mobileQuery.addEventListener('change', function () {
+                body.classList.remove('sidebar-open');
+                if (!mobileQuery.matches && localStorage.getItem(storageKey) === 'true') {
+                    body.classList.add('sidebar-collapsed');
+                }
+                syncToggle();
+            });
+
+            syncToggle();
+        });
+    </script>
 </body>
 </html>

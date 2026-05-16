@@ -16,67 +16,62 @@
     @stack('scripts')
 </head>
 <body>
-    <div class="min-vh-100 d-flex flex-column">
-        <header class="bg-white shadow-sm px-4 py-3">
-            <div class="container-fluid">
-                <div class="d-flex justify-content-between align-items-center">
-                    <a class="navbar-brand fw-bold d-flex align-items-center gap-2 text-primary" href="{{ route('inventory.index') }}">
-                        <i class="bi bi-box-seam"></i>MGB VI - Inventory System
-                    </a>
-                    @auth
-                    <div class="dropdown">
-                        <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->username) . '&background=0D8ABC&color=fff' }}" alt="user" width="32" height="32" class="rounded-circle me-2">
-                            <span class="fw-medium">{{ Auth::user()->username }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="{{ route('profile') }}"><i class="bi bi-person me-2"></i>Profile</a></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                    @endauth
-                </div>
-            </div>
-        </header>
+    <div class="app-shell">
+        <aside class="app-sidebar">
+            <a class="sidebar-brand" href="{{ route('inventory.dashboard') }}">
+                <span class="sidebar-brand-icon"><i class="bi bi-box-seam"></i></span>
+                <span>
+                    <span class="sidebar-brand-title">MGB VI</span>
+                    <span class="sidebar-brand-subtitle">Inventory System</span>
+                </span>
+            </a>
 
-        <!-- Navigation Tabs -->
-        <div class="bg-white border-bottom">
-            <div class="container-fluid px-4">
-                <ul class="nav nav-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('inventory.dashboard') ? 'active' : '' }}" href="{{ route('inventory.dashboard') }}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('inventory.index') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
-                            <i class="bi bi-archive"></i> Inventory
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('inventory.ipm') ? 'active' : '' }}" href="{{ route('inventory.ipm') }}">
-                            <i class="bi bi-clipboard-check"></i> IPM
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('inventory.icm') ? 'active' : '' }}" href="{{ route('inventory.icm') }}">
-                            <i class="bi bi-tools"></i> ICM
-                        </a>
+            <nav class="sidebar-nav" aria-label="Primary navigation">
+                <a class="sidebar-nav-link {{ request()->routeIs('inventory.dashboard') ? 'active' : '' }}" href="{{ route('inventory.dashboard') }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="sidebar-nav-link {{ request()->routeIs('inventory.index') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
+                    <i class="bi bi-archive"></i>
+                    <span>Inventory</span>
+                </a>
+                <a class="sidebar-nav-link {{ request()->routeIs('inventory.ipm') ? 'active' : '' }}" href="{{ route('inventory.ipm') }}">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>IPM</span>
+                </a>
+                <a class="sidebar-nav-link {{ request()->routeIs('inventory.icm') ? 'active' : '' }}" href="{{ route('inventory.icm') }}">
+                    <i class="bi bi-tools"></i>
+                    <span>ICM</span>
+                </a>
+            </nav>
+
+            @auth
+            <div class="sidebar-account dropdown">
+                <a href="#" class="sidebar-account-toggle dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->username) . '&background=0D8ABC&color=fff' }}" alt="user" width="40" height="40" class="rounded-circle">
+                    <span class="sidebar-account-meta">
+                        <span class="sidebar-account-name">{{ Auth::user()->username }}</span>
+                        <span class="sidebar-account-label">Account</span>
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item" href="{{ route('profile') }}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="dropdown-item">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div>
-        </div>
+            @endauth
+        </aside>
 
         <!-- Main Content -->
-        <main class="flex-grow-1 bg-light py-4">
-            <div class="container-fluid px-4">
+        <main class="app-main bg-light">
+            <div class="container-fluid px-4 py-4">
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ session('success') }}

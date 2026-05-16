@@ -31,12 +31,12 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="text-center mb-3">
-                                        <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->username) . '&background=0D8ABC&color=fff&size=150' }}"
+                                        <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->username ?: Auth::user()->name) . '&background=0D8ABC&color=fff&size=150' }}"
                                              alt="Profile Image"
                                              class="rounded-circle img-fluid mb-3 border"
                                              style="width: 150px; height: 150px; object-fit: cover;"
                                              id="profile-image-preview">
-                                        <h5>{{ Auth::user()->username }}</h5>
+                                        <h5>{{ Auth::user()->username ?: Auth::user()->name }}</h5>
                                         <p class="text-muted">{{ Auth::user()->email }}</p>
                                     </div>
 
@@ -45,14 +45,20 @@
                                         @method('PUT')
                                         <div class="mb-3">
                                             <label for="username" class="form-label">Username</label>
-                                            <input type="text" class="form-control" id="username" name="username" value="{{ Auth::user()->username }}" required>
+                                            <input type="text" class="form-control @error('username') is-invalid @enderror" id="username" name="username" value="{{ old('username', Auth::user()->username ?: Auth::user()->name) }}" required>
                                             <div class="invalid-feedback" id="username-feedback"></div>
+                                            @error('username')
+                                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                            @enderror
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="email" class="form-label">Email</label>
-                                            <input type="email" class="form-control" id="email" name="email" value="{{ Auth::user()->email }}" required>
+                                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', Auth::user()->email) }}" required>
                                             <div class="invalid-feedback" id="email-feedback"></div>
+                                            @error('email')
+                                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                            @enderror
                                         </div>
 
                                         <div class="mb-3">
@@ -176,8 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Check if any field has changed
-        const originalUsername = '{{ Auth::user()->username }}';
-        const originalEmail = '{{ Auth::user()->email }}';
+        const originalUsername = @js(Auth::user()->username ?: Auth::user()->name);
+        const originalEmail = @js(Auth::user()->email);
         const hasChanges = usernameInput.value !== originalUsername || emailInput.value !== originalEmail || profileImageInput.files.length > 0;
 
         updateBtn.disabled = !isValid || !hasChanges;

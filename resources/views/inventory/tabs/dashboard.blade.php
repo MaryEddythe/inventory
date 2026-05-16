@@ -1,15 +1,16 @@
 @extends('layout.app')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid inventory-dashboard">
     <!-- Header Section -->
     <div class="dashboard-header mb-5">
-        <div class="d-flex justify-content-between align-items-start mb-4">
+        <div class="dashboard-hero d-flex justify-content-between align-items-start mb-4">
             <div>
+                <span class="dashboard-eyebrow">Inventory Overview</span>
                 <h1 class="dashboard-title"><i class="bi bi-speedometer2 me-2"></i>Inventory Dashboard</h1>
                 <p class="dashboard-subtitle">Monitor your inventory metrics and division performance</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="dashboard-actions d-flex gap-2">
                 <button class="btn btn-primary btn-sm" id="refresh-btn">
                     <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                 </button>
@@ -19,7 +20,7 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end dashboard-filter-menu">
                         <li class="px-3 py-2">
-                            <small class="text-muted d-block mb-2">Date Range</small>
+                            <small class="dashboard-filter-label d-block mb-2">Date Range</small>
                             <div class="row g-2">
                                 <div class="col-6">
                                     <label for="start_date" class="form-label small text-muted mb-1">Start</label>
@@ -30,13 +31,13 @@
                                     <input type="date" class="form-control form-control-sm" id="end_date">
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-primary btn-sm w-100 mt-2" id="apply-custom-range">
+                            <button type="button" class="btn btn-primary btn-sm w-100 mt-3" id="apply-custom-range">
                                 <i class="bi bi-check2 me-1"></i>Apply date range
                             </button>
                         </li>
                         <li><hr class="dropdown-divider my-1"></li>
                         <li class="px-3 py-2 border-top">
-                            <small class="text-muted d-block mb-2">Item Classification</small>
+                            <small class="dashboard-filter-label d-block mb-2">Item Classification</small>
                             <div class="form-check">
                                 <input class="form-check-input classification-filter" type="checkbox" id="filter-rpcsp" value="rpcsp">
                                 <label class="form-check-label" for="filter-rpcsp">

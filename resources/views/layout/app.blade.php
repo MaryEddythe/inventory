@@ -48,9 +48,9 @@
             @auth
             <div class="sidebar-account dropdown">
                 <a href="#" class="sidebar-account-toggle dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->username) . '&background=0D8ABC&color=fff' }}" alt="user" width="40" height="40" class="rounded-circle">
+                    <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->username ?: Auth::user()->name) . '&background=0D8ABC&color=fff' }}" alt="user" width="40" height="40" class="rounded-circle">
                     <span class="sidebar-account-meta">
-                        <span class="sidebar-account-name">{{ Auth::user()->username }}</span>
+                        <span class="sidebar-account-name">{{ Auth::user()->username ?: Auth::user()->name }}</span>
                         <span class="sidebar-account-label">Account</span>
                     </span>
                 </a>

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AuthController extends Controller
 {
@@ -21,10 +22,21 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        // Check if the input is an email or username
-        $field = filter_var($credentials['email'], FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+        // Check if the input is an email or username.
+        $login = $credentials['email'];
+        $password = $credentials['password'];
+        $usernameColumn = Schema::hasColumn('users', 'username') ? 'username' : 'name';
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : $usernameColumn;
+        $attempts = [
+            [$field => $login, 'password' => $password],
+        ];
 
-        if (Auth::attempt([$field => $credentials['email'], 'password' => $credentials['password']])) {
+        // Backward compatibility for older users that only had a name value.
+        if ($field === 'username') {
+            $attempts[] = ['name' => $login, 'password' => $password];
+        }
+
+        if (Auth::attempt($attempts[0]) || (isset($attempts[1]) && Auth::attempt($attempts[1]))) {
             $request->session()->regenerate();
             return redirect()->intended('dashboard');
         }
@@ -70,19 +82,29 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
+        $usernameColumn = Schema::hasColumn('users', 'username') ? 'username' : 'name';
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'username' => 'required|string|min:3|max:255|unique:users,' . $usernameColumn . ',' . $user->id,
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        if ($request->hasFile('profile_image')) {
-            $imagePath = $request->file('profile_image')->store('profile_images', 'public');
-            $validated['profile_image'] = $imagePath;
+        $updates = [
+            'name' => $validated['username'],
+            'email' => $validated['email'],
+        ];
+
+        if ($usernameColumn === 'username') {
+            $updates['username'] = $validated['username'];
         }
 
-        $user->update($validated);
+        if ($request->hasFile('profile_image')) {
+            $imagePath = $request->file('profile_image')->store('profile_images', 'public');
+            $updates['profile_image'] = $imagePath;
+        }
+
+        $user->update($updates);
 
         Auth::setUser($user->fresh());
 

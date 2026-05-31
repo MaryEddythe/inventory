@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // For SQLite compatibility, use strftime instead of TIMESTAMPDIFF
+        // Use MySQL compatible syntax
         DB::statement("
             UPDATE inventory_items
             SET `condition` = CASE
-                WHEN (strftime('%Y', 'now') - strftime('%Y', date_acquired)) <= 5 THEN 'NEW'
+                WHEN TIMESTAMPDIFF(YEAR, date_acquired, NOW()) <= 5 THEN 'NEW'
                 ELSE 'FOR REPLACEMENT'
             END
         ");

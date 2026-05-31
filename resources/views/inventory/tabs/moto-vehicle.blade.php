@@ -17,7 +17,7 @@
     @endif
 
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
-        <h1 class="h4 fw-bold mb-0">Moto Vehicle</h1>
+        <h1 class="h4 fw-bold mb-0">Motor Vehicle</h1>
         <div class="d-flex gap-2 align-items-center">
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1">
                 <i class="bi bi-plus-circle"></i> Coming Soon

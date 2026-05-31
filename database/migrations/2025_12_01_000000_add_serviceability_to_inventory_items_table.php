@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inventory_items', function (Blueprint $table) {
-            $table->enum('serviceability', ['Beyond Economic Repair', 'Good Condition', 'For Replacement'])->nullable()->after('condition');
+            if (!Schema::hasColumn('inventory_items', 'serviceability')) {
+                $table->enum('serviceability', ['Beyond Economic Repair', 'Good Condition', 'For Replacement'])->nullable()->after('condition');
+            }
         });
     }
 

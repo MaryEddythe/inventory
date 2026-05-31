@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('icm')->table('icm', function (Blueprint $table) {
-            if (!Schema::connection('icm')->hasColumn('icm', 'division')) {
+        Schema::table('icm', function (Blueprint $table) {
+            if (!Schema::hasColumn('icm', 'division')) {
                 $table->string('division')->nullable()->after('icm_no');
             }
-            if (!Schema::connection('icm')->hasColumn('icm', 'classification')) {
+            if (!Schema::hasColumn('icm', 'classification')) {
                 $table->string('classification')->nullable()->after('problem_description');
             }
-            if (!Schema::connection('icm')->hasColumn('icm', 'serial_number')) {
+            if (!Schema::hasColumn('icm', 'serial_number')) {
                 $table->string('serial_number')->nullable()->after('brand_model');
             }
-            if (!Schema::connection('icm')->hasColumn('icm', 'property_number')) {
+            if (!Schema::hasColumn('icm', 'property_number')) {
                 $table->string('property_number')->nullable()->after('serial_number');
             }
         });
@@ -32,13 +32,19 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('icm')->table('icm', function (Blueprint $table) {
-            $table->dropColumn([
-                'division',
-                'classification',
-                'serial_number',
-                'property_number',
-            ]);
+        Schema::table('icm', function (Blueprint $table) {
+            if (Schema::hasColumn('icm', 'division')) {
+                $table->dropColumn('division');
+            }
+            if (Schema::hasColumn('icm', 'classification')) {
+                $table->dropColumn('classification');
+            }
+            if (Schema::hasColumn('icm', 'serial_number')) {
+                $table->dropColumn('serial_number');
+            }
+            if (Schema::hasColumn('icm', 'property_number')) {
+                $table->dropColumn('property_number');
+            }
         });
     }
 };

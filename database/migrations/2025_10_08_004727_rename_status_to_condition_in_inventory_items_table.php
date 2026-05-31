@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inventory_items', function (Blueprint $table) {
-            $table->enum('condition', ['Functional', 'Nonfunctional'])->default('Functional')->after('status');
+            if (!Schema::hasColumn('inventory_items', 'condition')) {
+                $table->enum('condition', ['Functional', 'Nonfunctional', 'NEW', 'FOR REPLACEMENT'])->default('Functional')->after('status');
+            }
         });
     }
 

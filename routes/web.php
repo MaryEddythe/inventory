@@ -33,16 +33,24 @@ Route::middleware(['auth'])->group(function () {
         return view('inventory.tabs.cip', compact('cips'));
     })->name('inventory.tabs.cip');
     Route::get('/inventory/tabs/machine-equipment', function() {
-        return view('inventory.tabs.machine-equipment');
+        $machineEquipments = \App\Models\MachineEquipment::latest()->get();
+
+        return view('inventory.tabs.machine-equipment', compact('machineEquipments'));
     })->name('inventory.tabs.machine-equipment');
     Route::get('/inventory/tabs/office-equipment', function() {
-        return view('inventory.tabs.office-equipment');
+        $officeEquipments = \App\Models\OfficeEquipment::latest()->get();
+
+        return view('inventory.tabs.office-equipment', compact('officeEquipments'));
     })->name('inventory.tabs.office-equipment');
     Route::get('/inventory/tabs/technical-scientific-equipment', function() {
-        return view('inventory.tabs.technical-scientific-equipment');
+        $technicalScientificEquipments = \App\Models\TechnicalScientificEquipment::latest()->get();
+
+        return view('inventory.tabs.technical-scientific-equipment', compact('technicalScientificEquipments'));
     })->name('inventory.tabs.technical-scientific-equipment');
     Route::get('/inventory/tabs/other-ppe', function() {
-        return view('inventory.tabs.other-ppe');
+        $otherPpes = \App\Models\OtherPpe::latest()->get();
+
+        return view('inventory.tabs.other-ppe', compact('otherPpes'));
     })->name('inventory.tabs.other-ppe');
 
     // Motor Vehicle Routes
@@ -52,6 +60,14 @@ Route::middleware(['auth'])->group(function () {
 
     // CIP Routes
     Route::post('/cip/store', [InventoryItemController::class, 'storeCip'])->name('cip.store');
+    Route::put('/cip/{cip}', [InventoryItemController::class, 'updateCip'])->name('cip.update');
+    Route::delete('/cip/{cip}', [InventoryItemController::class, 'destroyCip'])->name('cip.destroy');
+
+    // PPE Category Routes
+    Route::post('/machine-equipment/store', [InventoryItemController::class, 'storeMachineEquipment'])->name('machine-equipment.store');
+    Route::post('/office-equipment/store', [InventoryItemController::class, 'storeOfficeEquipment'])->name('office-equipment.store');
+    Route::post('/technical-scientific-equipment/store', [InventoryItemController::class, 'storeTechnicalScientificEquipment'])->name('technical-scientific-equipment.store');
+    Route::post('/other-ppe/store', [InventoryItemController::class, 'storeOtherPpe'])->name('other-ppe.store');
     
     Route::get('/ipm', [InventoryItemController::class, 'ipm'])->name('inventory.ipm');
     Route::get('/icm', [InventoryItemController::class, 'icm'])->name('inventory.icm');

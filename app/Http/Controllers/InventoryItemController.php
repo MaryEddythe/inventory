@@ -7,7 +7,11 @@ use App\Models\Icm;
 use App\Models\Cip;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\MachineEquipment;
+use App\Models\OfficeEquipment;
+use App\Models\OtherPpe;
 use App\Models\MotorVehicle;
+use App\Models\TechnicalScientificEquipment;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
@@ -946,6 +950,117 @@ class InventoryItemController extends Controller
         return redirect()
             ->route('inventory.tabs.cip')
             ->with('success', 'CIP added successfully!');
+    }
+
+    public function updateCip(Request $request, Cip $cip)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('cips', 'property_number')->ignore($cip->id),
+            ],
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'nullable|date',
+            'date_acquired_type' => 'required|in:date,na',
+            'remarks' => 'nullable|string',
+        ]);
+
+        if ($request->input('date_acquired_type') === 'na') {
+            $validated['date_acquired'] = null;
+        }
+
+        unset($validated['date_acquired_type']);
+
+        $cip->update($validated);
+
+        return redirect()
+            ->route('inventory.tabs.cip')
+            ->with('success', 'CIP updated successfully!');
+    }
+
+    public function destroyCip(Cip $cip)
+    {
+        $cip->delete();
+
+        return redirect()
+            ->route('inventory.tabs.cip')
+            ->with('success', 'CIP deleted successfully!');
+    }
+
+    public function storeMachineEquipment(Request $request)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => 'required|string|max:255|unique:machine_equipments,property_number',
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        MachineEquipment::create($validated);
+
+        return redirect()
+            ->route('inventory.tabs.machine-equipment')
+            ->with('success', 'Machine & Equipment added successfully!');
+    }
+
+    public function storeOfficeEquipment(Request $request)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => 'required|string|max:255|unique:office_equipments,property_number',
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        OfficeEquipment::create($validated);
+
+        return redirect()
+            ->route('inventory.tabs.office-equipment')
+            ->with('success', 'Office Equipment added successfully!');
+    }
+
+    public function storeTechnicalScientificEquipment(Request $request)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => 'required|string|max:255|unique:technical_scientific_equipments,property_number',
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        TechnicalScientificEquipment::create($validated);
+
+        return redirect()
+            ->route('inventory.tabs.technical-scientific-equipment')
+            ->with('success', 'Technical and Scientific Equipment added successfully!');
+    }
+
+    public function storeOtherPpe(Request $request)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => 'required|string|max:255|unique:other_ppes,property_number',
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        OtherPpe::create($validated);
+
+        return redirect()
+            ->route('inventory.tabs.other-ppe')
+            ->with('success', 'Other PPE added successfully!');
     }
 
     public function icm(Request $request)

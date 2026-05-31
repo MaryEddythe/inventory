@@ -28,7 +28,9 @@ Route::middleware(['auth'])->group(function () {
         return view('inventory.tabs.moto-vehicle', compact('motorVehicles'));
     })->name('inventory.tabs.moto-vehicle');
     Route::get('/inventory/tabs/cip', function() {
-        return view('inventory.tabs.cip');
+        $cips = \App\Models\Cip::latest()->get();
+
+        return view('inventory.tabs.cip', compact('cips'));
     })->name('inventory.tabs.cip');
     Route::get('/inventory/tabs/machine-equipment', function() {
         return view('inventory.tabs.machine-equipment');
@@ -47,6 +49,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/motor-vehicle/store', [InventoryItemController::class, 'storeMotorVehicle'])->name('motor-vehicle.store');
     Route::put('/motor-vehicle/{motorVehicle}', [InventoryItemController::class, 'updateMotorVehicle'])->name('motor-vehicle.update');
     Route::delete('/motor-vehicle/{motorVehicle}', [InventoryItemController::class, 'destroyMotorVehicle'])->name('motor-vehicle.destroy');
+
+    // CIP Routes
+    Route::post('/cip/store', [InventoryItemController::class, 'storeCip'])->name('cip.store');
     
     Route::get('/ipm', [InventoryItemController::class, 'ipm'])->name('inventory.ipm');
     Route::get('/icm', [InventoryItemController::class, 'icm'])->name('inventory.icm');

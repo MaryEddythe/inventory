@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InventoryItem;
 use App\Models\Icm;
+use App\Models\Cip;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\MotorVehicle;
@@ -912,6 +913,39 @@ class InventoryItemController extends Controller
         return redirect()
             ->route('inventory.tabs.moto-vehicle')
             ->with('success', 'Motor vehicle deleted successfully!');
+    }
+
+    public function storeCip(Request $request)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => 'required|string|max:255|unique:cips,property_number',
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'nullable|date',
+            'date_acquired_type' => 'required|in:date,na',
+            'remarks' => 'nullable|string',
+        ]);
+
+        if ($request->input('date_acquired_type') === 'na') {
+            $validated['date_acquired'] = null;
+        }
+
+        unset($validated['date_acquired_type']);
+
+        $cip = Cip::create($validated);
+
+        if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => 'CIP added successfully',
+                'cip' => $cip,
+            ], 201);
+        }
+
+        return redirect()
+            ->route('inventory.tabs.cip')
+            ->with('success', 'CIP added successfully!');
     }
 
     public function icm(Request $request)

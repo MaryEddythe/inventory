@@ -6,6 +6,10 @@
         font-size: 0.68rem;
     }
 
+    .motor-vehicle-table th {
+        font-size: 0.86rem;
+    }
+
     .motor-vehicle-table th,
     .motor-vehicle-table td {
         padding: 0.28rem 0.4rem;

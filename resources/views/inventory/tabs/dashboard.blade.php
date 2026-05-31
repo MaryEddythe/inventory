@@ -317,9 +317,16 @@
             const el = document.getElementById(id);
             if (!el) return;
             el.setAttribute('data-target', cfg.value);
-            animateCountUp(el, cfg.value);
+
+            // No count-up animation: update instantly.
+            if (cfg.currency) {
+                el.textContent = Number(cfg.value).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else {
+                el.textContent = Math.round(Number(cfg.value)).toLocaleString();
+            }
         });
     }
+
 
     // Track active filters
     let activeFilter = 'none';
@@ -342,12 +349,9 @@
             const cached = sessionStorage.getItem('inventoryMetrics');
             if (cached) {
                 applyMetricsToDom(JSON.parse(cached));
-            } else {
-                document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
             }
-        } catch (e) {
-            document.querySelectorAll('.count-up').forEach(el => animateCountUp(el));
-        }
+        } catch (e) { /* ignore */ }
+
 
         // Also react whenever the tab regains focus (user switches back to this tab
         // in the browser after adding items on the Inventory tab).

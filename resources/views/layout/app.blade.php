@@ -31,10 +31,41 @@
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
-                <a class="sidebar-nav-link {{ request()->routeIs('inventory.index') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
-                    <i class="bi bi-archive"></i>
-                    <span>Inventory</span>
-                </a>
+
+                <!-- Inventory Dropdown -->
+                <div class="sidebar-nav-dropdown">
+                    <button class="sidebar-nav-link sidebar-dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#inventoryDropdown" aria-expanded="false">
+                        <i class="bi bi-archive"></i>
+                        <span>Inventory</span>
+                        <i class="bi bi-chevron-down ms-auto"></i>
+                    </button>
+                    <div class="collapse" id="inventoryDropdown">
+                        <div class="sidebar-dropdown-menu">
+                            <a class="sidebar-dropdown-item {{ request()->routeIs('inventory.index') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
+                                <span>Inventory</span>
+                            </a>
+                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.moto-vehicle') }}">
+                                <span>Motor Vehicle</span>
+                            </a>
+                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.cip') }}">
+                                <span>CIP</span>
+                            </a>
+                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.machine-equipment') }}">
+                                <span>Machine & Equipment</span>
+                            </a>
+                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.office-equipment') }}">
+                                <span>Office Equipment</span>
+                            </a>
+                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.technical-scientific-equipment') }}">
+                                <span>Technical and Scientific Equipment</span>
+                            </a>
+                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.other-ppe') }}">
+                                <span>Other PPE</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <a class="sidebar-nav-link {{ request()->routeIs('inventory.ipm') ? 'active' : '' }}" href="{{ route('inventory.ipm') }}">
                     <i class="bi bi-clipboard-check"></i>
                     <span>IPM</span>
@@ -147,7 +178,11 @@
 
             closeButtons.forEach(button => button.addEventListener('click', closeSidebar));
             sidebarLinks.forEach(link => {
-                link.addEventListener('click', function () {
+                link.addEventListener('click', function (e) {
+                    // Don't close sidebar if clicking dropdown toggle
+                    if (this.classList.contains('sidebar-dropdown-toggle')) {
+                        return;
+                    }
                     if (mobileQuery.matches) closeSidebar();
                 });
             });

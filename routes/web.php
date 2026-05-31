@@ -20,6 +20,27 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('inventory', InventoryItemController::class);
     Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])
         ->name('inventory.tabs.dashboard');
+    
+    // Inventory Category Tabs
+    Route::get('/inventory/tabs/moto-vehicle', function() {
+        return view('inventory.tabs.moto-vehicle');
+    })->name('inventory.tabs.moto-vehicle');
+    Route::get('/inventory/tabs/cip', function() {
+        return view('inventory.tabs.cip');
+    })->name('inventory.tabs.cip');
+    Route::get('/inventory/tabs/machine-equipment', function() {
+        return view('inventory.tabs.machine-equipment');
+    })->name('inventory.tabs.machine-equipment');
+    Route::get('/inventory/tabs/office-equipment', function() {
+        return view('inventory.tabs.office-equipment');
+    })->name('inventory.tabs.office-equipment');
+    Route::get('/inventory/tabs/technical-scientific-equipment', function() {
+        return view('inventory.tabs.technical-scientific-equipment');
+    })->name('inventory.tabs.technical-scientific-equipment');
+    Route::get('/inventory/tabs/other-ppe', function() {
+        return view('inventory.tabs.other-ppe');
+    })->name('inventory.tabs.other-ppe');
+    
     Route::get('/ipm', [InventoryItemController::class, 'ipm'])->name('inventory.ipm');
     Route::get('/icm', [InventoryItemController::class, 'icm'])->name('inventory.icm');
     Route::get('/inventory/export/{type}', [InventoryItemController::class, 'export'])->name('inventory.export');

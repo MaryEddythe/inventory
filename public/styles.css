@@ -238,6 +238,88 @@ body.sidebar-collapsed .app-sidebar {
     border-left-color: #0d6efd;
 }
 
+/* Sidebar Dropdown Styles */
+.sidebar-nav-dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.sidebar-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-height: 46px;
+    padding: 0.75rem 0.9rem;
+    border: none;
+    background: transparent;
+    border-left: 3px solid transparent;
+    border-radius: 10px;
+    color: #495057;
+    text-decoration: none;
+    font-weight: 600;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar-dropdown-toggle:hover {
+    color: #0d6efd;
+    background: #f3f7ff;
+}
+
+.sidebar-dropdown-toggle:hover i:first-child,
+.sidebar-dropdown-toggle.active i:first-child {
+    color: #0d6efd;
+}
+
+.sidebar-dropdown-toggle i {
+    width: 22px;
+    color: #6c757d;
+    font-size: 1.1rem;
+    text-align: center;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-dropdown-toggle[aria-expanded="true"] i:last-child {
+    transform: rotate(180deg);
+}
+
+.sidebar-dropdown-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-left: 1.5rem;
+    padding-top: 0.35rem;
+}
+
+.sidebar-dropdown-item {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    color: #6c757d;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-dropdown-item:hover {
+    color: #0d6efd;
+    background: #f3f7ff;
+}
+
+.sidebar-dropdown-item.active {
+    color: #0d6efd;
+    background: #f3f7ff;
+    font-weight: 600;
+}
+
 .sidebar-account {
     margin-top: auto;
     padding-top: 1rem;
@@ -355,6 +437,16 @@ body.sidebar-collapsed .app-sidebar {
     .sidebar-nav-link.active {
         border-left-color: #0d6efd;
         border-bottom: 0;
+    }
+
+    .sidebar-dropdown-menu {
+        padding-left: 1.25rem;
+    }
+
+    .sidebar-dropdown-item {
+        font-size: 0.85rem;
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
     }
 
     .sidebar-account {

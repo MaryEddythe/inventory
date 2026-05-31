@@ -23,7 +23,9 @@ Route::middleware(['auth'])->group(function () {
     
     // Inventory Category Tabs
     Route::get('/inventory/tabs/moto-vehicle', function() {
-        return view('inventory.tabs.moto-vehicle');
+        $motorVehicles = \App\Models\MotorVehicle::latest()->get();
+
+        return view('inventory.tabs.moto-vehicle', compact('motorVehicles'));
     })->name('inventory.tabs.moto-vehicle');
     Route::get('/inventory/tabs/cip', function() {
         return view('inventory.tabs.cip');
@@ -40,6 +42,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/tabs/other-ppe', function() {
         return view('inventory.tabs.other-ppe');
     })->name('inventory.tabs.other-ppe');
+
+    // Motor Vehicle Routes
+    Route::post('/motor-vehicle/store', [InventoryItemController::class, 'storeMotorVehicle'])->name('motor-vehicle.store');
+    Route::put('/motor-vehicle/{motorVehicle}', [InventoryItemController::class, 'updateMotorVehicle'])->name('motor-vehicle.update');
+    Route::delete('/motor-vehicle/{motorVehicle}', [InventoryItemController::class, 'destroyMotorVehicle'])->name('motor-vehicle.destroy');
     
     Route::get('/ipm', [InventoryItemController::class, 'ipm'])->name('inventory.ipm');
     Route::get('/icm', [InventoryItemController::class, 'icm'])->name('inventory.icm');

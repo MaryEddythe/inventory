@@ -6,6 +6,7 @@ use App\Models\InventoryItem;
 use App\Models\Icm;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\MotorVehicle;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
@@ -853,6 +854,64 @@ class InventoryItemController extends Controller
 
     public function show(InventoryItem $inventoryItem)
     {
+    }
+
+    public function storeMotorVehicle(Request $request)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => 'required|string|max:255|unique:motor_vehicles,property_number',
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $vehicle = MotorVehicle::create($validated);
+
+        if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Motor vehicle added successfully',
+                'vehicle' => $vehicle,
+            ], 201);
+        }
+
+        return redirect()
+            ->route('inventory.tabs.moto-vehicle')
+            ->with('success', 'Motor vehicle added successfully!');
+    }
+
+    public function updateMotorVehicle(Request $request, MotorVehicle $motorVehicle)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('motor_vehicles', 'property_number')->ignore($motorVehicle->id),
+            ],
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $motorVehicle->update($validated);
+
+        return redirect()
+            ->route('inventory.tabs.moto-vehicle')
+            ->with('success', 'Motor vehicle updated successfully!');
+    }
+
+    public function destroyMotorVehicle(MotorVehicle $motorVehicle)
+    {
+        $motorVehicle->delete();
+
+        return redirect()
+            ->route('inventory.tabs.moto-vehicle')
+            ->with('success', 'Motor vehicle deleted successfully!');
     }
 
     public function icm(Request $request)

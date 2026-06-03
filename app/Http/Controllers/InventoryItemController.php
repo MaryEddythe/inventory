@@ -92,6 +92,17 @@ class InventoryItemController extends Controller
 {
     $query = InventoryItem::active();
 
+    if ($request->filled('ppe_type')) {
+        if ($request->ppe_type === 'rpcsp') {
+            $query->where('unit_price', '<=', 49999)
+                ->whereNotNull('unit_price');
+        } elseif ($request->ppe_type === 'ppe') {
+            $query->where('unit_price', '>=', 50000)
+                ->where('co_mooe', 'CO');
+        }
+    }
+
+
     if ($request->filled('search')) {
         $search = $request->search;
         $searchTerms = array_filter(explode(' ', $search));

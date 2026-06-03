@@ -11,6 +11,17 @@
             </select>
         </div>
 
+        <!-- RPCSP / PPE Filter -->
+        <div class="col-12">
+            <label for="ppeTypeSelect" class="form-label fw-600 small text-muted">Type</label>
+            <select class="form-select form-select-sm" id="ppeTypeSelect" name="ppe_type">
+                <option value="">All</option>
+                <option value="rpcsp">RPCSP (≤ 49,999)</option>
+                <option value="ppe">PPE (≥ 50,000)</option>
+            </select>
+        </div>
+
+
         <!-- Division Filter -->
         <div class="col-12">
             <label for="divisionSelect" class="form-label fw-600 small text-muted">Division</label>

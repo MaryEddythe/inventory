@@ -654,6 +654,63 @@ class InventoryItemController extends Controller
     return back()->with('error', 'Invalid export type');
 }
 
+    public function exportCategoryPdf(Request $request, string $category)
+    {
+        $categories = [
+            'machine-equipment' => [
+                'model' => MachineEquipment::class,
+                'title' => 'Machine & Equipment',
+                'filename' => 'machine-equipment.pdf',
+                'view' => 'inventory.export-machine-equipment-pdf',
+            ],
+            'office-equipment' => [
+                'model' => OfficeEquipment::class,
+                'title' => 'Office Equipment',
+                'filename' => 'office-equipment.pdf',
+                'view' => 'inventory.export-office-equipment-pdf',
+            ],
+            'technical-scientific-equipment' => [
+                'model' => TechnicalScientificEquipment::class,
+                'title' => 'Technical and Scientific Equipment',
+                'filename' => 'technical-scientific-equipment.pdf',
+                'view' => 'inventory.export-technical-scientific-equipment-pdf',
+            ],
+            'other-ppe' => [
+                'model' => OtherPpe::class,
+                'title' => 'Other PPE',
+                'filename' => 'other-ppe.pdf',
+                'view' => 'inventory.export-other-ppe-pdf',
+            ],
+            'cip' => [
+                'model' => Cip::class,
+                'title' => 'CIP',
+                'filename' => 'cip.pdf',
+                'view' => 'inventory.export-cip-pdf',
+            ],
+            'moto-vehicle' => [
+                'model' => MotorVehicle::class,
+                'title' => 'Motor Vehicle',
+                'filename' => 'motor-vehicle.pdf',
+                'view' => 'inventory.export-motor-vehicle-pdf',
+            ],
+        ];
+
+        abort_unless(isset($categories[$category]), 404);
+
+        $config = $categories[$category];
+        $model = $config['model'];
+        $items = $model::latest()->get();
+        $title = $config['title'];
+        $css = File::get(public_path('pdf-styles.css'));
+        $mgbLogo = base64_encode(file_get_contents(public_path('assets/mgb.jpg')));
+        $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
+
+        $pdf = Pdf::loadView($config['view'], compact('items', 'title', 'category', 'css', 'mgbLogo', 'bpLogo'))
+            ->setPaper('legal', 'landscape');
+
+        return $pdf->download($config['filename']);
+    }
+
     public function dashboard(Request $request)
 {
     $filterableQuery = InventoryItem::active();

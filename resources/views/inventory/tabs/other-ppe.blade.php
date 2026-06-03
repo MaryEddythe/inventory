@@ -22,6 +22,9 @@
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
         <h1 class="h4 fw-bold mb-0">Other PPE</h1>
         <div class="d-flex gap-2 align-items-center">
+            <a href="{{ route('inventory.category.export.pdf', 'other-ppe') }}" class="btn btn-outline-danger d-flex align-items-center gap-1">
+                <i class="bi bi-file-earmark-pdf"></i> Download PDF
+            </a>
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addOtherPpeModal">
                 <i class="bi bi-plus-circle"></i> Add Other PPE
             </button>
@@ -46,7 +49,7 @@
                     @foreach($otherPpes as $item)
                         <tr>
                             <td class="fw-semibold">{{ $item->article }}</td>
-                            <td>{{ $item->description }}</td>
+                            <td title="{{ $item->description }}">{{ Str::limit($item->description, 10) }}</td>
                             <td>{{ $item->property_number }}</td>
                             <td>{{ number_format($item->unit_value, 2) }}</td>
                             <td>{{ $item->date_acquired ? $item->date_acquired->format('M d, Y') : 'N/A' }}</td>

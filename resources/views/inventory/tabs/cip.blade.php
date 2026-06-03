@@ -28,6 +28,9 @@
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
         <h1 class="h4 fw-bold mb-0">CIP</h1>
         <div class="d-flex gap-2 align-items-center">
+            <a href="{{ route('inventory.category.export.pdf', 'cip') }}" class="btn btn-outline-danger d-flex align-items-center gap-1">
+                <i class="bi bi-file-earmark-pdf"></i> Download PDF
+            </a>
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addCipModal">
                 <i class="bi bi-plus-circle"></i> Add CIP
             </button>
@@ -52,7 +55,7 @@
                     @foreach($cips as $cip)
                         <tr>
                             <td class="fw-semibold">{{ $cip->article }}</td>
-                            <td>{{ $cip->description }}</td>
+                            <td title="{{ $cip->description }}">{{ Str::limit($cip->description, 10) }}</td>
                             <td>{{ $cip->property_number }}</td>
                             <td>{{ number_format($cip->unit_value, 2) }}</td>
                             <td>{{ $cip->date_acquired ? $cip->date_acquired->format('M d, Y') : 'N/A' }}</td>

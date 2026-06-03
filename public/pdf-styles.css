@@ -441,6 +441,89 @@ body {
     margin-bottom: 1mm;
 }
 
+/* Category PPE / property PDF reports */
+.pdf-category-body {
+    margin: 0;
+    padding: 0.25in;
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+}
+
+.pdf-logo-cell {
+    width: 25%;
+    vertical-align: middle;
+    padding: 0 5px;
+    border: none;
+}
+
+.pdf-logo-left {
+    text-align: left;
+}
+
+.pdf-logo-right {
+    text-align: right;
+}
+
+.pdf-logo {
+    height: 50px;
+}
+
+.pdf-header-title-cell {
+    width: 50%;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0 5px;
+    border: none;
+}
+
+.pdf-header-rule {
+    margin: 4px 0;
+    border: none;
+    border-top: 1px solid #000;
+}
+
+.pdf-category-table {
+    font-size: 10px;
+}
+
+.pdf-category-table .pdf-no-col {
+    width: 4%;
+}
+
+.pdf-category-table .pdf-article-col {
+    width: 14%;
+}
+
+.pdf-category-table .pdf-description-col {
+    width: 32%;
+}
+
+.pdf-category-table .pdf-property-col {
+    width: 17%;
+}
+
+.pdf-category-table .pdf-unit-value-col {
+    width: 11%;
+}
+
+.pdf-category-table .pdf-date-col {
+    width: 10%;
+}
+
+.pdf-category-table .pdf-remarks-col {
+    width: 12%;
+}
+
+.pdf-category-total-row {
+    background-color: #e9ecef;
+    font-weight: bold;
+}
+
+.pdf-no-data {
+    padding: 10px;
+    text-align: center;
+}
+
 /* RPCSP PDF Styles */
 .rpcsp-body {
     font-family: "Arial", sans-serif;

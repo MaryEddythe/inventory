@@ -28,6 +28,9 @@
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
         <h1 class="h4 fw-bold mb-0">Motor Vehicle</h1>
         <div class="d-flex gap-2 align-items-center">
+            <a href="{{ route('inventory.category.export.pdf', 'moto-vehicle') }}" class="btn btn-outline-danger d-flex align-items-center gap-1">
+                <i class="bi bi-file-earmark-pdf"></i> Download PDF
+            </a>
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addMotorVehicleModal">
                 <i class="bi bi-plus-circle"></i>Add Motor Vehicle
             </button>
@@ -53,7 +56,7 @@
                         @foreach($motorVehicles as $vehicle)
                             <tr>
                                 <td class="fw-semibold">{{ $vehicle->article }}</td>
-                                <td>{{ $vehicle->description }}</td>
+                                <td title="{{ $vehicle->description }}">{{ Str::limit($vehicle->description, 10) }}</td>
                                 <td>{{ $vehicle->property_number }}</td>
                                 <td>{{ number_format($vehicle->unit_value, 2) }}</td>
                                 <td>{{ $vehicle->date_acquired ? $vehicle->date_acquired->format('M d, Y') : 'N/A' }}</td>

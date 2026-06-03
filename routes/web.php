@@ -65,9 +65,17 @@ Route::middleware(['auth'])->group(function () {
 
     // PPE Category Routes
     Route::post('/machine-equipment/store', [InventoryItemController::class, 'storeMachineEquipment'])->name('machine-equipment.store');
+    Route::put('/machine-equipment/{machineEquipment}', [InventoryItemController::class, 'updateMachineEquipment'])->name('machine-equipment.update');
+    Route::delete('/machine-equipment/{machineEquipment}', [InventoryItemController::class, 'destroyMachineEquipment'])->name('machine-equipment.destroy');
     Route::post('/office-equipment/store', [InventoryItemController::class, 'storeOfficeEquipment'])->name('office-equipment.store');
+    Route::put('/office-equipment/{officeEquipment}', [InventoryItemController::class, 'updateOfficeEquipment'])->name('office-equipment.update');
+    Route::delete('/office-equipment/{officeEquipment}', [InventoryItemController::class, 'destroyOfficeEquipment'])->name('office-equipment.destroy');
     Route::post('/technical-scientific-equipment/store', [InventoryItemController::class, 'storeTechnicalScientificEquipment'])->name('technical-scientific-equipment.store');
+    Route::put('/technical-scientific-equipment/{technicalScientificEquipment}', [InventoryItemController::class, 'updateTechnicalScientificEquipment'])->name('technical-scientific-equipment.update');
+    Route::delete('/technical-scientific-equipment/{technicalScientificEquipment}', [InventoryItemController::class, 'destroyTechnicalScientificEquipment'])->name('technical-scientific-equipment.destroy');
     Route::post('/other-ppe/store', [InventoryItemController::class, 'storeOtherPpe'])->name('other-ppe.store');
+    Route::put('/other-ppe/{otherPpe}', [InventoryItemController::class, 'updateOtherPpe'])->name('other-ppe.update');
+    Route::delete('/other-ppe/{otherPpe}', [InventoryItemController::class, 'destroyOtherPpe'])->name('other-ppe.destroy');
     
     Route::get('/ipm', [InventoryItemController::class, 'ipm'])->name('inventory.ipm');
     Route::get('/icm', [InventoryItemController::class, 'icm'])->name('inventory.icm');

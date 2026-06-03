@@ -1021,6 +1021,38 @@ class InventoryItemController extends Controller
             ->with('success', 'Machine & Equipment added successfully!');
     }
 
+    public function updateMachineEquipment(Request $request, MachineEquipment $machineEquipment)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('machine_equipments', 'property_number')->ignore($machineEquipment->id),
+            ],
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $machineEquipment->update($validated);
+
+        return redirect()
+            ->route('inventory.tabs.machine-equipment')
+            ->with('success', 'Machine & Equipment updated successfully!');
+    }
+
+    public function destroyMachineEquipment(MachineEquipment $machineEquipment)
+    {
+        $machineEquipment->delete();
+
+        return redirect()
+            ->route('inventory.tabs.machine-equipment')
+            ->with('success', 'Machine & Equipment deleted successfully!');
+    }
+
     public function storeOfficeEquipment(Request $request)
     {
         $validated = $request->validate([
@@ -1037,6 +1069,38 @@ class InventoryItemController extends Controller
         return redirect()
             ->route('inventory.tabs.office-equipment')
             ->with('success', 'Office Equipment added successfully!');
+    }
+
+    public function updateOfficeEquipment(Request $request, OfficeEquipment $officeEquipment)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('office_equipments', 'property_number')->ignore($officeEquipment->id),
+            ],
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $officeEquipment->update($validated);
+
+        return redirect()
+            ->route('inventory.tabs.office-equipment')
+            ->with('success', 'Office Equipment updated successfully!');
+    }
+
+    public function destroyOfficeEquipment(OfficeEquipment $officeEquipment)
+    {
+        $officeEquipment->delete();
+
+        return redirect()
+            ->route('inventory.tabs.office-equipment')
+            ->with('success', 'Office Equipment deleted successfully!');
     }
 
     public function storeTechnicalScientificEquipment(Request $request)
@@ -1057,6 +1121,38 @@ class InventoryItemController extends Controller
             ->with('success', 'Technical and Scientific Equipment added successfully!');
     }
 
+    public function updateTechnicalScientificEquipment(Request $request, TechnicalScientificEquipment $technicalScientificEquipment)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('technical_scientific_equipments', 'property_number')->ignore($technicalScientificEquipment->id),
+            ],
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $technicalScientificEquipment->update($validated);
+
+        return redirect()
+            ->route('inventory.tabs.technical-scientific-equipment')
+            ->with('success', 'Technical and Scientific Equipment updated successfully!');
+    }
+
+    public function destroyTechnicalScientificEquipment(TechnicalScientificEquipment $technicalScientificEquipment)
+    {
+        $technicalScientificEquipment->delete();
+
+        return redirect()
+            ->route('inventory.tabs.technical-scientific-equipment')
+            ->with('success', 'Technical and Scientific Equipment deleted successfully!');
+    }
+
     public function storeOtherPpe(Request $request)
     {
         $validated = $request->validate([
@@ -1073,6 +1169,38 @@ class InventoryItemController extends Controller
         return redirect()
             ->route('inventory.tabs.other-ppe')
             ->with('success', 'Other PPE added successfully!');
+    }
+
+    public function updateOtherPpe(Request $request, OtherPpe $otherPpe)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('other_ppes', 'property_number')->ignore($otherPpe->id),
+            ],
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $otherPpe->update($validated);
+
+        return redirect()
+            ->route('inventory.tabs.other-ppe')
+            ->with('success', 'Other PPE updated successfully!');
+    }
+
+    public function destroyOtherPpe(OtherPpe $otherPpe)
+    {
+        $otherPpe->delete();
+
+        return redirect()
+            ->route('inventory.tabs.other-ppe')
+            ->with('success', 'Other PPE deleted successfully!');
     }
 
     public function icm(Request $request)

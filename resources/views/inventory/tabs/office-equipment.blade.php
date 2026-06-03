@@ -9,6 +9,13 @@
         padding: 0.28rem 0.4rem;
         line-height: 1.15;
     }
+
+    .category-table .btn {
+        --bs-btn-padding-y: 0.08rem;
+        --bs-btn-padding-x: 0.28rem;
+        --bs-btn-font-size: 0.62rem;
+        line-height: 1.1;
+    }
 </style>
 
 <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
@@ -32,6 +39,7 @@
                         <th scope="col">Unit Value</th>
                         <th scope="col">Date Acquired</th>
                         <th scope="col">Remarks</th>
+                        <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -43,6 +51,20 @@
                             <td>{{ number_format($item->unit_value, 2) }}</td>
                             <td>{{ $item->date_acquired ? $item->date_acquired->format('M d, Y') : 'N/A' }}</td>
                             <td>{{ $item->remarks ?: 'N/A' }}</td>
+                            <td>
+                                <div class="d-flex justify-content-end gap-1">
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editOfficeEquipmentModal{{ $item->id }}" title="Edit">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <form action="{{ route('office-equipment.destroy', $item) }}" method="POST" onsubmit="return confirm('Delete this office equipment entry?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -55,6 +77,60 @@
         </div>
     @endif
 </div>
+
+@foreach($officeEquipments as $item)
+    <div class="modal fade" id="editOfficeEquipmentModal{{ $item->id }}" tabindex="-1" aria-labelledby="editOfficeEquipmentModalLabel{{ $item->id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ route('office-equipment.update', $item) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editOfficeEquipmentModalLabel{{ $item->id }}">Edit Office Equipment</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_office_equipment_article_{{ $item->id }}" class="form-label">Article <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit_office_equipment_article_{{ $item->id }}" name="article" value="{{ old('article', $item->article) }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_office_equipment_property_number_{{ $item->id }}" class="form-label">Property Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit_office_equipment_property_number_{{ $item->id }}" name="property_number" value="{{ old('property_number', $item->property_number) }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit_office_equipment_description_{{ $item->id }}" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="edit_office_equipment_description_{{ $item->id }}" name="description" rows="3" required>{{ old('description', $item->description) }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_office_equipment_unit_value_{{ $item->id }}" class="form-label">Unit Value <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control" id="edit_office_equipment_unit_value_{{ $item->id }}" name="unit_value" value="{{ old('unit_value', $item->unit_value) }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_office_equipment_date_acquired_{{ $item->id }}" class="form-label">Date Acquired <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="edit_office_equipment_date_acquired_{{ $item->id }}" name="date_acquired" value="{{ old('date_acquired', $item->date_acquired ? $item->date_acquired->format('Y-m-d') : '') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit_office_equipment_remarks_{{ $item->id }}" class="form-label">Remarks</label>
+                            <textarea class="form-control" id="edit_office_equipment_remarks_{{ $item->id }}" name="remarks" rows="2">{{ old('remarks', $item->remarks) }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Office Equipment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endforeach
 
 <div class="modal fade" id="addOfficeEquipmentModal" tabindex="-1" aria-labelledby="addOfficeEquipmentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">

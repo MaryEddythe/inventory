@@ -9,8 +9,9 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $connection = 'employee_db';
+    // Departments table is now in the inventory database (same connection as inventory_items)
     protected $table = 'departments';
+
     protected $fillable = ['dept_no', 'department', 'description', 'last_updated', 'updated_by'];
 
     public $timestamps = false;

@@ -9,9 +9,10 @@ class Employee extends Model
 {
     use HasFactory;
 
-    protected $connection = 'employee_db';
+    // Employees table is now in the inventory database (same connection as inventory_items)
     protected $table = 'employees';
     protected $fillable = ['emp_no', 'lastname', 'firstname', 'department', 'descr', 'Role', 'dob', 'status', 'updated_at'];
+
 
     public $timestamps = false; // Assuming updated_at is used
 

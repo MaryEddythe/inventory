@@ -233,7 +233,8 @@ class InventoryItemController extends Controller
             $validated = $request->validate([
                 'division' => 'required|string|max:255',
                 'enduser' => 'required|string|max:255',
-                'emp_no' => 'required|string|max:255|exists:employee_db.employees,emp_no',
+                'emp_no' => 'required|string|max:255|exists:employees,emp_no',
+
                 'classification' => 'required|string|max:255',
                 'property_number' => 'required|string|max:255',
                 'description' => 'required|string',

@@ -22,7 +22,7 @@
         </div>
         <div class="col-md-6 mb-3 position-relative">
             <label for="employee_search-{{ $item->no }}" class="form-label">Employee <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="employee_search-{{ $item->no }}" placeholder="Search Employee..." autocomplete="off" required>
+            <input type="text" class="form-control" id="employee_search-{{ $item->no }}" placeholder="Search Employee..." autocomplete="off" value="{{ old('enduser', $item->enduser) }}" data-original-enduser="{{ $item->enduser }}" required>
             <div id="employee_suggestions-{{ $item->no }}" class="suggestions-list"></div>
             <input type="hidden" id="emp_no-{{ $item->no }}" name="emp_no" value="{{ old('emp_no', $item->emp_no) }}">
             <input type="hidden" id="enduser-{{ $item->no }}" name="enduser" value="{{ old('enduser', $item->enduser) }}">

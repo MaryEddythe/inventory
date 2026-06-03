@@ -408,6 +408,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Client-side validation for edit inventory forms
         document.querySelectorAll('.edit-inventory-form').forEach(form => {
+            const employeeSearchInput = form.querySelector('input[id^="employee_search-"]');
+            const empNoInput = form.querySelector('input[name="emp_no"]');
+            const enduserInput = form.querySelector('input[name="enduser"]');
+
+            if (employeeSearchInput && enduserInput && !employeeSearchInput.value.trim()) {
+                employeeSearchInput.value = enduserInput.value || employeeSearchInput.dataset.originalEnduser || '';
+            }
+
+            if (enduserInput && !enduserInput.value.trim() && employeeSearchInput?.value.trim()) {
+                enduserInput.value = employeeSearchInput.value.trim();
+            }
+
             // Only attach once per form instance
             if (form._listenerAttached) return;
             form._listenerAttached = true;
@@ -424,6 +436,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Verify this is the correct form
                 const empNoInput = this.querySelector('input[name="emp_no"]');
+                const enduserInput = this.querySelector('input[name="enduser"]');
+                const employeeSearchInput = this.querySelector('input[id^="employee_search-"]');
                 const classificationInput = this.querySelector('input[name="classification"]');
                 const descriptionInput = this.querySelector('textarea[name="description"]');
                 
@@ -442,6 +456,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 const empNo = empNoInput.value;
+                if (enduserInput && !enduserInput.value.trim() && employeeSearchInput?.value.trim()) {
+                    enduserInput.value = employeeSearchInput.value.trim();
+                }
+
+                if (employeeSearchInput && !employeeSearchInput.value.trim() && enduserInput?.value.trim()) {
+                    employeeSearchInput.value = enduserInput.value.trim();
+                }
+
                 if (!empNo) {
                     Swal.fire({
                         icon: 'error',

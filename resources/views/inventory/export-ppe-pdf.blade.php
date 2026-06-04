@@ -2,231 +2,192 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT</title>
-    <link rel="stylesheet" href="{{ public_path('pdf-styles.css') }}">
+    <title>Inventory Report - PPE</title>
+    <style>
+        :root { --total-records: "{{ $items->count() }}"; }
+        
+        @page {
+            size: 14in 8.5in landscape;
+            margin: 0.25in 0.25in 0.25in 0.25in;
+        }
+
+        @media print {
+            @page {
+                size: 14in 8.5in landscape;
+                margin: 0.25in 0.25in 0.25in 0.25in;
+            }
+            
+            * {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            body {
+                margin: 0 !important;
+                padding: 0.25in 0.25in !important;
+            }
+            
+            html {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0.25in 0.25in;
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        {{ $css }}
+    </style>
 </head>
-<body class="rpcsp-body">
-
-<div class="rpcsp-header-info">
-    <h1 class="rpcsp-h1">REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT</h1>
-    <h2 class="rpcsp-h2">CIP-BUILDING AND OTHER STRUCTURES</h2>
-    <h3 class="rpcsp-h3">(Type of Inventory Item)</h3>
-    <p><strong>As at December 31, 2024</strong></p>
-</div>
-
-<div class="rpcsp-meta-row">
-    <span class="rpcsp-meta-label">Fund Cluster:</span>
-    <span>&nbsp;</span>
-</div>
-
-<div style="margin: 5px 0; font-size: 9px;">
-    <div style="margin: 3px 0;">
-        <span class="rpcsp-meta-label">For which</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 200px; text-align: center;">MAY FLORENCE A. PABELENONIO</span>
-        <span>,</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 150px; text-align: center;">Supply Officer II/GSS</span>
-        <span>,</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 200px; text-align: center;">DENR-Mines and Geosciences Bureau R-6</span>
-        <span>is accountable, having assumed such accountability on</span>
-        <span style="border-bottom: 1px solid #000; padding: 0 5px; display: inline-block; min-width: 60px; text-align: center;">&nbsp;</span>
-    </div>
-
-    <!-- Aligned labels directly under each underlined field -->
-    <div style="margin-top: 3px; font-size: 8px; text-align: left; white-space: nowrap;">
-        <span style="display:inline-block; width: 52px;">&nbsp;</span>
-        <span style="display:inline-block; width: 200px; text-align:center;">(Name of Accountable Officer)</span>
-        <span style="display:inline-block; width: 6px;">&nbsp;</span>
-        <span style="display:inline-block; width: 150px; text-align:center;">(Office Designation)</span>
-        <span style="display:inline-block; width: 6px;">&nbsp;</span>
-        <span style="display:inline-block; width: 200px; text-align:center;">(Agency/Office)</span>
-        <span style="display:inline-block; width: 238px;">&nbsp;</span>
-        <span style="display:inline-block; width: 60px; text-align:center;">(Date of Assumption)</span>
-    </div>
-</div>
-
-<table class="rpcsp-table">
-    <thead>
-        <tr class="rpcsp-header-row">
-            <th class="rpcsp-article-col" rowspan="2">ARTICLE</th>
-            <th class="rpcsp-description-col" rowspan="2">DESCRIPTION</th>
-            <th class="rpcsp-property-col" rowspan="2">PROPERTY NUMBER</th>
-            <th class="rpcsp-uom-col" rowspan="2">UNIT OF MEASURE</th>
-            <th colspan="2" class="rpcsp-text-center">BALANCE PER</th>
-            <th class="rpcsp-onhand-col" rowspan="2">ON HAND<br>PER COUNT<br>(Quantity)</th>
-            <th class="rpcsp-total-value-col" rowspan="2">TOTAL<br>VALUE</th>
-            <th class="rpcsp-date-col" rowspan="2">DATE<br>ACQUIRED</th>
-            <th colspan="2" class="rpcsp-text-center">SHORTAGE/<br>OVERAGE</th>
-            <th class="rpcsp-remarks-col" rowspan="2" style="border-right: 1px solid #000 !important;">REMARKS</th>
-        </tr>
-        <tr class="rpcsp-header-row">
-            <th class="rpcsp-unit-value-col">UNIT VALUE</th>
-            <th class="rpcsp-card-col">CARD<br>(Quantity)</th>
-            <th class="rpcsp-shortage-qty-col">Quantity</th>
-            <th class="rpcsp-shortage-value-col">Value</th>
-        </tr>
-    </thead>
-    <tbody>
-        @php
-            $totalItems = $items->count();
-            $threshold = 50000;
-            $filteredItems = $items->filter(function($item) use ($threshold) {
-                return ($item->unit_price >= $threshold) && ($item->co_mooe === 'CO');
-            });
-
-            $classificationItems = $filteredItems->groupBy('classification');
-
-            $totalGrandValue = 0;
-            $totalUnitValue = 0;
-            $itemCount = 0;
-        @endphp
-
-        @if($filteredItems->count() > 0)
-            @foreach($classificationItems as $classification => $groupedItems)
-                @foreach($groupedItems as $item)
-                    @php
-                        $uom = 'unit';
-                        $desc = strtolower($item->description ?? '');
-
-                        if (str_contains($desc, 'desktop') || str_contains($desc, 'set')) {
-                            $uom = 'set';
-                        } elseif (str_contains($desc, 'monitor') && $item->unit_price >= $threshold) {
-                            $uom = 'set';
-                        } elseif (str_contains($desc, 'monitor') ||
-                                  str_contains($desc, 'printer') ||
-                                  str_contains($desc, 'scanner') ||
-                                  str_contains($desc, 'laptop') ||
-                                  str_contains($desc, 'tablet') ||
-                                  str_contains($desc, 'phone')) {
-                            $uom = 'pc';
-                        } elseif (str_contains($desc, 'pair')) {
-                            $uom = 'pair';
-                        }
-
-                        $remarks = '';
-                        if ($item->enduser && $item->division) {
-                            $remarks = $item->enduser . ' / ' . $item->division;
-                        } elseif ($item->enduser) {
-                            $remarks = $item->enduser;
-                        } elseif ($item->division) {
-                            $remarks = $item->division;
-                        }
-
-                        $totalValue = $item->unit_price;
-                        $totalGrandValue += $totalValue;
-                        $totalUnitValue += $item->unit_price;
-                        $itemCount++;
-
-                        $article = $classification;
-                        $clsUp = strtoupper($classification ?? '');
-                        if ($clsUp === 'DESKTOP' || ($clsUp !== '' && stripos($desc, 'monitor') !== false && $item->unit_price >= $threshold)) {
-                            $article = 'COMPUTER';
-                        }
-                    @endphp
-                    <tr>
-                        <td class="rpcsp-article-col pdf-text-center">{{ strtoupper($article) }}</td>
-                        <td class="rpcsp-description-col">{{ ucwords($item->description) }}</td>
-                        <td class="rpcsp-property-col pdf-text-center">{{ $item->property_number ?? 'N/A' }}</td>
-                        <td class="rpcsp-uom-col pdf-text-center">{{ $uom }}</td>
-                        <td class="rpcsp-unit-value-col pdf-text-right">{{ number_format($item->unit_price, 2) }}</td>
-                        <td class="rpcsp-card-col pdf-text-center">1</td> <!-- Balance per Card (Quantity) -->
-                        <td class="rpcsp-onhand-col pdf-text-center">1</td> <!-- On Hand per Count (Quantity) -->
-                        <td class="rpcsp-total-value-col pdf-text-right">{{ number_format($totalValue, 2) }}</td>
-                        <td class="rpcsp-date-col pdf-text-center">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
-                        <td class="rpcsp-shortage-qty-col pdf-text-center"></td> <!-- Shortage/Overage Quantity -->
-                        <td class="rpcsp-shortage-value-col pdf-text-right"></td> <!-- Shortage/Overage Value -->
-                        <td class="rpcsp-remarks-col" style="border-right: 1px solid #000 !important;">{{ $remarks }}</td>
-                    </tr>
-                @endforeach
-            @endforeach
-
-            <!-- Subtotal and Grand Total on Same Row -->
-            <tr class="pdf-bg-gray pdf-font-bold">
-                <td colspan="4" class="pdf-text-right">SUBTOTAL:</td>
-                <td class="pdf-text-right">{{ number_format($totalUnitValue, 2) }}</td>
-                <td colspan="3" class="pdf-text-right">GRAND TOTAL:</td>
-                <td class="pdf-text-right">{{ number_format($totalGrandValue, 2) }}</td>
-                <td colspan="3"></td>
-                <td style="border-right: 1px solid #000 !important;"></td>
-            </tr>
-        @else
-            <tr>
-                <td colspan="12" class="no-data">
-                    No qualifying semi-expendable property items found.<br>
-                    Criteria: Unit Price â‰¥ â‚±50,000.00 AND CO/MOOE = 'CO'<br>
-                    Total items in database: {{ $totalItems }}<br>
-                    @if($totalItems > 0)
-                        Sample items:
-                        @foreach($items->take(3) as $sample)
-                            <br>- {{ $sample->description }} (â‚±{{ number_format($sample->unit_price, 2) }}, {{ $sample->co_mooe }})
-                        @endforeach
-                    @endif
-                </td>
-            </tr>
-        @endif
-    </tbody>
-</table>
-
-<div class="signature-section" style="margin-top: 20px;">
-    <table style="width: 100%; border: none;">
+<body>
+    <table class="pdf-header" style="width: 100%; border: none; margin-bottom: 8px;">
         <tr>
-            <!-- COLUMN 1: Certified Correct by -->
-            <td style="width: 45%; text-align: left; vertical-align: top; padding-right: 15px;">
-                <span style="font-size: 8px;">Certified Correct by:</span><br><br>
-                <table style="width: 100%; border: none;">
-                    <tr>
-                        <td style="width: 50%; text-align: left; vertical-align: top; padding-right: 8px;">
-                            <div style="border-bottom: 1px solid #000; height: 35px;"></div>
-                            <strong style="font-size: 9px;">GLENN L. UMIPIG</strong><br>
-                            <span style="font-size: 9px;">OIC Chief, FAD in Concurrent Capacity as</span><br>
-                            <span style="font-size: 9px;">Chief, Finance Section</span>
-                        </td>
-                        <td style="width: 50%; text-align: left; vertical-align: top;">
-                            <div style="border-bottom: 1px solid #000; height: 35px;"></div>
-                            <strong style="font-size: 9px;">DELILAH P. AGUILAR</strong><br>
-                            <span style="font-size: 9px;">Administrative Assistant II</span><br>
-                            <span style="font-size: 9px;">Member</span>
-                        </td>
-                    </tr>
-                    <tr><td colspan="2" style="height: 10px;"></td></tr>
-                    <tr>
-                        <td style="width: 50%; text-align: left; vertical-align: top; padding-right: 8px;">
-                            <div style="border-bottom: 1px solid #000; height: 35px;"></div>
-                            <strong style="font-size: 9px;">PRUDENCIO C. BULAWAN IV</strong><br>
-                            <span style="font-size: 9px;">D./Prop. Inspector</span><br>
-                            <span style="font-size: 9px;">Member</span>
-                        </td>
-                        <td style="width: 50%; text-align: left; vertical-align: top;">
-                            <div style="border-bottom: 1px solid #000; height: 35px;"></div>
-                            <strong style="font-size: 9px;">MAY FLORENCE A. PABELONIO</strong><br>
-                            <span style="font-size: 9px;">Acting Supply Officer II, GSS</span><br>
-                            <span style="font-size: 9px;">Member</span>
-                        </td>
-                    </tr>
-                </table>
+            <td style="width: 50%; text-align: left; vertical-align: middle; padding: 0 5px;">
+                <img src="data:image/jpeg;base64,{{ $mgbLogo }}" alt="MGB Logo" style="height: 50px;">
             </td>
-
-            <!-- COLUMN 2: Approved by -->
-            <td style="width: 30%; text-align: left; vertical-align: top; padding-right: 15px;">
-                <span style="font-size: 8px;">Approved by:</span><br><br>
-                <div style="border-bottom: 1px solid #000; height: 35px;"></div>
-                <strong style="font-size: 9px;">CECILIA L. OCHAVO-SAYCON</strong><br>
-                <span style="font-size: 9px;">OIC Regional Director</span>
+            <td style="width: 60%; text-align: center; vertical-align: middle; padding: 0 5px;">
+                <h2 style="margin: 2px 0; font-size: 16px;">Mines and Geosciences Bureau</h2>
+                <h3 style="margin: 2px 0; font-size: 13px;">Regional Office VI</h3>
+                <h1 style="margin: 2px 0; font-size: 14px;">INVENTORY REPORT SUMMARY</h1>
+                <p style="margin: 2px 0; font-size: 10px;">
+                    Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} |
+                    Period: {{ request('date_from') ? \Carbon\Carbon::parse(request('date_from'))->format('M d, Y') : 'All' }}
+                    to {{ request('date_to') ? \Carbon\Carbon::parse(request('date_to'))->format('M d, Y') : 'Present' }}
+                </p>
             </td>
-
-            <!-- COLUMN 3: Witnessed by -->
-            <td style="width: 25%; text-align: left; vertical-align: top;">
-                <span style="font-size: 8px;">Witnessed by:</span><br><br>
-                <div style="border-bottom: 1px solid #000; height: 35px;"></div>
-                <span style="font-size: 9px;">Signature over Printed of COA</span><br>
-                <span style="font-size: 9px;">Representative</span>
+            <td style="width: 50%; text-align: right; vertical-align: middle; padding: 0 5px;">
+                <img src="data:image/jpeg;base64,{{ $bpLogo }}" alt="BP Logo" style="height: 50px;">
             </td>
         </tr>
     </table>
-</div>
 
-<div class="footer" style="text-align: center;">
-    <p>Generated on: {{ now()->format('F d, Y h:i A') }} | Inventory Management System - MGB Region VI</p>
-</div>
+    <hr style="margin: 4px 0; border: none; border-top: 1px solid #000;">
 
+    <!-- Detailed PPE Inventory -->
+    <div class="pdf-mt-3" style="margin: 8px 0;">
+        <table class="pdf-table pdf-table-striped" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <th colspan="13" class="pdf-bg-dark" style="padding: 4px; background-color: #333; color: white;">
+                        DETAILED INVENTORY LISTING (PPE)
+                    </th>
+                </tr>
+                <tr style="background-color: #f0f0f0;">
+                    <th class="pdf-col-2 pdf-text-center" style="width: 3%; padding: 4px; border: 1px solid #ccc;">No</th>
+                    <th class="pdf-col-10" style="width: 7%; padding: 4px; border: 1px solid #ccc;">Department</th>
+                    <th class="pdf-col-10" style="width: 7%; padding: 4px; border: 1px solid #ccc;">End User</th>
+                    <th class="pdf-col-9" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Classification</th>
+                    <th class="pdf-col-15" style="width: 13%; padding: 4px; border: 1px solid #ccc;">Description</th>
+                    <th class="pdf-col-8" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Serial No</th>
+                    <th class="pdf-col-8" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Property No</th>
+                    <th class="pdf-col-8 pdf-text-right" style="width: 9%; padding: 4px; border: 1px solid #ccc;">Unit Price</th>
+                    <th class="pdf-col-5" style="width: 6%; padding: 4px; border: 1px solid #ccc;">CO/MOOE</th>
+                    <th class="pdf-col-6 pdf-text-center" style="width: 7%; padding: 4px; border: 1px solid #ccc;">Date Acquired</th>
+                    <th class="pdf-col-12" style="width: 9%; padding: 4px; border: 1px solid #ccc;">Remarks</th>
+                    <th class="pdf-col-5 pdf-text-center" style="width: 5%; padding: 4px; border: 1px solid #ccc;">Status</th>
+                    <th class="pdf-col-8 pdf-text-center" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Serviceability</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $ppeItems = $items->filter(function($item) {
+                        return $item->unit_price !== null && (float)$item->unit_price >= 50000 && $item->co_mooe === 'CO';
+                    });
+
+                    $groupedItems = $ppeItems->groupBy('division');
+                    $rowNumber = 1;
+                @endphp
+
+                @foreach($groupedItems as $division => $divisionItems)
+                    <tr>
+                        <td colspan="13" style="background:#efefef; padding: 4px; font-weight: bold; border: 1px solid #ccc;">
+                            Division: {{ $division ?? 'N/A' }}
+                        </td>
+                    </tr>
+
+                    @foreach($divisionItems as $item)
+                        @php
+                            $yearsSinceAcquisition = $item->date_acquired ? \Carbon\Carbon::parse($item->date_acquired)->diffInYears(\Carbon\Carbon::now()) : 10;
+                            $pdfBadgeClass = $yearsSinceAcquisition <= 5 ? 'pdf-status-new' : 'pdf-status-replace';
+                        @endphp
+                        <tr style="border-bottom: 1px solid #ccc;">
+                            <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">{{ $rowNumber++ }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->department_name ?? $item->division }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{!! $item->enduser ?? 'N/A' !!}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->classification }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->description }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->serial_number ?? 'N/A' }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->property_number }}</td>
+                            <td class="pdf-text-right" style="padding: 3px; border: 1px solid #ccc;">{{ number_format($item->unit_price, 2) }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->co_mooe }}</td>
+                            <td class="pdf-text-center pdf-nowrap" style="padding: 3px; border: 1px solid #ccc; white-space: nowrap;">{{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}</td>
+                            <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->remarks ?? 'N/A' }}</td>
+                            <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">
+                                <span class="{{ $pdfBadgeClass }}">
+                                    {{ $yearsSinceAcquisition <= 5 ? '<= 5' : '> 5' }}
+                                </span>
+                            </td>
+                            <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">{{ $item->serviceability ?? 'N/A' }}</td>
+                        </tr>
+                    @endforeach
+                @endforeach
+
+                @if($ppeItems->count() === 0)
+                    <tr>
+                        <td colspan="13" style="padding: 12px; text-align:center; border: 1px solid #ccc;">
+                            No qualifying PPE items found.
+                            <br>Criteria: Unit Price ≥ 50,000 AND CO/MOOE = 'CO'.
+                        </td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Signature Section -->
+    <div class="pdf-signature-section pdf-mt-3" style="page-break-inside: avoid; margin: 8px 0;">
+        <table style="width: 100%; border: none; margin-top: 20px;">
+            <tr>
+                <td class="pdf-col-30 pdf-text-left" style="width: 30%; text-align: left; padding-right: 10px;">
+                    <span class="pdf-signature-label" style="font-weight: bold; font-size: 11px;">Prepared by:</span><br>
+                    <span class="pdf-signature-name" style="font-weight: bold; margin-top: 30px; display: block;">HERO JOHN E. LAPORGA</span><br>
+                    <span class="pdf-signature-title" style="font-size: 10px;">Senior IT Support Specialist</span><br><br><br><br><br><br>
+                    <span class="pdf-signature-name" style="font-weight: bold; display: block;">MARY EDDYTHE M. SORNITO</span><br>
+                    <span class="pdf-signature-title" style="font-size: 10px;">Computer Maintenance Technologist I</span>
+                </td>
+
+                <td class="pdf-col-40 pdf-text-center" style="width: 40%; text-align: center;">
+                    <span class="pdf-signature-label" style="font-weight: bold; font-size: 11px;">Reviewed by:</span><br>
+                    <span class="pdf-signature-name" style="font-weight: bold; margin-top: 30px; display: block;">MAY FLORENCE A. PABELONIO</span><br>
+                    <span class="pdf-signature-title" style="font-size: 10px;">ICT Focal Person</span>
+                </td>
+
+                <td class="pdf-col-30 pdf-text-right" style="width: 30%; text-align: right; padding-left: 10px;">
+                    <span class="pdf-signature-label" style="font-weight: bold; font-size: 11px;">Approved by:</span><br>
+                    <span class="pdf-signature-name" style="font-weight: bold; margin-top: 30px; display: block;">CECILIA L. OCHAVO-SAYCON</span><br>
+                    <span class="pdf-signature-title" style="font-size: 10px;">Regional Director</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="pdf-footer pdf-mt-2" style="margin-top: 8px; font-size: 10px; text-align: center; border-top: 1px solid #ccc; padding-top: 5px;">
+        Total Records: {{ $ppeItems->count() }} | Generated by Inventory Management System - MGB
+    </div>
 </body>
 </html>
+

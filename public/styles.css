@@ -2070,7 +2070,7 @@ mark {
 }
 
 .status-count {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0.25rem 0 0 0;
@@ -2187,7 +2187,7 @@ mark {
 }
 
 .condition-count {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0.25rem 0 0 0;
@@ -2700,12 +2700,12 @@ mark {
 .breakdown-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .breakdown-modal-summary {
   text-align: center;
-  padding: 1.5rem;
+  padding: 1rem;
   background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
   border-radius: 8px;
   border: 1px solid #e9ecef;
@@ -2719,31 +2719,31 @@ mark {
 
 .breakdown-modal-number {
   display: block;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1a1a1a;
 }
 
 .breakdown-modal-text {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #6c757d;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 .breakdown-modal-details {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .breakdown-modal-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 1rem;
+  padding: 0.6rem 0.8rem;
   background: #f8f9fa;
   border-radius: 6px;
   border: 1px solid #e9ecef;
@@ -2756,13 +2756,13 @@ mark {
 }
 
 .breakdown-modal-label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #6c757d;
   font-weight: 500;
 }
 
 .breakdown-modal-value {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #1a1a1a;
 }

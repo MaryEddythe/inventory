@@ -133,13 +133,13 @@
             <div class="section-card">
                 <div class="section-header">
                     <h3 class="section-title"><i class="bi bi-diagram-3 me-2"></i>Division Summary</h3>
-                    <p class="section-subtitle">Item distribution across divisions</p>
+                    <p class="section-subtitle">Click any division to see item breakdown by classification</p>
                 </div>
                 <div class="section-body">
                     <div class="division-summary-row" id="division-summary-cards">
                         @foreach($divisionData as $division)
                         <div class="division-summary-card">
-                            <div class="division-card division-card-{{ str_replace(' ', '-', strtolower(trim($division->division))) }}">
+                            <div class="division-card division-card-{{ str_replace(' ', '-', strtolower(trim($division->division))) }} cursor-pointer division-summary-trigger" data-division="{{ $division->division }}" data-breakdown="{{ base64_encode(json_encode($divisionBreakdown[$division->division] ?? [])) }}">
                                 <div class="division-card-body">
                                     <div class="division-icon">
                                         <i class="bi bi-building"></i>
@@ -217,49 +217,12 @@
         </div>
     </div>
 
-    <!-- Division Breakdown Section -->
-    <div class="row g-3">
-        <div class="col-12">
-            <div class="section-card">
-                <div class="section-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="section-title"><i class="bi bi-list-columns-reverse me-2"></i>Division Breakdown by Classification</h3>
-                            <p class="section-subtitle">Detailed item distribution across divisions and types</p>
-                        </div>
-                        <div id="active-classification-badges"></div>
-                    </div>
-                </div>
-                <div class="section-body">
-                    <div class="breakdown-row" id="division-breakdown-cards">
-                        @foreach($divisionBreakdown as $division => $breakdown)
-                        <div class="breakdown-card-wrapper">
-                            <div class="breakdown-card breakdown-card-{{ str_replace(' ', '-', strtolower(trim($division))) }} cursor-pointer division-breakdown-trigger" data-division="{{ $division }}" data-breakdown="{{ base64_encode(json_encode($breakdown)) }}">
-                                <div class="breakdown-header">
-                                    <h4 class="breakdown-title">{{ $division }}</h4>
-                                    <button class="btn-expand" type="button">
-                                        <i class="bi bi-fullscreen"></i>
-                                    </button>
-                                </div>
-                                <div class="breakdown-summary">
-                                    <div class="breakdown-total">
-                                        <span class="breakdown-number">{{ ($breakdown['Desktop'] ?? 0) + ($breakdown['Laptop'] ?? 0) + ($breakdown['Monitor'] ?? 0) + ($breakdown['Printer'] ?? 0) + ($breakdown['Scanner'] ?? 0) + ($breakdown['Others'] ?? 0) }}</span>
-                                        <span class="breakdown-text">Total Items</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 <!-- Division Breakdown Modal -->
 <div class="modal fade" id="divisionBreakdownModal" tabindex="-1" aria-labelledby="divisionBreakdownModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="divisionBreakdownModalLabel">Division Breakdown</h5>
@@ -289,18 +252,25 @@
         }
     }
 
-    // Handle division breakdown modal clicks
+    // Global variable to store division breakdown data
+    let divisionBreakdownData = {};
+
+    // Handle division summary modal clicks
     document.addEventListener('DOMContentLoaded', function() {
-        // Set up click handlers for breakdown cards
-        document.querySelectorAll('.division-breakdown-trigger').forEach(card => {
+        // Set up click handlers for summary cards
+        attachDivisionSummaryClickHandlers();
+    });
+
+    function attachDivisionSummaryClickHandlers() {
+        document.querySelectorAll('.division-summary-trigger').forEach(card => {
             card.addEventListener('click', function(e) {
                 e.preventDefault();
                 const division = this.getAttribute('data-division');
                 const encodedBreakdown = this.getAttribute('data-breakdown');
                 const breakdown = decodeBase64(encodedBreakdown);
                 
-                if (!breakdown) {
-                    console.error('Could not decode breakdown data');
+                if (!breakdown || Object.keys(breakdown).length === 0) {
+                    console.warn('No breakdown data for division:', division);
                     return;
                 }
                 
@@ -354,7 +324,7 @@
                 modal.show();
             });
         });
-    });
+    }
 
     // ── Helper: apply a metrics object to the dashboard DOM ───────────────────
     function applyMetricsToDom(metrics) {
@@ -487,10 +457,9 @@
                 totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
                 animateCountUp(totalDivisionsEl, data.totalDivisions);
 
-                updateCards('division-summary-cards', data.divisionData, 'division-summary');
+                updateCards('division-summary-cards', data.divisionData, 'division-summary', data.divisionBreakdown);
                 updateCards('status-cards', data.statusData, 'status');
                 updateCards('condition-cards', data.conditionData, 'condition');
-                updateDivisionBreakdownCards(data.divisionBreakdown);
             })
             .catch(error => {
                 console.error('Error fetching dashboard data:', error);
@@ -576,10 +545,10 @@
             totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
             animateCountUp(totalDivisionsEl, data.totalDivisions);
 
-            updateCards('division-summary-cards', data.divisionData, 'division-summary');
+            updateCards('division-summary-cards', data.divisionData, 'division-summary', data.divisionBreakdown);
             updateCards('status-cards', data.statusData, 'status');
             updateCards('condition-cards', data.conditionData, 'condition');
-            updateDivisionBreakdownCards(data.divisionBreakdown);
+            divisionBreakdownData = data.divisionBreakdown;
         })
         .catch(error => {
             console.error('Error fetching dashboard data:', error);
@@ -587,122 +556,7 @@
         });
     }
 
-    function updateDivisionBreakdownCards(divisionBreakdown) {
-        const container = document.getElementById('division-breakdown-cards');
-        container.innerHTML = '';
-
-        // Update the global breakdown data
-        divisionBreakdownData = divisionBreakdown;
-
-        // Update classification badges
-        const selectedClassifications = getSelectedClassifications();
-        const badgesContainer = document.getElementById('active-classification-badges');
-        badgesContainer.innerHTML = '';
-        
-        if (selectedClassifications.length > 0) {
-            const badgeHtml = selectedClassifications.map(classification => {
-                if (classification === 'rpcsp') {
-                    return '<span class="badge bg-success ms-2">RPCSP (≤ ₱49,999)</span>';
-                } else if (classification === 'ppe') {
-                    return '<span class="badge bg-info ms-2">PPE (≥ ₱50,000)</span>';
-                }
-            }).join('');
-            badgesContainer.innerHTML = '<small class="text-muted">Showing:</small>' + badgeHtml;
-        }
-
-        Object.keys(divisionBreakdown).forEach((division, index) => {
-            const breakdown = divisionBreakdown[division];
-            const total = Object.values(breakdown).reduce((sum, count) => sum + count, 0);
-
-            const divisionClass = division.replace(/\s+/g, '-').toLowerCase();
-            const encodedBreakdown = btoa(JSON.stringify(breakdown));
-            const cardHtml = `
-                <div class="breakdown-card-wrapper">
-                    <div class="breakdown-card breakdown-card-${divisionClass} cursor-pointer division-breakdown-trigger" data-division="${division}" data-breakdown="${encodedBreakdown}">
-                        <div class="breakdown-header">
-                            <h4 class="breakdown-title">${division}</h4>
-                            <button class="btn-expand" type="button">
-                                <i class="bi bi-fullscreen"></i>
-                            </button>
-                        </div>
-                        <div class="breakdown-summary">
-                            <div class="breakdown-total">
-                                <span class="breakdown-number">${(breakdown.Desktop ?? 0) + (breakdown.Laptop ?? 0) + (breakdown.Monitor ?? 0) + (breakdown.Printer ?? 0) + (breakdown.Scanner ?? 0) + (breakdown.Others ?? 0)}</span>
-                                <span class="breakdown-text">Total Items</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', cardHtml);
-        });
-
-        // Reattach click handlers
-        document.querySelectorAll('.division-breakdown-trigger').forEach(card => {
-            card.addEventListener('click', function(e) {
-                e.preventDefault();
-                const division = this.getAttribute('data-division');
-                const encodedBreakdown = this.getAttribute('data-breakdown');
-                const breakdown = decodeBase64(encodedBreakdown);
-                
-                if (!breakdown) {
-                    console.error('Could not decode breakdown data');
-                    return;
-                }
-                
-                // Populate modal
-                const modalTitle = document.querySelector('#divisionBreakdownModalLabel');
-                const modalContent = document.querySelector('#modalBreakdownContent');
-                
-                modalTitle.textContent = `${division} - Item Breakdown`;
-                
-                let contentHtml = `
-                    <div class="breakdown-modal-content">
-                        <div class="breakdown-modal-summary">
-                            <div class="breakdown-modal-total">
-                                <span class="breakdown-modal-number">${(breakdown.Desktop ?? 0) + (breakdown.Laptop ?? 0) + (breakdown.Monitor ?? 0) + (breakdown.Printer ?? 0) + (breakdown.Scanner ?? 0) + (breakdown.Others ?? 0)}</span>
-                                <span class="breakdown-modal-text">Total Items</span>
-                            </div>
-                        </div>
-                        <div class="breakdown-modal-details">
-                            <div class="breakdown-modal-item">
-                                <span class="breakdown-modal-label">Desktop</span>
-                                <span class="breakdown-modal-value">${breakdown.Desktop ?? 0}</span>
-                            </div>
-                            <div class="breakdown-modal-item">
-                                <span class="breakdown-modal-label">Laptop</span>
-                                <span class="breakdown-modal-value">${breakdown.Laptop ?? 0}</span>
-                            </div>
-                            <div class="breakdown-modal-item">
-                                <span class="breakdown-modal-label">Monitor</span>
-                                <span class="breakdown-modal-value">${breakdown.Monitor ?? 0}</span>
-                            </div>
-                            <div class="breakdown-modal-item">
-                                <span class="breakdown-modal-label">Printer</span>
-                                <span class="breakdown-modal-value">${breakdown.Printer ?? 0}</span>
-                            </div>
-                            <div class="breakdown-modal-item">
-                                <span class="breakdown-modal-label">Scanner</span>
-                                <span class="breakdown-modal-value">${breakdown.Scanner ?? 0}</span>
-                            </div>
-                            <div class="breakdown-modal-item">
-                                <span class="breakdown-modal-label">Others</span>
-                                <span class="breakdown-modal-value">${breakdown.Others ?? 0}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                modalContent.innerHTML = contentHtml;
-                
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('divisionBreakdownModal'));
-                modal.show();
-            });
-        });
-    }
-
-    function updateCards(containerId, data, type) {
+    function updateCards(containerId, data, type, divisionBreakdown = null) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
 
@@ -711,9 +565,11 @@
 
             if (type === 'division-summary') {
                 const divisionClass = item.division.replace(/\s+/g, '-').toLowerCase();
+                const breakdown = divisionBreakdown && divisionBreakdown[item.division] ? divisionBreakdown[item.division] : {};
+                const encodedBreakdown = btoa(JSON.stringify(breakdown));
                 cardHtml = `
                     <div class="col-lg-3 col-md-6">
-                        <div class="division-card division-card-${divisionClass}">
+                        <div class="division-card division-card-${divisionClass} cursor-pointer division-summary-trigger" data-division="${item.division}" data-breakdown="${encodedBreakdown}">
                             <div class="division-card-body">
                                 <div class="division-icon">
                                     <i class="bi bi-building"></i>
@@ -769,6 +625,11 @@
 
             container.insertAdjacentHTML('beforeend', cardHtml);
         });
+
+        // Re-attach click handlers for division-summary cards
+        if (type === 'division-summary') {
+            attachDivisionSummaryClickHandlers();
+        }
     }
 
 </script>

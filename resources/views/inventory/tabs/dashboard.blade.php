@@ -107,22 +107,6 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="metric-card metric-card-info">
-                    <div class="metric-header">
-                        <div class="metric-icon">
-                            <i class="bi bi-graph-up"></i>
-                        </div>
-                        <div class="metric-info">
-                            <span class="metric-label">Added Items</span>
-                            <h2 class="metric-value"><span class="count-up" data-target="{{ $itemsThisMonth }}" id="itemsThisMonthCount">{{ $itemsThisMonth }}</span></h2>
-                        </div>
-                    </div>
-                    <div class="metric-footer">
-                        <small class="text-muted">New items added</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
                 <div class="metric-card metric-card-warning">
                     <div class="metric-header">
                         <div class="metric-icon">
@@ -141,6 +125,8 @@
         </div>
     </div>
 
+    </div>
+
     <!-- Division Summary Section -->
     <div class="row g-3 mb-4">
         <div class="col-12">
@@ -150,9 +136,9 @@
                     <p class="section-subtitle">Item distribution across divisions</p>
                 </div>
                 <div class="section-body">
-                    <div class="row g-3" id="division-summary-cards">
+                    <div class="division-summary-row" id="division-summary-cards">
                         @foreach($divisionData as $division)
-                        <div class="col-lg-3 col-md-6">
+                        <div class="division-summary-card">
                             <div class="division-card division-card-{{ str_replace(' ', '-', strtolower(trim($division->division))) }}">
                                 <div class="division-card-body">
                                     <div class="division-icon">
@@ -245,48 +231,20 @@
                     </div>
                 </div>
                 <div class="section-body">
-                    <div class="row g-3" id="division-breakdown-cards">
+                    <div class="breakdown-row" id="division-breakdown-cards">
                         @foreach($divisionBreakdown as $division => $breakdown)
-                        <div class="col-lg-4 col-md-6">
-                            <div class="breakdown-card breakdown-card-{{ str_replace(' ', '-', strtolower(trim($division))) }}">
+                        <div class="breakdown-card-wrapper">
+                            <div class="breakdown-card breakdown-card-{{ str_replace(' ', '-', strtolower(trim($division))) }} cursor-pointer division-breakdown-trigger" data-division="{{ $division }}" data-breakdown="{{ base64_encode(json_encode($breakdown)) }}">
                                 <div class="breakdown-header">
                                     <h4 class="breakdown-title">{{ $division }}</h4>
-                                    <button class="btn-expand" type="button" data-bs-toggle="collapse" data-bs-target="#breakdown-{{ str_replace(' ', '-', $division) }}" aria-expanded="false">
-                                        <i class="bi bi-chevron-down"></i>
+                                    <button class="btn-expand" type="button">
+                                        <i class="bi bi-fullscreen"></i>
                                     </button>
                                 </div>
                                 <div class="breakdown-summary">
                                     <div class="breakdown-total">
                                         <span class="breakdown-number">{{ ($breakdown['Desktop'] ?? 0) + ($breakdown['Laptop'] ?? 0) + ($breakdown['Monitor'] ?? 0) + ($breakdown['Printer'] ?? 0) + ($breakdown['Scanner'] ?? 0) + ($breakdown['Others'] ?? 0) }}</span>
                                         <span class="breakdown-text">Total Items</span>
-                                    </div>
-                                </div>
-                                <div class="collapse" id="breakdown-{{ str_replace(' ', '-', $division) }}">
-                                    <div class="breakdown-details">
-                                        <div class="breakdown-item">
-                                            <span class="breakdown-label">Desktop</span>
-                                            <span class="breakdown-value">{{ $breakdown['Desktop'] ?? 0 }}</span>
-                                        </div>
-                                        <div class="breakdown-item">
-                                            <span class="breakdown-label">Laptop</span>
-                                            <span class="breakdown-value">{{ $breakdown['Laptop'] ?? 0 }}</span>
-                                        </div>
-                                        <div class="breakdown-item">
-                                            <span class="breakdown-label">Monitor</span>
-                                            <span class="breakdown-value">{{ $breakdown['Monitor'] ?? 0 }}</span>
-                                        </div>
-                                        <div class="breakdown-item">
-                                            <span class="breakdown-label">Printer</span>
-                                            <span class="breakdown-value">{{ $breakdown['Printer'] ?? 0 }}</span>
-                                        </div>
-                                        <div class="breakdown-item">
-                                            <span class="breakdown-label">Scanner</span>
-                                            <span class="breakdown-value">{{ $breakdown['Scanner'] ?? 0 }}</span>
-                                        </div>
-                                        <div class="breakdown-item">
-                                            <span class="breakdown-label">Others</span>
-                                            <span class="breakdown-value">{{ $breakdown['Others'] ?? 0 }}</span>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -299,8 +257,105 @@
     </div>
 </div>
 
+<!-- Division Breakdown Modal -->
+<div class="modal fade" id="divisionBreakdownModal" tabindex="-1" aria-labelledby="divisionBreakdownModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="divisionBreakdownModalLabel">Division Breakdown</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalBreakdownContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+    // Helper function to decode base64
+    function decodeBase64(str) {
+        try {
+            return JSON.parse(atob(str));
+        } catch (e) {
+            console.error('Failed to decode base64:', e);
+            return null;
+        }
+    }
+
+    // Handle division breakdown modal clicks
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up click handlers for breakdown cards
+        document.querySelectorAll('.division-breakdown-trigger').forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                const division = this.getAttribute('data-division');
+                const encodedBreakdown = this.getAttribute('data-breakdown');
+                const breakdown = decodeBase64(encodedBreakdown);
+                
+                if (!breakdown) {
+                    console.error('Could not decode breakdown data');
+                    return;
+                }
+                
+                // Populate modal
+                const modalTitle = document.querySelector('#divisionBreakdownModalLabel');
+                const modalContent = document.querySelector('#modalBreakdownContent');
+                
+                modalTitle.textContent = `${division} - Item Breakdown`;
+                
+                let contentHtml = `
+                    <div class="breakdown-modal-content">
+                        <div class="breakdown-modal-summary">
+                            <div class="breakdown-modal-total">
+                                <span class="breakdown-modal-number">${(breakdown.Desktop ?? 0) + (breakdown.Laptop ?? 0) + (breakdown.Monitor ?? 0) + (breakdown.Printer ?? 0) + (breakdown.Scanner ?? 0) + (breakdown.Others ?? 0)}</span>
+                                <span class="breakdown-modal-text">Total Items</span>
+                            </div>
+                        </div>
+                        <div class="breakdown-modal-details">
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Desktop</span>
+                                <span class="breakdown-modal-value">${breakdown.Desktop ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Laptop</span>
+                                <span class="breakdown-modal-value">${breakdown.Laptop ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Monitor</span>
+                                <span class="breakdown-modal-value">${breakdown.Monitor ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Printer</span>
+                                <span class="breakdown-modal-value">${breakdown.Printer ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Scanner</span>
+                                <span class="breakdown-modal-value">${breakdown.Scanner ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Others</span>
+                                <span class="breakdown-modal-value">${breakdown.Others ?? 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                modalContent.innerHTML = contentHtml;
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('divisionBreakdownModal'));
+                modal.show();
+            });
+        });
+    });
+
     // ── Helper: apply a metrics object to the dashboard DOM ───────────────────
     function applyMetricsToDom(metrics) {
         if (!metrics) return;
@@ -309,9 +364,9 @@
             totalItemsCount:     { value: metrics.totalItems,     currency: false },
             rpcspValueCount:     { value: metrics.rpcspValue,     currency: true  },
             ppeValueCount:       { value: metrics.ppeValue,       currency: true  },
-            itemsThisMonthCount: { value: metrics.itemsThisMonth, currency: false },
             totalDivisionsCount: { value: metrics.totalDivisions, currency: false },
         };
+
 
         Object.entries(map).forEach(([id, cfg]) => {
             const el = document.getElementById(id);
@@ -427,11 +482,8 @@
                 ppeValueEl.setAttribute('data-target', data.ppeValue);
                 animateCountUp(ppeValueEl, data.ppeValue);
 
-                const itemsThisMonthEl = document.getElementById('itemsThisMonthCount');
-                itemsThisMonthEl.setAttribute('data-target', data.itemsThisMonth);
-                animateCountUp(itemsThisMonthEl, data.itemsThisMonth);
-
                 const totalDivisionsEl = document.getElementById('totalDivisionsCount');
+
                 totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
                 animateCountUp(totalDivisionsEl, data.totalDivisions);
 
@@ -502,10 +554,11 @@
             }
         })
         .then(response => response.json())
-        .then(data => {
+            .then(data => {
             const totalItemsEl = document.getElementById('totalItemsCount');
-            totalItemsEl.setAttribute('data-target', data.totalItems);
-            animateCountUp(totalItemsEl, data.totalItems);
+            totalItemsEl?.setAttribute('data-target', data.totalItems);
+            if (totalItemsEl) animateCountUp(totalItemsEl, data.totalItems);
+
 
             const rpcspValueEl = document.getElementById('rpcspValueCount');
             rpcspValueEl.setAttribute('data-target', data.rpcspValue);
@@ -538,6 +591,9 @@
         const container = document.getElementById('division-breakdown-cards');
         container.innerHTML = '';
 
+        // Update the global breakdown data
+        divisionBreakdownData = divisionBreakdown;
+
         // Update classification badges
         const selectedClassifications = getSelectedClassifications();
         const badgesContainer = document.getElementById('active-classification-badges');
@@ -557,16 +613,16 @@
         Object.keys(divisionBreakdown).forEach((division, index) => {
             const breakdown = divisionBreakdown[division];
             const total = Object.values(breakdown).reduce((sum, count) => sum + count, 0);
-            const divisionId = division.replace(/\s+/g, '-');
 
             const divisionClass = division.replace(/\s+/g, '-').toLowerCase();
+            const encodedBreakdown = btoa(JSON.stringify(breakdown));
             const cardHtml = `
-                <div class="col-lg-4 col-md-6">
-                    <div class="breakdown-card breakdown-card-${divisionClass}">
+                <div class="breakdown-card-wrapper">
+                    <div class="breakdown-card breakdown-card-${divisionClass} cursor-pointer division-breakdown-trigger" data-division="${division}" data-breakdown="${encodedBreakdown}">
                         <div class="breakdown-header">
                             <h4 class="breakdown-title">${division}</h4>
-                            <button class="btn-expand" type="button" data-bs-toggle="collapse" data-bs-target="#breakdown-${divisionId}" aria-expanded="false">
-                                <i class="bi bi-chevron-down"></i>
+                            <button class="btn-expand" type="button">
+                                <i class="bi bi-fullscreen"></i>
                             </button>
                         </div>
                         <div class="breakdown-summary">
@@ -575,38 +631,74 @@
                                 <span class="breakdown-text">Total Items</span>
                             </div>
                         </div>
-                        <div class="collapse" id="breakdown-${divisionId}">
-                            <div class="breakdown-details">
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Desktop</span>
-                                    <span class="breakdown-value">${breakdown.Desktop ?? 0}</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Laptop</span>
-                                    <span class="breakdown-value">${breakdown.Laptop ?? 0}</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Monitor</span>
-                                    <span class="breakdown-value">${breakdown.Monitor ?? 0}</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Printer</span>
-                                    <span class="breakdown-value">${breakdown.Printer ?? 0}</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Scanner</span>
-                                    <span class="breakdown-value">${breakdown.Scanner ?? 0}</span>
-                                </div>
-                                <div class="breakdown-item">
-                                    <span class="breakdown-label">Others</span>
-                                    <span class="breakdown-value">${breakdown.Others ?? 0}</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', cardHtml);
+        });
+
+        // Reattach click handlers
+        document.querySelectorAll('.division-breakdown-trigger').forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                const division = this.getAttribute('data-division');
+                const encodedBreakdown = this.getAttribute('data-breakdown');
+                const breakdown = decodeBase64(encodedBreakdown);
+                
+                if (!breakdown) {
+                    console.error('Could not decode breakdown data');
+                    return;
+                }
+                
+                // Populate modal
+                const modalTitle = document.querySelector('#divisionBreakdownModalLabel');
+                const modalContent = document.querySelector('#modalBreakdownContent');
+                
+                modalTitle.textContent = `${division} - Item Breakdown`;
+                
+                let contentHtml = `
+                    <div class="breakdown-modal-content">
+                        <div class="breakdown-modal-summary">
+                            <div class="breakdown-modal-total">
+                                <span class="breakdown-modal-number">${(breakdown.Desktop ?? 0) + (breakdown.Laptop ?? 0) + (breakdown.Monitor ?? 0) + (breakdown.Printer ?? 0) + (breakdown.Scanner ?? 0) + (breakdown.Others ?? 0)}</span>
+                                <span class="breakdown-modal-text">Total Items</span>
+                            </div>
+                        </div>
+                        <div class="breakdown-modal-details">
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Desktop</span>
+                                <span class="breakdown-modal-value">${breakdown.Desktop ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Laptop</span>
+                                <span class="breakdown-modal-value">${breakdown.Laptop ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Monitor</span>
+                                <span class="breakdown-modal-value">${breakdown.Monitor ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Printer</span>
+                                <span class="breakdown-modal-value">${breakdown.Printer ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Scanner</span>
+                                <span class="breakdown-modal-value">${breakdown.Scanner ?? 0}</span>
+                            </div>
+                            <div class="breakdown-modal-item">
+                                <span class="breakdown-modal-label">Others</span>
+                                <span class="breakdown-modal-value">${breakdown.Others ?? 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                modalContent.innerHTML = contentHtml;
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('divisionBreakdownModal'));
+                modal.show();
+            });
         });
     }
 

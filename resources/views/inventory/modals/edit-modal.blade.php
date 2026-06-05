@@ -93,9 +93,15 @@
         <label for="serviceability-{{ $item->no }}" class="form-label">Serviceability</label>
         <select class="form-select" id="serviceability-{{ $item->no }}" name="serviceability">
             <option value="" disabled>Select Serviceability</option>
-            <option value="Beyond Economic Repair" {{ old('serviceability', $item->serviceability) == 'Beyond Economic Repair' ? 'selected' : '' }}>Beyond Economic Repair</option>
-            <option value="Good Condition" {{ old('serviceability', $item->serviceability) == 'Good Condition' ? 'selected' : '' }}>Good Condition</option>
-            <option value="For Replacement" {{ old('serviceability', $item->serviceability) == 'For Replacement' ? 'selected' : '' }}>For Replacement</option>
+@php
+    $serviceabilities = $serviceabilities ?? ['Beyond Economic Repair', 'Good Condition', 'For Replacement', 'N/A'];
+@endphp
+
+@foreach($serviceabilities as $serviceability)
+                <option value="{{ $serviceability }}" {{ old('serviceability', $item->serviceability) == $serviceability ? 'selected' : '' }}>
+                    {{ $serviceability }}
+                </option>
+            @endforeach
         </select>
     </div>
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">

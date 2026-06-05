@@ -89,9 +89,15 @@
             <label for="serviceability" class="form-label">Serviceability</label>
             <select class="form-select" id="serviceability" name="serviceability">
                 <option value="" disabled {{ old('serviceability') ? '' : 'selected' }}>Select Serviceability</option>
-                <option value="Good Condition" {{ old('serviceability') == 'Good Condition' ? 'selected' : '' }}>Good Condition</option>
-                <option value="For Replacement" {{ old('serviceability') == 'For Replacement' ? 'selected' : '' }}>For Replacement</option>
-                <option value="Beyond Economic Repair" {{ old('serviceability') == 'Beyond Economic Repair' ? 'selected' : '' }}>Beyond Economic Repair</option>
+                @php
+                    $serviceabilities = $serviceabilities ?? ['Beyond Economic Repair', 'Good Condition', 'For Replacement', 'N/A'];
+                @endphp
+
+                @foreach($serviceabilities as $serviceability)
+                    <option value="{{ $serviceability }}" {{ old('serviceability') == $serviceability ? 'selected' : '' }}>
+                        {{ $serviceability }}
+                    </option>
+                @endforeach
             </select>
         </div>
         <div class="col-md-6 mb-3">

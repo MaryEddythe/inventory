@@ -233,9 +233,6 @@
                     <!-- Content will be populated by JavaScript -->
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
         </div>
     </div>
 </div>
@@ -441,21 +438,28 @@
             .then(response => response.json())
             .then(data => {
                 const totalItemsEl = document.getElementById('totalItemsCount');
-                totalItemsEl.setAttribute('data-target', data.totalItems);
-                animateCountUp(totalItemsEl, data.totalItems);
+                if (totalItemsEl) {
+                    totalItemsEl.setAttribute('data-target', data.totalItems);
+                    animateCountUp(totalItemsEl, data.totalItems, 0);
+                }
 
                 const rpcspValueEl = document.getElementById('rpcspValueCount');
-                rpcspValueEl.setAttribute('data-target', data.rpcspValue);
-                animateCountUp(rpcspValueEl, data.rpcspValue);
+                if (rpcspValueEl) {
+                    rpcspValueEl.setAttribute('data-target', data.rpcspValue);
+                    animateCountUp(rpcspValueEl, data.rpcspValue, 0);
+                }
 
                 const ppeValueEl = document.getElementById('ppeValueCount');
-                ppeValueEl.setAttribute('data-target', data.ppeValue);
-                animateCountUp(ppeValueEl, data.ppeValue);
+                if (ppeValueEl) {
+                    ppeValueEl.setAttribute('data-target', data.ppeValue);
+                    animateCountUp(ppeValueEl, data.ppeValue, 0);
+                }
 
                 const totalDivisionsEl = document.getElementById('totalDivisionsCount');
-
-                totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
-                animateCountUp(totalDivisionsEl, data.totalDivisions);
+                if (totalDivisionsEl) {
+                    totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
+                    animateCountUp(totalDivisionsEl, data.totalDivisions, 0);
+                }
 
                 updateCards('division-summary-cards', data.divisionData, 'division-summary', data.divisionBreakdown);
                 updateCards('status-cards', data.statusData, 'status');
@@ -468,7 +472,7 @@
         });
     });
 
-    function animateCountUp(el, targetValue) {
+    function animateCountUp(el, targetValue, duration = 1000) {
         const target = targetValue !== undefined ? parseFloat(targetValue) : parseFloat(el.getAttribute('data-target'));
         if (isNaN(target)) return;
 
@@ -481,7 +485,16 @@
         // when the page first loads, resulting in no visible animation.)
         const start = 0;
 
-        const duration = 1000;
+        // If duration is 0, set value immediately
+        if (duration === 0) {
+            if (isCurrency) {
+                el.textContent = target.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else {
+                el.textContent = Math.round(target).toLocaleString();
+            }
+            return;
+        }
+
         let startTime;
 
         function step(timestamp) {
@@ -526,24 +539,32 @@
             .then(data => {
             const totalItemsEl = document.getElementById('totalItemsCount');
             totalItemsEl?.setAttribute('data-target', data.totalItems);
-            if (totalItemsEl) animateCountUp(totalItemsEl, data.totalItems);
+            if (totalItemsEl) animateCountUp(totalItemsEl, data.totalItems, 0);
 
 
             const rpcspValueEl = document.getElementById('rpcspValueCount');
-            rpcspValueEl.setAttribute('data-target', data.rpcspValue);
-            animateCountUp(rpcspValueEl, data.rpcspValue);
+            if (rpcspValueEl) {
+                rpcspValueEl.setAttribute('data-target', data.rpcspValue);
+                animateCountUp(rpcspValueEl, data.rpcspValue, 0);
+            }
 
             const ppeValueEl = document.getElementById('ppeValueCount');
-            ppeValueEl.setAttribute('data-target', data.ppeValue);
-            animateCountUp(ppeValueEl, data.ppeValue);
+            if (ppeValueEl) {
+                ppeValueEl.setAttribute('data-target', data.ppeValue);
+                animateCountUp(ppeValueEl, data.ppeValue, 0);
+            }
 
             const itemsThisMonthEl = document.getElementById('itemsThisMonthCount');
-            itemsThisMonthEl.setAttribute('data-target', data.itemsThisMonth);
-            animateCountUp(itemsThisMonthEl, data.itemsThisMonth);
+            if (itemsThisMonthEl) {
+                itemsThisMonthEl.setAttribute('data-target', data.itemsThisMonth);
+                animateCountUp(itemsThisMonthEl, data.itemsThisMonth, 0);
+            }
 
             const totalDivisionsEl = document.getElementById('totalDivisionsCount');
-            totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
-            animateCountUp(totalDivisionsEl, data.totalDivisions);
+            if (totalDivisionsEl) {
+                totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
+                animateCountUp(totalDivisionsEl, data.totalDivisions, 0);
+            }
 
             updateCards('division-summary-cards', data.divisionData, 'division-summary', data.divisionBreakdown);
             updateCards('status-cards', data.statusData, 'status');

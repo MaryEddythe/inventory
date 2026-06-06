@@ -74,8 +74,43 @@
                 </span>
             </td>
                             <td>
-                                <span class="badge fw-normal {{ $item->serviceability ? 'badge-serviceability-' . strtolower(str_replace(' ', '-', $item->serviceability)) : '' }}" title="Serviceability">
-                                    {{ $item->serviceability ?? 'N/A' }}
+                                @php
+                                    $serviceability = $item->serviceability ?? 'N/A';
+                                    // Make a safe CSS slug: "N/A" -> "n-a", "Beyond Economic Repair" -> "beyond-economic-repair"
+                                    $serviceabilitySlug = strtolower(preg_replace('/[^a-z0-9]+/', '-', trim($serviceability)));
+                                @endphp
+
+                                @php
+                                    // Inline fallback colors (so badge colors still work even if public/styles.css has parse errors)
+                                    // IMPORTANT: switch on normalized DB value (not slug) to avoid mismatches due to spacing/casing.
+                                    $serviceabilityBadgeStyle = '';
+                                    $serviceabilityNormalized = strtolower(trim(preg_replace('/\s+/', ' ', $serviceability)));
+
+                                    switch ($serviceabilityNormalized) {
+                                        case 'good condition':
+                                            $serviceabilityBadgeStyle = 'background:#006400 !important; color:#fff !important;';
+                                            break;
+                                        case 'for replacement':
+                                            $serviceabilityBadgeStyle = 'background:#A65E00 !important; color:#fff !important;';
+                                            break;
+                                        case 'beyond economic repair':
+                                            $serviceabilityBadgeStyle = 'background:#7A0000 !important; color:#fff !important;';
+                                            break;
+                                        case 'n/a':
+                                        case 'na':
+                                            $serviceabilityBadgeStyle = 'background:#6c757d !important; color:#fff !important;';
+                                            break;
+                                        default:
+                                            // leave empty -> badge will fall back to bootstrap/default badge styling
+                                            $serviceabilityBadgeStyle = '';
+                                            break;
+                                    }
+                                @endphp
+
+                                <span class="badge fw-normal badge-serviceability-{{ $serviceabilitySlug }} {{ $serviceabilitySlug === 'n-a' ? 'badge-secondary' : '' }} {{ $serviceabilitySlug === 'n-a' ? 'text-white' : '' }}"
+                                      style="{{ $serviceabilityBadgeStyle }}"
+                                      title="Serviceability">
+                                    {{ $serviceability }}
                                 </span>
                             </td>
             <td>

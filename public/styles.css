@@ -627,6 +627,11 @@ header {
     color: #222 !important;
 }
 
+.badge-serviceability {
+    background: #007bff !important;
+    color: #fff !important;
+}
+
 .badge-serviceability-good-condition {
     background: #006400 !important;
     color: #fff !important;
@@ -641,6 +646,7 @@ header {
     background: #7A0000 !important;
     color: #fff !important;
 }
+
 .pagination .page-link {
     border-radius: 8px;
     margin: 0 4px;

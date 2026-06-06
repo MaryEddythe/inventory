@@ -106,22 +106,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="metric-card metric-card-warning">
-                    <div class="metric-header">
-                        <div class="metric-icon">
-                            <i class="bi bi-building"></i>
-                        </div>
-                        <div class="metric-info">
-                            <span class="metric-label">Active Divisions</span>
-                            <h2 class="metric-value"><span class="count-up" data-target="{{ $totalDivisions }}" id="totalDivisionsCount">{{ $totalDivisions }}</span></h2>
-                        </div>
-                    </div>
-                    <div class="metric-footer">
-                        <small class="text-muted">Operating divisions</small>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -585,19 +569,26 @@
             let cardHtml;
 
             if (type === 'division-summary') {
-                const divisionClass = item.division.replace(/\s+/g, '-').toLowerCase();
-                const breakdown = divisionBreakdown && divisionBreakdown[item.division] ? divisionBreakdown[item.division] : {};
+                const divisionValue = item?.division;
+                const divisionText = (divisionValue === null || divisionValue === undefined) ? '' : String(divisionValue).trim();
+
+                // Defensive: skip invalid/empty divisions to prevent "NaN" cards.
+                if (!divisionText) return;
+
+                const divisionClass = divisionText.replace(/\s+/g, '-').toLowerCase();
+                const breakdown = divisionBreakdown && divisionBreakdown[divisionText] ? divisionBreakdown[divisionText] : {};
                 const encodedBreakdown = btoa(JSON.stringify(breakdown));
+
                 cardHtml = `
                     <div class="col-lg-3 col-md-6">
-                        <div class="division-card division-card-${divisionClass} cursor-pointer division-summary-trigger" data-division="${item.division}" data-breakdown="${encodedBreakdown}">
+                        <div class="division-card division-card-${divisionClass} cursor-pointer division-summary-trigger" data-division="${divisionText}" data-breakdown="${encodedBreakdown}">
                             <div class="division-card-body">
                                 <div class="division-icon">
                                     <i class="bi bi-building"></i>
                                 </div>
                                 <div class="division-content">
                                     <h3 class="division-count">${item.count}</h3>
-                                    <p class="division-name">${item.division}</p>
+                                    <p class="division-name">${divisionText}</p>
                                 </div>
                             </div>
                             <div class="division-footer">

@@ -311,6 +311,9 @@ class InventoryItemController extends Controller
                 'date_acquired' => 'nullable|date',
                 'date_acquired_type' => 'required|in:date,na',
                 'remarks' => 'nullable|string',
+
+                // Ensure serviceability is stored on create as well (not just on update)
+                'serviceability' => 'nullable|string',
             ]);
 
             // Handle NA values
@@ -809,22 +812,43 @@ class InventoryItemController extends Controller
         ->count();
 
     // Get all divisions with item counts, including those with 0 items
-    $allDivisions = Department::orderBy('department')->pluck('department');
+    // Also guard against null/empty division labels to prevent "NaN" rendering in the UI.
+    $allDivisions = Department::orderBy('department')
+        ->pluck('department')
+        ->filter(function ($division) {
+            return $division !== null && trim((string) $division) !== '';
+        })
+        ->values();
+
     $divisionCounts = (clone $filterableQuery)
         ->select('division', \DB::raw('count(*) as count'))
         ->groupBy('division')
         ->pluck('count', 'division');
 
-    $divisionData = $allDivisions->map(function ($division) use ($divisionCounts) {
-        return (object) [
-            'division' => $division,
-            'count' => $divisionCounts->get($division, 0)
-        ];
+    // Remove invalid keys like null/empty to prevent "NaN" being rendered.
+    $divisionCounts = $divisionCounts->reject(function ($count, $divisionKey) {
+        $key = $divisionKey === null ? '' : (string)$divisionKey;
+        $key = trim($key);
+        return $key === '' || strtolower($key) === 'nan';
     });
 
-    // Count only divisions with items
-    $totalDivisions = $divisionCounts->filter(function ($count) {
-        return $count > 0;
+    $divisionData = $allDivisions->map(function ($division) use ($divisionCounts) {
+        $divisionKey = (string) $division;
+
+        // Also guard against "NaN" text stored in DB
+        if (trim($divisionKey) === '' || strtolower(trim($divisionKey)) === 'nan') {
+            return null;
+        }
+
+        return (object) [
+            'division' => $divisionKey,
+            'count' => (int) $divisionCounts->get($divisionKey, 0),
+        ];
+    })->filter()->values();
+
+    // Count only divisions with items (after filtering invalid keys)
+    $totalDivisions = (int) $divisionCounts->filter(function ($count) {
+        return (int) $count > 0;
     })->count();
 
     // Status data: Items less than 5 years and 5 years or more since date acquired

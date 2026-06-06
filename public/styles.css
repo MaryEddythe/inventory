@@ -236,7 +236,7 @@ body.sidebar-collapsed .app-sidebar {
 .sidebar-nav-link.active {
     color: #0d6efd;
     background: #eef5ff;
-    border-left-color: #0d6efd;
+    border-left-color: transparent !important;
 }
 
 /* Sidebar Dropdown Styles */
@@ -2808,6 +2808,22 @@ mark {
   border-radius: 16px;
   background: var(--dash-surface);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.055);
+}
+
+/* User request: remove colored/different borders on the top metric cards */
+.inventory-dashboard .metric-card {
+  border: none !important;
+}
+
+/* Remove the colored stripe that looks like a border */
+.inventory-dashboard .metric-card::before {
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/* Prevent hover from reintroducing a border color */
+.inventory-dashboard .metric-card:hover {
+  border-color: transparent !important;
 }
 
 .inventory-dashboard .metric-card {

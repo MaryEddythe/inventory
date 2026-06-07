@@ -122,13 +122,19 @@ class InventoryItemController extends Controller
 
         $totalItems = $query->count();
         $totalValue = $query->sum('unit_price');
-       $rpcspValue = (clone $query)->where('unit_price', '<=', 49999)
-        ->whereNotNull('unit_price')
-        ->sum('unit_price');
-        $ppeValue = (clone $query)->where('unit_price', '>=', 50000)
+
+        $rpcspValue = (clone $query)
+            ->where('unit_price', '<=', 49999)
+            ->whereNotNull('unit_price')
+            ->sum('unit_price');
+
+        $ppeValue = (clone $query)
+            ->where('unit_price', '>=', 50000)
             ->where('co_mooe', 'CO')
             ->sum('unit_price');
-        $itemsThisMonth = (clone $query)->whereMonth('date_acquired', now()->month)
+
+        $itemsThisMonth = (clone $query)
+            ->whereMonth('date_acquired', now()->month)
             ->whereYear('date_acquired', now()->year)
             ->count();
 
@@ -858,13 +864,18 @@ class InventoryItemController extends Controller
     $fiveYearsOrMore = 0;
 
     foreach ($allStatusItems as $item) {
-        if ($item->date_acquired) {
-            // If date_acquired is before 5 years ago, it's 5 years or more
-            if ($item->date_acquired < $fiveYearsAgo) {
-                $fiveYearsOrMore++;
-            } else {
-                $lessThan5Years++;
-            }
+        // Match calculateStatus() behavior:
+        // when date_acquired is missing, treat as "≤ 5 years"
+        if (!$item->date_acquired) {
+            $lessThan5Years++;
+            continue;
+        }
+
+        // If date_acquired is before 5 years ago, it's 5 years or more
+        if ($item->date_acquired < $fiveYearsAgo) {
+            $fiveYearsOrMore++;
+        } else {
+            $lessThan5Years++;
         }
     }
 

@@ -70,7 +70,13 @@
             // Debug: Check what data we have
             $totalItems = $items->count();
             $filteredItems = $items->filter(function($item) {
-                $isValid = $item->unit_price <= 49999 && !is_null($item->unit_price);
+                // Only include ACTIVE items (per requirement: x 'active')
+                $isActive = isset($item->x) && strtolower((string) $item->x) === 'active';
+
+                $isValid = $isActive
+                    && $item->unit_price <= 49999
+                    && !is_null($item->unit_price);
+
                 return $isValid;
             });
 
@@ -143,7 +149,7 @@
             @endforeach
 
             <!-- Subtotal and Grand Total on Same Row -->
-            <tr class="pdf-bg-gray pdf-font-bold">
+            <tr class="pdf-font-bold" style="background-color:#fff3cd !important; border-top: 2px solid #ffc107 !important;">
                 <td colspan="4" class="pdf-text-right">SUBTOTAL:</td>
                 <td class="pdf-text-right">{{ number_format($totalUnitValue, 2) }}</td>
                 <td colspan="3" class="pdf-text-right">GRAND TOTAL:</td>

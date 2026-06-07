@@ -337,6 +337,7 @@
     // Track active filters
     let activeFilter = 'none';
     let selectedClassifications = [];
+    let lastCustomRange = null;
 
     function getSelectedClassifications() {
         const rpcspChecked = document.getElementById('filter-rpcsp').checked;
@@ -358,17 +359,84 @@
             }
         } catch (e) { /* ignore */ }
 
+        // ── Auto-refresh (AJAX polling) ──────────────────────────────────────
+        const AUTO_REFRESH_MS = 30000;
+
+        function buildDashboardUrl() {
+            const classifications = getSelectedClassifications();
+            const classParams = classifications.length > 0 ? `&classifications=${classifications.join(',')}` : '';
+
+            if (activeFilter === 'custom' && lastCustomRange) {
+                const { startDate, endDate } = lastCustomRange;
+                return `/dashboard?filter=custom&date_from=${startDate}&date_to=${endDate}${classParams}`;
+            }
+
+            if (activeFilter && activeFilter !== 'none') {
+                return `/dashboard?filter=${encodeURIComponent(activeFilter)}${classParams}`;
+            }
+
+            return `/dashboard${classParams ? `?${classParams.substring(1)}` : ''}`;
+        }
+
+        function fetchAndApplyDashboard() {
+            if (document.visibilityState !== 'visible') return;
+
+            const url = buildDashboardUrl();
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const totalItemsEl = document.getElementById('totalItemsCount');
+                if (totalItemsEl) {
+                    totalItemsEl.setAttribute('data-target', data.totalItems);
+                    animateCountUp(totalItemsEl, data.totalItems, 0);
+                }
+
+                const rpcspValueEl = document.getElementById('rpcspValueCount');
+                if (rpcspValueEl) {
+                    rpcspValueEl.setAttribute('data-target', data.rpcspValue);
+                    animateCountUp(rpcspValueEl, data.rpcspValue, 0);
+                }
+
+                const ppeValueEl = document.getElementById('ppeValueCount');
+                if (ppeValueEl) {
+                    ppeValueEl.setAttribute('data-target', data.ppeValue);
+                    animateCountUp(ppeValueEl, data.ppeValue, 0);
+                }
+
+                const totalDivisionsEl = document.getElementById('totalDivisionsCount');
+                if (totalDivisionsEl) {
+                    totalDivisionsEl.setAttribute('data-target', data.totalDivisions);
+                    animateCountUp(totalDivisionsEl, data.totalDivisions, 0);
+                }
+
+                updateCards('division-summary-cards', data.divisionData, 'division-summary', data.divisionBreakdown);
+                updateCards('status-cards', data.statusData, 'status');
+                updateCards('condition-cards', data.conditionData, 'condition');
+
+                divisionBreakdownData = data.divisionBreakdown;
+            })
+            .catch(error => {
+                console.error('Auto-refresh dashboard fetch failed:', error);
+            });
+        }
+
+        // initial fetch + start polling
+        fetchAndApplyDashboard();
+        window.setInterval(fetchAndApplyDashboard, AUTO_REFRESH_MS);
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                fetchAndApplyDashboard();
+            }
+        });
+
 
         // Also react whenever the tab regains focus (user switches back to this tab
         // in the browser after adding items on the Inventory tab).
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState !== 'visible') return;
-            try {
-                const cached = sessionStorage.getItem('inventoryMetrics');
-                if (cached) applyMetricsToDom(JSON.parse(cached));
-            } catch (e) { /* ignore */ }
-        });
-
         document.getElementById('refresh-btn').addEventListener('click', function() {
             location.reload();
         });
@@ -399,6 +467,8 @@
                 alert('Please select both start and end dates.');
                 return;
             }
+
+            lastCustomRange = { startDate, endDate };
 
             if (startDate > endDate) {
                 alert('Start date cannot be after end date.');

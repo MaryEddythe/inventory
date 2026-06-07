@@ -105,7 +105,15 @@
             <tbody>
                 @php
                     $ppeItems = $items->filter(function($item) {
-                        return $item->unit_price !== null && (float)$item->unit_price >= 50000 && $item->co_mooe === 'CO';
+                        // Only include ACTIVE items (x 'active' only)
+                        $isActive = isset($item->x) && $item->x !== null && strtolower(trim((string)$item->x)) !== 'inactive';
+                        if (!$isActive) {
+                            return false;
+                        }
+
+                        return $item->unit_price !== null
+                            && (float)$item->unit_price >= 50000
+                            && $item->co_mooe === 'CO';
                     });
 
                     $groupedItems = $ppeItems->groupBy('division');

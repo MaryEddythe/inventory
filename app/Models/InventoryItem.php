@@ -84,6 +84,10 @@ class InventoryItem extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('x', '!=', 'INACTIVE');
+        // Treat any of: NULL/empty? as inactive? (keep null allowed by dashboard logic elsewhere)
+        // Requirement: when inventory_items.x is 'inactive' (case-insensitive), exclude it.
+        return $query
+            ->whereNotNull('x')
+            ->whereRaw('LOWER(TRIM(x)) <> ?', ['inactive']);
     }
 }

@@ -111,6 +111,13 @@
                 @php
                     $rowNumber = 1;
                     $filteredItems = $items->filter(function($item) {
+                        // Only include ACTIVE items (x 'active' only)
+                        $isActive = isset($item->x) && strtolower((string)$item->x) !== 'inactive';
+                        if (!$isActive) {
+                            return false;
+                        }
+
+                        // Exclude Monitor classification from IPM listing
                         return stripos($item->classification, 'monitor') === false;
                     });
                 @endphp

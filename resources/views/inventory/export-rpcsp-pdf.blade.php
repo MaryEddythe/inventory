@@ -145,7 +145,8 @@
                             && !is_null($item->unit_price);
                     });
 
-                    $classificationItems = $filteredItems->groupBy('classification');
+$classificationItems = $filteredItems->groupBy('division');
+
 
                     $totalGrandValue = 0;
                     $totalUnitValue  = 0;

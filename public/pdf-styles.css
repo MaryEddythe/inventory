@@ -583,7 +583,8 @@ body {
 }
 
 .rpcsp-table th, .rpcsp-table td {
-    border: 1px solid #000;
+    border: 1px solid #ccc;
+
     padding: 2px;
     text-align: left;
     vertical-align: top;

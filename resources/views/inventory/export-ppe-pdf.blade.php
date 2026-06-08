@@ -284,6 +284,120 @@
         </table>
     </div>
 
+    {{-- ===== SIGNATURE SECTION ===== --}}
+    <div class="pdf-signature-section pdf-mt-3" style="margin-top: 15px; page-break-inside: avoid;">
+
+        {{-- Section labels row --}}
+        <table style="width: 100%; border: none; margin-bottom: 4px;">
+            <tr>
+                <td style="width: 45%; border: none; padding: 0;">
+                    <span style="font-size: 8px; font-weight: bold;">Certified Correct by:</span>
+                </td>
+                <td style="width: 30%; border: none; padding: 0;">
+                    <span style="font-size: 8px; font-weight: bold;">Approved by:</span>
+                </td>
+                <td style="width: 25%; border: none; padding: 0;">
+                    <span style="font-size: 8px; font-weight: bold;">Witnessed by:</span>
+                </td>
+            </tr>
+        </table>
+
+        {{-- Signature boxes --}}
+        <table style="width: 100%; border: none; margin-top: 8px;">
+        <tr>
+
+        {{-- Certified Correct — 4 signatories --}}
+        <td style="width: 45%; vertical-align: top; border: none; padding-right: 12px;">
+            <table style="width: 100%; border: none;">
+
+                <tr>
+                    {{-- Signatory 1 --}}
+                    <td style="width: 50%; text-align: center; vertical-align: top; border: none; padding: 0 6px 0 0;">
+
+                        {{-- VERY SMALL GAP --}}
+                        <div style="height: 2px;"></div>
+
+                        <div style="border-bottom: 1px solid #000; margin: 0 10%;"></div>
+
+                        <div style="margin-top: 2px;">
+                            <strong style="font-size: 9px;">GLENN L. UMIPIG</strong><br>
+                            <span style="font-size: 8px;">Chief, FAD in Concurrent Capacity as</span><br>
+                            <span style="font-size: 8px;">Accountant III</span>
+                        </div>
+                    </td>
+
+                    {{-- Signatory 2 --}}
+                    <td style="width: 50%; text-align: center; vertical-align: top; border: none; padding: 0 0 0 6px;">
+                        <div style="height: 2px;"></div>
+
+                        <div style="border-bottom: 1px solid #000; margin: 0 10%;"></div>
+
+                        <div style="margin-top: 2px;">
+                            <strong style="font-size: 9px;">DELILAH P. AGUILAR</strong><br>
+                            <span style="font-size: 8px;">Administrative Assistant II</span><br>
+                            <span style="font-size: 8px;">Member</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" style="height: 20px; border: none;"></td>
+                </tr>
+
+                <tr>
+                    {{-- Signatory 3 --}}
+                    <td style="width: 50%; text-align: center; vertical-align: top; border: none; padding: 0 6px 0 0;">
+                        <div style="height: 2px;"></div>
+
+                        <div style="border-bottom: 1px solid #000; margin: 0 10%;"></div>
+
+                        <div style="margin-top: 2px;">
+                            <strong style="font-size: 9px;">PRUDENCIO C. BULAWAN IV</strong><br>
+                            <span style="font-size: 8px;">D./Prop. Inspector</span><br>
+                            <span style="font-size: 8px;">Member</span>
+                        </div>
+                    </td>
+
+                    {{-- Signatory 4 --}}
+                    <td style="width: 50%; text-align: center; vertical-align: top; border: none; padding: 0 0 0 6px;">
+                        <div style="height: 2px;"></div>
+
+                        <div style="border-bottom: 1px solid #000; margin: 0 10%;"></div>
+
+                        <div style="margin-top: 2px;">
+                            <strong style="font-size: 9px;">MAY FLORENCE A. PABELONIO</strong><br>
+                            <span style="font-size: 8px;">Supply Officer II, GSS</span><br>
+                            <span style="font-size: 8px;">Member</span>
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+
+        {{-- Approved by --}}
+        <td style="width: 30%; text-align: center; vertical-align: top; border: none; padding: 0 12px;">
+            <div style="height: 35px;"></div>
+            <div style="border-bottom: 1px solid #000; margin: 0 10%;"></div>
+            <div style="margin-top: 4px;">
+                <strong style="font-size: 9px;">CECILIA L. OCHAVO-SAYCON</strong><br>
+                <span style="font-size: 8px;">Regional Director</span>
+            </div>
+        </td>
+
+        {{-- Witnessed by --}}
+        <td style="width: 25%; text-align: center; vertical-align: top; border: none; padding: 0;">
+            <div style="height: 35px;"></div>
+            <div style="border-bottom: 1px solid #000; margin: 0 10%;"></div>
+            <div style="margin-top: 4px;">
+                <span style="font-size: 8px;">Signature over Printed Name of COA</span><br>
+                <span style="font-size: 8px;">Representative</span>
+            </div>
+        </td>
+
+    </tr>
+    </table>
+
     {{-- ===== FOOTER ===== --}}
     <div class="pdf-footer pdf-mt-2" style="margin-top: 8px; font-size: 10px; text-align: center; border-top: 1px solid #ccc; padding-top: 5px;">
         Total Records: {{ $ppeItems->count() }} | Generated by Inventory Management System - MGB

@@ -282,8 +282,8 @@
         </table>
 
         {{-- Signature boxes --}}
-<table style="width: 100%; border: none; margin-top: 8px;">
-    <tr>
+        <table style="width: 100%; border: none; margin-top: 8px;">
+        <tr>
 
         {{-- Certified Correct — 4 signatories --}}
         <td style="width: 45%; vertical-align: top; border: none; padding-right: 12px;">
@@ -375,7 +375,7 @@
         </td>
 
     </tr>
-</table>
+    </table>
 
     {{-- ===== FOOTER (matches PPE style) ===== --}}
     <div class="pdf-footer pdf-mt-2" style="margin-top: 8px; font-size: 10px; text-align: center; border-top: 1px solid #ccc; padding-top: 5px;">

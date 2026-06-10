@@ -266,9 +266,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const submenu = document.querySelector('.dropdown-submenu .submenu');
 
     if (pdfMenuItem && submenu) {
+        // Ensure submenu is positioned/visible correctly when the parent dropdown is opened.
         pdfMenuItem.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
+
+            // If Bootstrap dropdown closes on click, re-open the parent dropdown
+            // by toggling the submenu visibility explicitly.
             submenu.classList.toggle('show');
         });
 
@@ -279,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 
     document.querySelectorAll('.export-option').forEach(option => {
         option.addEventListener('click', function(e) {

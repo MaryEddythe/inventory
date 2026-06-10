@@ -14,7 +14,8 @@ class MotorVehicle extends Model
         'property_number',
         'unit_value',
         'date_acquired',
-        'remarks',
+'remarks',
+        'co_mooe',
     ];
 
     protected $casts = [

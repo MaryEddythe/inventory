@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('motor_vehicles', function (Blueprint $table) {
+            $table->enum('co_mooe', ['CO', 'MOOE'])->nullable()->after('unit_value');
+            $table->index('co_mooe');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('motor_vehicles', function (Blueprint $table) {
+            $table->dropIndex(['co_mooe']);
+            $table->dropColumn('co_mooe');
+        });
+    }
+};

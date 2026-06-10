@@ -22,23 +22,74 @@
         --bs-btn-font-size: 0.62rem;
         line-height: 1.1;
     }
+
+    /* Dropdown Submenu Styling */
+    .dropdown-submenu {
+        position: relative;
+    }
+
+    .dropdown-submenu .submenu {
+        top: 0;
+        left: 100%;
+        margin-top: -1px;
+        display: none;
+    }
+
+    .dropdown-submenu .submenu.show {
+        display: block !important;
+    }
 </style>
 
 <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
         <h1 class="h4 fw-bold mb-0">Motor Vehicle</h1>
-        <div class="d-flex gap-2 align-items-center">
-            <a href="{{ route('inventory.category.export.pdf', 'moto-vehicle') }}" class="btn btn-outline-danger d-flex align-items-center gap-1">
-                <i class="bi bi-file-earmark-pdf"></i> Download PDF
-            </a>
+
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <div class="d-flex align-items-center flex-column" style="min-width: 240px;">
+                <input id="motoVehicleSearch" type="text" class="form-control form-control-sm" placeholder="Live search..." value="{{ request('search') }}">
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between" href="#" aria-expanded="false">
+                            <span>
+                                <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                                Export as PDF
+                            </span>
+                            <i class="bi bi-chevron-right ms-3 small"></i>
+                        </a>
+                        <ul class="dropdown-menu submenu">
+                            <li><a class="dropdown-item export-moto-option" href="#" data-type="pdf" data-subtype="rpcsp"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>RPCSP</a></li>
+                            <li><a class="dropdown-item export-moto-option" href="#" data-type="pdf" data-subtype="ppe"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PPE</a></li>
+                        </ul>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item export-moto-option" href="#" data-type="csv"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</a></li>
+                </ul>
+            </div>
+
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addMotorVehicleModal">
                 <i class="bi bi-plus-circle"></i>Add Motor Vehicle
             </button>
         </div>
     </div>
 
-    <div id="table-container">
-        @if($motorVehicles->isNotEmpty())
+<div id="table-container">
+    @php
+        $q = trim((string) request('search'));
+        $filteredMotorVehicles = $q === '' ? $motorVehicles : $motorVehicles->filter(function($v) use ($q) {
+            return str_contains(strtolower((string)$v->article), strtolower($q))
+                || str_contains(strtolower((string)$v->description), strtolower($q))
+                || str_contains(strtolower((string)$v->property_number), strtolower($q))
+                || str_contains(strtolower((string)($v->remarks ?? '')), strtolower($q));
+        });
+    @endphp
+
+        @if($filteredMotorVehicles->isNotEmpty())
             <div class="table-responsive">
                 <table class="table table-sm table-hover align-middle mb-0 motor-vehicle-table">
                     <thead class="table-light">
@@ -53,8 +104,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($motorVehicles as $vehicle)
+                        @foreach($filteredMotorVehicles as $vehicle)
                             <tr>
+
                                 <td class="fw-semibold">{{ $vehicle->article }}</td>
                                 <td title="{{ $vehicle->description }}">{{ Str::limit($vehicle->description, 10) }}</td>
                                 <td>{{ $vehicle->property_number }}</td>
@@ -143,7 +195,6 @@
     </div>
 @endforeach
 
-<!-- Add Motor Vehicle Modal -->
 <div class="modal fade" id="addMotorVehicleModal" tabindex="-1" aria-labelledby="addMotorVehicleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -161,19 +212,97 @@
 
 @push('scripts')
 <script>
-    // Reset form when modal is hidden
-    const addMotorVehicleModal = document.getElementById('addMotorVehicleModal');
-    if (addMotorVehicleModal) {
-        addMotorVehicleModal.addEventListener('hidden.bs.modal', function(e) {
-            const form = document.getElementById('add-motor-vehicle-form');
-            if (form) {
-                form.reset();
-                form._isSubmitting = false;
-                form.querySelectorAll('input, textarea, select').forEach(field => {
-                    field.value = '';
-                });
-            }
-        });
+    function debounce(fn, delay = 300) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), delay);
+        };
     }
+
+    // Wrap everything inside DOMContentLoaded to ensure elements exist before binding scripts
+    document.addEventListener('DOMContentLoaded', function() {
+        const motoVehicleSearch = document.getElementById('motoVehicleSearch');
+
+        console.log('moto-vehicle search input exists?', !!motoVehicleSearch);
+        console.log('moto-vehicle scripts executed');
+
+        let lastSearch = motoVehicleSearch ? (motoVehicleSearch.value || '').trim() : '';
+
+        if (motoVehicleSearch) {
+            const applySearch = debounce(() => {
+                const q = (motoVehicleSearch.value || '').trim();
+                console.log('moto-vehicle live search applySearch q=', q);
+
+                if (q === lastSearch) return;
+                lastSearch = q;
+
+                // Reload with ?search=... so the controller can filter.
+                const url = new URL(window.location.href);
+                if (q) {
+                    url.searchParams.set('search', q);
+                } else {
+                    url.searchParams.delete('search');
+                }
+                window.location.href = url.toString();
+            }, 300);
+
+            motoVehicleSearch.addEventListener('input', () => {
+                console.log('moto-vehicle input event fired, current=', motoVehicleSearch.value);
+            });
+
+            motoVehicleSearch.addEventListener('input', applySearch);
+        }
+
+        // Export dropdown options
+        document.querySelectorAll('.export-moto-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const type = this.getAttribute('data-type');
+                const subtype = this.getAttribute('data-subtype');
+
+                // Export as PDF: open rpcsp/ppe PDFs using existing exportCategoryPdf logic
+                if (type === 'pdf') {
+                    window.location.href = `{{ route('inventory.category.export.pdf', ['moto-vehicle', 'rpcsp']) }}`.replace('rpcsp', subtype);
+                    return;
+                }
+            });
+        });
+
+        // Toggle the submenu visibility when clicking the "Export as PDF" parent item
+        document.querySelectorAll('.dropdown-submenu > a.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // CRITICAL: Keeps Bootstrap from killing the parent dropdown menu frame
+
+                const submenu = this.parentElement.querySelector('.submenu');
+                if (!submenu) return;
+
+                // Toggle visibility class used by your CSS
+                submenu.classList.toggle('show');
+            });
+        });
+
+        // Close nested submenu when clicking outside
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.dropdown-submenu .submenu.show').forEach(s => s.classList.remove('show'));
+        });
+
+        // Reset form when modal is hidden
+        const addMotorVehicleModal = document.getElementById('addMotorVehicleModal');
+        if (addMotorVehicleModal) {
+            addMotorVehicleModal.addEventListener('hidden.bs.modal', function(e) {
+                const form = document.getElementById('add-motor-vehicle-form');
+                if (form) {
+                    form.reset();
+                    form._isSubmitting = false;
+                    form.querySelectorAll('input, textarea, select').forEach(field => {
+                        field.value = '';
+                    });
+                }
+            });
+        }
+    });
 </script>
 @endpush

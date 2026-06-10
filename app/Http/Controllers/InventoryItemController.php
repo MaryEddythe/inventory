@@ -21,58 +21,6 @@ use League\Csv\Writer;
 
 class InventoryItemController extends Controller
 {
-    private function getServiceabilityOptions(): array
-    {
-        $enumValues = [];
-        $dbValues = [];
-
-        // 1) Try reading ENUM allowed labels from information_schema
-        try {
-            $dbName = env('DB_DATABASE');
-            if (!$dbName) {
-                $dbName = config('database.connections.mysql.database');
-            }
-
-            $rows = \DB::select(
-                'SELECT COLUMN_TYPE
-                 FROM information_schema.COLUMNS
-                 WHERE TABLE_SCHEMA = ?
-                   AND TABLE_NAME = ?
-                   AND COLUMN_NAME = ?',
-                [$dbName, 'inventory_items', 'serviceability']
-            );
-
-            if (!empty($rows) && isset($rows[0]->COLUMN_TYPE)) {
-                $columnType = $rows[0]->COLUMN_TYPE;
-
-                if (preg_match("/^enum\\((.*)\\)$/i", $columnType, $m)) {
-                    $raw = $m[1]; // quoted values e.g. 'Good Condition','For Replacement','N/A'
-                    preg_match_all("/'((?:\\\\'|[^'])*)'/", $raw, $matches);
-
-                    $enumValues = array_map(function ($v) {
-                        return str_replace("\\'", "'", $v);
-                    }, $matches[1] ?? []);
-                }
-            }
-        } catch (\Throwable $e) {
-            \Log::warning('Failed to fetch serviceability enum values from information_schema', [
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        // 2) Also derive distinct values from existing rows (so N/A shows even if enum metadata is stale)
-        $dbValues = InventoryItem::query()
-            ->whereNotNull('serviceability')
-            ->distinct()
-            ->pluck('serviceability')
-            ->toArray();
-
-        // 3) Merge + dedupe + filter empties
-        $merged = array_values(array_unique(array_filter(array_merge($enumValues, $dbValues))));
-
-        // Optional: keep the order stable (enum first, then any new DB values)
-        return $merged;
-    }
 
     private function calculateStatus($dateAcquired)
     {
@@ -122,19 +70,13 @@ class InventoryItemController extends Controller
 
         $totalItems = $query->count();
         $totalValue = $query->sum('unit_price');
-
-        $rpcspValue = (clone $query)
-            ->where('unit_price', '<=', 49999)
-            ->whereNotNull('unit_price')
-            ->sum('unit_price');
-
-        $ppeValue = (clone $query)
-            ->where('unit_price', '>=', 50000)
+       $rpcspValue = (clone $query)->where('unit_price', '<=', 49999)
+        ->whereNotNull('unit_price')
+        ->sum('unit_price');
+        $ppeValue = (clone $query)->where('unit_price', '>=', 50000)
             ->where('co_mooe', 'CO')
             ->sum('unit_price');
-
-        $itemsThisMonth = (clone $query)
-            ->whereMonth('date_acquired', now()->month)
+        $itemsThisMonth = (clone $query)->whereMonth('date_acquired', now()->month)
             ->whereYear('date_acquired', now()->year)
             ->count();
 
@@ -216,9 +158,7 @@ class InventoryItemController extends Controller
     {
         $departments = Department::orderBy('department')->get();
         $employees = Employee::with('departmentInfo')->orderBy('firstname')->get(['emp_no', 'firstname', 'lastname', 'department']);
-        $serviceabilities = $this->getServiceabilityOptions();
-
-        return view('inventory.modals.create-modal', compact('departments', 'employees', 'serviceabilities'));
+        return view('inventory.modals.create-modal', compact('departments', 'employees'));
     }
 
     public function store(Request $request)
@@ -317,9 +257,6 @@ class InventoryItemController extends Controller
                 'date_acquired' => 'nullable|date',
                 'date_acquired_type' => 'required|in:date,na',
                 'remarks' => 'nullable|string',
-
-                // Ensure serviceability is stored on create as well (not just on update)
-                'serviceability' => 'nullable|string',
             ]);
 
             // Handle NA values
@@ -352,9 +289,7 @@ class InventoryItemController extends Controller
     {
         $departments = Department::orderBy('department')->get();
         $employees = Employee::with('departmentInfo')->orderBy('firstname')->get(['emp_no', 'firstname', 'lastname', 'department']);
-        $serviceabilities = $this->getServiceabilityOptions();
-
-        return view('inventory.modals.edit-modal', compact('inventoryItem', 'departments', 'employees', 'serviceabilities'));
+        return view('inventory.modals.edit-modal', compact('inventoryItem', 'departments', 'employees'));
     }
 
    public function update(Request $request, $id)
@@ -818,43 +753,22 @@ class InventoryItemController extends Controller
         ->count();
 
     // Get all divisions with item counts, including those with 0 items
-    // Also guard against null/empty division labels to prevent "NaN" rendering in the UI.
-    $allDivisions = Department::orderBy('department')
-        ->pluck('department')
-        ->filter(function ($division) {
-            return $division !== null && trim((string) $division) !== '';
-        })
-        ->values();
-
+    $allDivisions = Department::orderBy('department')->pluck('department');
     $divisionCounts = (clone $filterableQuery)
         ->select('division', \DB::raw('count(*) as count'))
         ->groupBy('division')
         ->pluck('count', 'division');
 
-    // Remove invalid keys like null/empty to prevent "NaN" being rendered.
-    $divisionCounts = $divisionCounts->reject(function ($count, $divisionKey) {
-        $key = $divisionKey === null ? '' : (string)$divisionKey;
-        $key = trim($key);
-        return $key === '' || strtolower($key) === 'nan';
+    $divisionData = $allDivisions->map(function ($division) use ($divisionCounts) {
+        return (object) [
+            'division' => $division,
+            'count' => $divisionCounts->get($division, 0)
+        ];
     });
 
-    $divisionData = $allDivisions->map(function ($division) use ($divisionCounts) {
-        $divisionKey = (string) $division;
-
-        // Also guard against "NaN" text stored in DB
-        if (trim($divisionKey) === '' || strtolower(trim($divisionKey)) === 'nan') {
-            return null;
-        }
-
-        return (object) [
-            'division' => $divisionKey,
-            'count' => (int) $divisionCounts->get($divisionKey, 0),
-        ];
-    })->filter()->values();
-
-    // Count only divisions with items (after filtering invalid keys)
-    $totalDivisions = (int) $divisionCounts->filter(function ($count) {
-        return (int) $count > 0;
+    // Count only divisions with items
+    $totalDivisions = $divisionCounts->filter(function ($count) {
+        return $count > 0;
     })->count();
 
     // Status data: Items less than 5 years and 5 years or more since date acquired
@@ -864,18 +778,13 @@ class InventoryItemController extends Controller
     $fiveYearsOrMore = 0;
 
     foreach ($allStatusItems as $item) {
-        // Match calculateStatus() behavior:
-        // when date_acquired is missing, treat as "≤ 5 years"
-        if (!$item->date_acquired) {
-            $lessThan5Years++;
-            continue;
-        }
-
-        // If date_acquired is before 5 years ago, it's 5 years or more
-        if ($item->date_acquired < $fiveYearsAgo) {
-            $fiveYearsOrMore++;
-        } else {
-            $lessThan5Years++;
+        if ($item->date_acquired) {
+            // If date_acquired is before 5 years ago, it's 5 years or more
+            if ($item->date_acquired < $fiveYearsAgo) {
+                $fiveYearsOrMore++;
+            } else {
+                $lessThan5Years++;
+            }
         }
     }
 
@@ -1033,6 +942,8 @@ class InventoryItemController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
         $vehicle = MotorVehicle::create($validated);
 
         if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
@@ -1063,6 +974,8 @@ class InventoryItemController extends Controller
             'date_acquired' => 'required|date',
             'remarks' => 'nullable|string',
         ]);
+
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
 
         $motorVehicle->update($validated);
 
@@ -1313,7 +1226,14 @@ class InventoryItemController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        // Auto-set CO/MOOE based on unit_value cutoff
+        // <= 49999 => RPCSP
+        // >= 50000 => PPE
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
         OtherPpe::create($validated);
+
+
 
         return redirect()
             ->route('inventory.tabs.other-ppe')
@@ -1336,7 +1256,13 @@ class InventoryItemController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        // Auto-set CO/MOOE based on unit_value cutoff
+        // <= 49999 => RPCSP
+        // >= 50000 => PPE
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
         $otherPpe->update($validated);
+
 
         return redirect()
             ->route('inventory.tabs.other-ppe')

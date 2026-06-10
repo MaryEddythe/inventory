@@ -52,9 +52,11 @@
                             <td title="{{ $item->description }}">{{ Str::limit($item->description, 10) }}</td>
                             <td>{{ $item->property_number }}</td>
                             <td>{{ number_format($item->unit_value, 2) }}</td>
+                            <td>{{ $item->co_mooe ?: 'N/A' }}</td>
                             <td>{{ $item->date_acquired ? $item->date_acquired->format('M d, Y') : 'N/A' }}</td>
                             <td>{{ $item->remarks ?: 'N/A' }}</td>
                             <td>
+
                                 <div class="d-flex justify-content-end gap-1">
                                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editOtherPpeModal{{ $item->id }}" title="Edit">
                                         <i class="bi bi-pencil-square"></i>

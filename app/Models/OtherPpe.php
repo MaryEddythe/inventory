@@ -15,7 +15,9 @@ class OtherPpe extends Model
         'unit_value',
         'date_acquired',
         'remarks',
+        'co_mooe',
     ];
+
 
     protected $casts = [
         'date_acquired' => 'date',

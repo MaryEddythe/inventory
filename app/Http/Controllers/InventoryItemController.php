@@ -13,6 +13,7 @@ use App\Models\OtherPpe;
 use App\Models\MotorVehicle;
 use App\Models\TechnicalScientificEquipment;
 use App\Models\FurnitureFixture;
+use App\Models\MilitaryPoliceSecurityEquipment;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
@@ -688,6 +689,12 @@ class InventoryItemController extends Controller
                 'title' => 'Furniture/Fixtures',
                 'filename' => 'furniture-fixtures.pdf',
                 'view' => 'inventory.export-furniture-fixtures-pdf',
+            ],
+            'military-police-security' => [
+                'model' => MilitaryPoliceSecurityEquipment::class,
+                'title' => 'Military, Police & Security Equipment',
+                'filename' => 'military-police-security.pdf',
+                'view' => 'inventory.export-military-police-security-pdf',
             ],
             'cip' => [
                 'model' => Cip::class,
@@ -1367,6 +1374,60 @@ class InventoryItemController extends Controller
         return redirect()
             ->route('inventory.tabs.furniture-fixtures')
             ->with('success', 'Furniture/Fixtures deleted successfully!');
+    }
+
+    public function storeMilitaryPoliceSecurityEquipment(Request $request)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => 'required|string|max:255|unique:military_police_security_equipments,property_number',
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
+        MilitaryPoliceSecurityEquipment::create($validated);
+
+        return redirect()
+            ->route('inventory.tabs.military-police-security')
+            ->with('success', 'Military, Police & Security Equipment added successfully!');
+    }
+
+    public function updateMilitaryPoliceSecurityEquipment(Request $request, MilitaryPoliceSecurityEquipment $militaryPoliceSecurityEquipment)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('military_police_security_equipments', 'property_number')->ignore($militaryPoliceSecurityEquipment->id),
+            ],
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
+        $militaryPoliceSecurityEquipment->update($validated);
+
+        return redirect()
+            ->route('inventory.tabs.military-police-security')
+            ->with('success', 'Military, Police & Security Equipment updated successfully!');
+    }
+
+    public function destroyMilitaryPoliceSecurityEquipment(MilitaryPoliceSecurityEquipment $militaryPoliceSecurityEquipment)
+    {
+        $militaryPoliceSecurityEquipment->delete();
+
+        return redirect()
+            ->route('inventory.tabs.military-police-security')
+            ->with('success', 'Military, Police & Security Equipment deleted successfully!');
     }
 
     public function icm(Request $request)

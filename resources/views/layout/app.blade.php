@@ -65,6 +65,10 @@
                             <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.furniture-fixtures') }}">
                                 <span>Furnitures and Fixtures</span>
                             </a>
+
+                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.military-police-security') }}">
+                                <span>Military, Police &amp; Security Equipment</span>
+                            </a>
                         </div>
                     </div>
                 </div>

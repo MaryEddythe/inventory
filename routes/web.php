@@ -76,6 +76,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/furniture-fixtures/store', [InventoryItemController::class, 'storeFurnitureFixture'])->name('furniture-fixtures.store');
     Route::put('/furniture-fixtures/{furnitureFixture}', [InventoryItemController::class, 'updateFurnitureFixture'])->name('furniture-fixtures.update');
     Route::delete('/furniture-fixtures/{furnitureFixture}', [InventoryItemController::class, 'destroyFurnitureFixture'])->name('furniture-fixtures.destroy');
+
+    // Military, Police & Security Equipment Routes
+    Route::get('/inventory/tabs/military-police-security', function() {
+        $militaryPoliceSecurityEquipments = \App\Models\MilitaryPoliceSecurityEquipment::latest()->get();
+        return view('inventory.tabs.military-police-security', compact('militaryPoliceSecurityEquipments'));
+    })->name('inventory.tabs.military-police-security');
+
+    Route::post('/military-police-security/store', [InventoryItemController::class, 'storeMilitaryPoliceSecurityEquipment'])->name('military-police-security.store');
+    Route::put('/military-police-security/{militaryPoliceSecurityEquipment}', [InventoryItemController::class, 'updateMilitaryPoliceSecurityEquipment'])->name('military-police-security.update');
+    Route::delete('/military-police-security/{militaryPoliceSecurityEquipment}', [InventoryItemController::class, 'destroyMilitaryPoliceSecurityEquipment'])->name('military-police-security.destroy');
     Route::put('/machine-equipment/{machineEquipment}', [InventoryItemController::class, 'updateMachineEquipment'])->name('machine-equipment.update');
     Route::delete('/machine-equipment/{machineEquipment}', [InventoryItemController::class, 'destroyMachineEquipment'])->name('machine-equipment.destroy');
     Route::post('/office-equipment/store', [InventoryItemController::class, 'storeOfficeEquipment'])->name('office-equipment.store');

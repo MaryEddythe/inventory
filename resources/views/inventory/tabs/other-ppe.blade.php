@@ -40,8 +40,10 @@
                         <th scope="col">Description</th>
                         <th scope="col">Property Number</th>
                         <th scope="col">Unit Value</th>
+                        <th scope="col">CO/MOOE</th>
                         <th scope="col">Date Acquired</th>
                         <th scope="col">Remarks</th>
+
                         <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>

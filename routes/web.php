@@ -53,6 +53,12 @@ Route::middleware(['auth'])->group(function () {
         return view('inventory.tabs.other-ppe', compact('otherPpes'));
     })->name('inventory.tabs.other-ppe');
 
+    Route::get('/inventory/tabs/furniture-fixtures', function() {
+        $furnitureFixtures = \App\Models\FurnitureFixture::latest()->get();
+
+        return view('inventory.tabs.furniturez-fixtures', compact('furnitureFixtures'));
+    })->name('inventory.tabs.furniture-fixtures');
+
     // Motor Vehicle Routes
     Route::post('/motor-vehicle/store', [InventoryItemController::class, 'storeMotorVehicle'])->name('motor-vehicle.store');
     Route::put('/motor-vehicle/{motorVehicle}', [InventoryItemController::class, 'updateMotorVehicle'])->name('motor-vehicle.update');
@@ -65,6 +71,11 @@ Route::middleware(['auth'])->group(function () {
 
     // PPE Category Routes
     Route::post('/machine-equipment/store', [InventoryItemController::class, 'storeMachineEquipment'])->name('machine-equipment.store');
+
+    // Furniture & Fixtures Routes
+    Route::post('/furniture-fixtures/store', [InventoryItemController::class, 'storeFurnitureFixture'])->name('furniture-fixtures.store');
+    Route::put('/furniture-fixtures/{furnitureFixture}', [InventoryItemController::class, 'updateFurnitureFixture'])->name('furniture-fixtures.update');
+    Route::delete('/furniture-fixtures/{furnitureFixture}', [InventoryItemController::class, 'destroyFurnitureFixture'])->name('furniture-fixtures.destroy');
     Route::put('/machine-equipment/{machineEquipment}', [InventoryItemController::class, 'updateMachineEquipment'])->name('machine-equipment.update');
     Route::delete('/machine-equipment/{machineEquipment}', [InventoryItemController::class, 'destroyMachineEquipment'])->name('machine-equipment.destroy');
     Route::post('/office-equipment/store', [InventoryItemController::class, 'storeOfficeEquipment'])->name('office-equipment.store');
@@ -91,4 +102,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
+
+    // PDF - Controller
+
 });

@@ -40,10 +40,12 @@
                         <th scope="col">Description</th>
                         <th scope="col">Property Number</th>
                         <th scope="col">Unit Value</th>
+                        <th scope="col">CO/MOOE</th>
                         <th scope="col">Date Acquired</th>
                         <th scope="col">Remarks</th>
                         <th scope="col" class="text-end">Actions</th>
                     </tr>
+
                 </thead>
                 <tbody>
                     @foreach($technicalScientificEquipments as $item)
@@ -52,8 +54,10 @@
                             <td title="{{ $item->description }}">{{ Str::limit($item->description, 10) }}</td>
                             <td>{{ $item->property_number }}</td>
                             <td>{{ number_format($item->unit_value, 2) }}</td>
+                            <td>{{ $item->co_mooe ?: 'N/A' }}</td>
                             <td>{{ $item->date_acquired ? $item->date_acquired->format('M d, Y') : 'N/A' }}</td>
                             <td>{{ $item->remarks ?: 'N/A' }}</td>
+
                             <td>
                                 <div class="d-flex justify-content-end gap-1">
                                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editTechnicalScientificEquipmentModal{{ $item->id }}" title="Edit">

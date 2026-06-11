@@ -62,6 +62,9 @@
                             <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.other-ppe') }}">
                                 <span>Other PPE</span>
                             </a>
+                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.furniture-fixtures') }}">
+                                <span>Furnitures and Fixtures</span>
+                            </a>
                         </div>
                     </div>
                 </div>

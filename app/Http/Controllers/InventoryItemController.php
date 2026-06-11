@@ -12,6 +12,7 @@ use App\Models\OfficeEquipment;
 use App\Models\OtherPpe;
 use App\Models\MotorVehicle;
 use App\Models\TechnicalScientificEquipment;
+use App\Models\FurnitureFixture;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
@@ -682,6 +683,12 @@ class InventoryItemController extends Controller
                 'filename' => 'other-ppe.pdf',
                 'view' => 'inventory.export-other-ppe-pdf',
             ],
+            'furniture-fixtures' => [
+                'model' => FurnitureFixture::class,
+                'title' => 'Furniture/Fixtures',
+                'filename' => 'furniture-fixtures.pdf',
+                'view' => 'inventory.export-furniture-fixtures-pdf',
+            ],
             'cip' => [
                 'model' => Cip::class,
                 'title' => 'CIP',
@@ -1126,7 +1133,13 @@ class InventoryItemController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        // Auto-set CO/MOOE based on unit_value cutoff
+        // <= 49999 => RPCSP
+        // >= 50000 => PPE
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
         OfficeEquipment::create($validated);
+
 
         return redirect()
             ->route('inventory.tabs.office-equipment')
@@ -1149,7 +1162,13 @@ class InventoryItemController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        // Auto-set CO/MOOE based on unit_value cutoff
+        // <= 49999 => RPCSP
+        // >= 50000 => PPE
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
         $officeEquipment->update($validated);
+
 
         return redirect()
             ->route('inventory.tabs.office-equipment')
@@ -1176,7 +1195,13 @@ class InventoryItemController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        // Auto-set CO/MOOE based on unit_value cutoff
+        // <= 49999 => RPCSP
+        // >= 50000 => PPE
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
         TechnicalScientificEquipment::create($validated);
+
 
         return redirect()
             ->route('inventory.tabs.technical-scientific-equipment')
@@ -1199,7 +1224,13 @@ class InventoryItemController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
+        // Auto-set CO/MOOE based on unit_value cutoff
+        // <= 49999 => RPCSP
+        // >= 50000 => PPE
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
         $technicalScientificEquipment->update($validated);
+
 
         return redirect()
             ->route('inventory.tabs.technical-scientific-equipment')
@@ -1276,6 +1307,66 @@ class InventoryItemController extends Controller
         return redirect()
             ->route('inventory.tabs.other-ppe')
             ->with('success', 'Other PPE deleted successfully!');
+    }
+
+    public function storeFurnitureFixture(Request $request)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => 'required|string|max:255|unique:furniture_fixtures,property_number',
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        // Auto-set CO/MOOE based on unit_value cutoff
+        // <= 49999 => RPCSP
+        // >= 50000 => PPE
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
+        FurnitureFixture::create($validated);
+
+        return redirect()
+            ->route('inventory.tabs.furniture-fixtures')
+            ->with('success', 'Furniture/Fixtures added successfully!');
+    }
+
+    public function updateFurnitureFixture(Request $request, FurnitureFixture $furnitureFixture)
+    {
+        $validated = $request->validate([
+            'article' => 'required|string|max:255',
+            'description' => 'required|string',
+            'property_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('furniture_fixtures', 'property_number')->ignore($furnitureFixture->id),
+            ],
+            'unit_value' => 'required|numeric|min:0',
+            'date_acquired' => 'required|date',
+            'remarks' => 'nullable|string',
+        ]);
+
+        // Auto-set CO/MOOE based on unit_value cutoff
+        // <= 49999 => RPCSP
+        // >= 50000 => PPE
+        $validated['co_mooe'] = ((float) $validated['unit_value'] >= 50000) ? 'PPE' : 'RPCSP';
+
+        $furnitureFixture->update($validated);
+
+        return redirect()
+            ->route('inventory.tabs.furniture-fixtures')
+            ->with('success', 'Furniture/Fixtures updated successfully!');
+    }
+
+    public function destroyFurnitureFixture(FurnitureFixture $furnitureFixture)
+    {
+        $furnitureFixture->delete();
+
+        return redirect()
+            ->route('inventory.tabs.furniture-fixtures')
+            ->with('success', 'Furniture/Fixtures deleted successfully!');
     }
 
     public function icm(Request $request)

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CreditsController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\InventoryItemController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +18,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::get('/dashboard', [InventoryItemController::class, 'dashboard'])->name('inventory.dashboard');
+
+    Route::resource('employees', EmployeeController::class);
     Route::put('/inventory/{inventory}', [InventoryItemController::class, 'update'])->name('inventory.update');
     Route::resource('inventory', InventoryItemController::class);
     Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])
@@ -114,5 +118,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
 
     // PDF - Controller
+
+    // Credits routes
+    Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');
+    Route::get('/credits/cto', [CreditsController::class, 'cto'])->name('credits.cto');
+
+    // Calendar page
+    Route::get('/calendar', function () {
+        return view('calendar.index');
+    })->name('calendar.index');
 
 });

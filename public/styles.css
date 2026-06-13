@@ -797,6 +797,25 @@ header {
     border-radius: 8px;
 }
 
+/* Sidebar SVG icon sizing + color (used by resources/views/layouts/sidebar.blade.php) */
+.nav-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    flex: 0 0 auto;
+    vertical-align: middle;
+    color: #6c757d; /* svg uses currentColor */
+}
+
+a.nav-links .nav-icon {
+    color: #6c757d;
+}
+
+a.active .nav-icon,
+a.nav-links .active .nav-icon {
+    color: #0d6efd;
+}
+
 /* Responsive tweaks */
 @media (max-width: 991.98px) {
     .sidebar { width: 100px; min-width: 80px; }

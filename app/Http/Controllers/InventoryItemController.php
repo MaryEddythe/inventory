@@ -1510,15 +1510,19 @@ class InventoryItemController extends Controller
             \Log::info('Employees query executed', ['count' => $employees->count()]);
 
             $result = $employees->map(function($employee) {
+                $division = $employee->departmentInfo;
                 return [
                     'emp_no' => (string)$employee->emp_no,
                     'firstname' => $employee->firstname ?? '',
                     'lastname' => $employee->lastname ?? '',
+                    // legacy field kept
                     'department' => $employee->department ?? '',
-                    'department_name' => $employee->departmentInfo ? $employee->departmentInfo->department : ($employee->department ?? 'Unknown'),
+                    // what the UI needs: full division/department name
+                    'department_name' => $division ? ($division->department ?? ($division->name ?? $employee->department ?? 'Unknown')) : ($employee->department ?? 'Unknown'),
                     'fullname' => trim(($employee->firstname ?? '') . ' ' . ($employee->lastname ?? ''))
                 ];
             });
+
 
             \Log::info('Employees mapped', ['count' => $result->count(), 'result' => $result->toArray()]);
 

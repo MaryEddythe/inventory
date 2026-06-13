@@ -9,22 +9,72 @@ class Employee extends Model
 {
     use HasFactory;
 
-    // Employees table is now in the inventory database (same connection as inventory_items)
-    protected $table = 'employees';
-    protected $fillable = ['emp_no', 'lastname', 'firstname', 'department', 'descr', 'Role', 'dob', 'status', 'updated_at'];
+    protected $primaryKey = 'emp_no';
 
-
-    public $timestamps = false; // Assuming updated_at is used
-
-    // Accessor for full name
-    public function getFullNameAttribute()
+    public function getRouteKeyName(): string
     {
-        return $this->firstname . ' ' . $this->lastname;
+        return 'emp_no';
     }
 
-    // Relationship to get department name
+    protected $fillable = [
+        'employee_id',
+        'first_name',
+        'last_name',
+        'email',
+        'division_id',
+        'position',
+        'employment_type',
+        'leave_type',
+        'hired_at',
+        'drive_folder_id',
+        'drive_folder_url',
+    ];
+
+    protected $casts = [
+        'hired_at' => 'date',
+    ];
+
+    public function getFullNameAttribute(): string
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
+
+    public static function generateEmployeeId(): string
+    {
+        $latest = self::latest('id')->first();
+
+        $number = $latest
+            ? ((int) filter_var($latest->employee_id, FILTER_SANITIZE_NUMBER_INT)) + 1
+            : 1;
+
+        return 'EMP-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+    }
     public function departmentInfo()
     {
-        return $this->belongsTo(Department::class, 'department', 'dept_no');
+        // Legacy name expected by InventoryItemController::searchEmployees()
+        // Map to the employee's division record.
+        return $this->belongsTo(Division::class, 'division_id');
     }
+
+    public function division()
+    {
+        return $this->belongsTo(Division::class, 'division_id');
+    }
+
+
+    public function files()
+    {
+        return $this->hasMany(EmployeeFile::class);
+    }
+
+    public function leaveBenefits()
+    {
+        return $this->hasMany(EmployeeLeaveBenefit::class);
+    }
+
+    public function leaveHistory()
+    {
+        return $this->hasMany(EmployeeLeaveHistory::class);
+    }
+
 }

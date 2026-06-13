@@ -166,9 +166,10 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
             const suggestionItem = document.createElement('div');
             suggestionItem.className = 'suggestion-item';
             suggestionItem.innerHTML = `
-                <div><strong>${emp.fullname || 'N/A'}</strong></div>
-                <small>(${emp.emp_no || 'N/A'}) - ${emp.department_name || emp.department || 'N/A'}</small>
+                <div class="suggestion-fullname"><strong>${emp.fullname || 'N/A'}</strong></div>
+                <div class="suggestion-division"><small>${emp.department_name || emp.department || 'N/A'}</small></div>
             `;
+
             suggestionItem.dataset.index = index;
             suggestionItem.style.cursor = 'pointer';
 
@@ -234,17 +235,23 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
             });
 
             // Auto-select division based on employee's department name
-            const divisionSelect = document.getElementById('division');
-            if (divisionSelect && emp.department_name) {
+const divisionSelect = document.getElementById('division');
+            if (divisionSelect && (emp.department_name || emp.department)) {
+                const deptName = (emp.department_name || emp.department || '').trim();
+                // Match either the full division name (value) or the name text
                 const options = divisionSelect.options;
                 for (let i = 0; i < options.length; i++) {
-                    if (options[i].value === emp.department_name) {
+                    const optValue = (options[i].value || '').trim();
+                    const optText = (options[i].textContent || '').trim();
+
+                    if (optValue === deptName || optText === deptName) {
                         options[i].selected = true;
-                        console.log('Division auto-selected:', emp.department_name);
+                        console.log('Division auto-selected:', deptName);
                         break;
                     }
                 }
             }
+
 
             suggestionsDiv.style.display = 'none';
             currentIndex = -1;

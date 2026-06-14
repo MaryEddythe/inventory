@@ -44,11 +44,13 @@
                         <label>Division <span class="required-asterisk">*</span></label>
                         <select name="division_id" required>
                             <option value="">-- Select Division --</option>
-                            @foreach($divisions as $division)
-                                <option value="{{ $division->id }}"
-                                    {{ old('division_id') == $division->id ? 'selected' : '' }}>
-                                    {{ $division->name }}
-                                    @if($division->code) ({{ $division->code }}) @endif
+                            @foreach($departments as $dept)
+                                @php
+                                    $deptDesc = $dept->description ?? null;
+                                    $deptText = $deptDesc ?? ($dept->department ?? $dept->dept_no ?? null);
+                                @endphp
+                                <option value="{{ $dept->id }}" {{ old('division_id') == $dept->id ? 'selected' : '' }}>
+                                    {{ $deptText }}
                                 </option>
                             @endforeach
                         </select>

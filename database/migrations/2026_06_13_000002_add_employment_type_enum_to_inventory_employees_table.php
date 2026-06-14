@@ -10,7 +10,7 @@ return new class extends Migration
     {
         // Add enum to the inventory module's employees table
         // (table name expected: inventory.employees)
-        Schema::table('employees', function (Blueprint $table) {
+        Schema::table('inventory.employees', function (Blueprint $table) {
             // If this column already exists, avoid duplicate failures
             if (!Schema::hasColumn('employees', 'employment_type')) {
                 $table->enum('employment_type', ['COS', 'Permanent'])->nullable()->after('position');

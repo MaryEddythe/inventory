@@ -59,6 +59,8 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        
+        
 
     ],
 
@@ -76,5 +78,6 @@ return [
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],
+    
 
 ];

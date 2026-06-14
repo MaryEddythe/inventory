@@ -9,17 +9,33 @@ class Employee extends Model
 {
     use HasFactory;
 
+    // Primary key is actually `emp_no` in inventory.employees
+    // Keeping this as emp_no ensures Eloquent updates/relations are consistent.
     protected $primaryKey = 'emp_no';
+
+    // This model is intended to write/read from the legacy schema: inventory.employees
+    protected $table = 'inventory.employees';
 
     public function getRouteKeyName(): string
     {
         return 'emp_no';
     }
 
+    // inventory.employees columns (legacy schema):
+    // emp_no, lastname, firstname, department, descr, Role, dob, status, updated_at
+    // We map/alias them to the field names expected by the rest of the app.
     protected $fillable = [
+        'emp_no',
         'employee_id',
+
+        // Legacy schema columns (what EmployeeController@store is writing)
+        'firstname',
+        'lastname',
+
+        // Newer/alternate naming used elsewhere in the app
         'first_name',
         'last_name',
+
         'email',
         'division_id',
         'position',
@@ -28,17 +44,47 @@ class Employee extends Model
         'dob',
         'drive_folder_id',
         'drive_folder_url',
+        // Stores all Google Drive links created for the employee on creation (JSON string)
+        'drive',
     ];
 
     protected $casts = [
         'dob' => 'date',
     ];
 
+    // Your legacy table `inventory.employees` does not have created_at.
+    // Disable timestamps so Eloquent only writes updated_at.
+    public $timestamps = false;
+
+
+
+    // Aliases for legacy column names in inventory.employees
+    protected function setTableAttributeAliases(): void
+    {
+        // no-op (reserved for future)
+    }
+
+    // Accessors to map legacy columns to app field names
+    public function getFirstNameAttribute(): ?string
+    {
+        return $this->attributes['first_name'] ?? ($this->attributes['firstname'] ?? null);
+    }
+
+    public function getLastNameAttribute(): ?string
+    {
+        return $this->attributes['last_name'] ?? ($this->attributes['lastname'] ?? null);
+    }
+
+    public function getDobAttribute($value): ?\Illuminate\Support\Carbon
+    {
+        return $value ? $this->asDateTime($value) : null;
+    }
 
     public function getFullNameAttribute(): string
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return ($this->first_name ?? 'N/A') . ' ' . ($this->last_name ?? 'N/A');
     }
+
 
     public static function generateEmployeeId(): string
     {

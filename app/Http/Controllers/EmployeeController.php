@@ -15,39 +15,76 @@ class EmployeeController extends Controller
     {
         $employees = Employee::orderByDesc('emp_no')->paginate(15);
 
+
         return view('employees.index', compact('employees'));
     }
 
     public function create()
     {
-        $divisions = \App\Models\Department::orderByDesc('last_updated')->get();
-        return view('employees.create', compact('divisions'));
+        // Load departments from inventory.departments table (dept_no, department, description, ...)
+        $departments = \App\Models\Department::orderByDesc('last_updated')->get();
+
+        // Backward compatibility: some views/logic may still reference $divisions.
+        $divisions = $departments;
+
+        return view('employees.create', compact('departments', 'divisions'));
     }
+
 
 
 
     public function store(Request $request)
     {
+        // Legacy inventory.employees schema does NOT have many of the modern fields.
+        // We only persist the columns that actually exist.
         $validated = $request->validate([
-            'first_name'      => 'required|string|max:255',
-            'last_name'       => 'required|string|max:255',
-            'email'           => 'required|email|unique:employees',
-            'division_id'     => 'required|exists:divisions,id',
-            'position'        => 'required|string|max:255',
-            'employment_type' => 'required|in:PERMANENT,COS',
-            'dob'            => 'required|date',
+            'first_name' => 'required|string|max:150',
+            'last_name'  => 'required|string|max:150',
+            'dob'         => 'nullable|date',
         ]);
 
-        // Generate unique employee_id server-side
-        $lastEmployee = Employee::orderByDesc('emp_no')->first();
-        $nextNumber = ($lastEmployee ? (int)substr((string) $lastEmployee->employee_id, 4) : 0) + 1;
-        $validated['employee_id'] = 'EMP-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        // Map modern form fields to legacy columns.
+        $payload = [
+            // legacy columns in inventory.employees
+            'firstname' => $validated['first_name'],
+            'lastname'  => $validated['last_name'],
+            'dob'        => $validated['dob'] ?? null,
+            // If your schema also requires these, you must add them here.
+            // 'division_id' => $validated['division_id'] ?? null,
+            // 'position'    => $validated['position'] ?? null,
+        ];
 
-        // Create employee
-        $employee = Employee::create($validated);
+        // Your legacy DB schema uses different column names (firstname/lastname/etc)
+        // and may write into the `employees` table, not `inventory.employees`.
+        // Ensure we persist using the column names that exist.
+        $employee = Employee::query()->create([
+            'emp_no' => $request->input('emp_no') ?? null,
+            'firstname' => $payload['firstname'],
+            'lastname' => $payload['lastname'],
+            'dob' => $payload['dob'],
+        ]);
+
+
 
         // Dispatch job to create Drive folder
         CreateEmployeeDriveFolder::dispatch($employee);
+
+        // Also persist the latest known folder URLs for this employee (if job/controller sets them).
+        // The `drive` column is intended to store *all* links created on employee creation.
+        // Since the folder creation logic lives in CreateEmployeeDriveFolder, this is a best-effort fallback.
+        try {
+            $employee->refresh();
+
+            $links = [];
+            if ($employee->drive_folder_url) {
+                $links[] = $employee->drive_folder_url;
+            }
+
+            $employee->drive = $links ? json_encode($links) : null;
+            $employee->save();
+        } catch (\Throwable $e) {
+            // Ignore; job will still set drive_folder_url and the UI can retry later.
+        }
 
         return redirect()->route('employees.show', $employee)
             ->with('status', 'Employee created successfully. Drive folder is being created...');

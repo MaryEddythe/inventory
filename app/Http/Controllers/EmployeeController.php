@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Jobs\CreateEmployeeDriveFolder;
 use App\Models\Employee;
-use App\Models\Division;
+use App\Models\Department;
+
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller

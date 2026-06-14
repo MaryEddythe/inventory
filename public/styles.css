@@ -27,6 +27,19 @@
     color: #fff !important;
 }
 
+/* Ensure division badge looks consistent everywhere */
+.badge-division {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.55rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
 .sidebar-collapsible.collapsed {
     width: 0 !important;
     min-width: 0 !important;

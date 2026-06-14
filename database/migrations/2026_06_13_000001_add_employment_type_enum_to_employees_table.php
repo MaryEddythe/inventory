@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::table('employees', function (Blueprint $table) {
             // Desired enum values: COS, Permanent (exact casing)
-            $table->enum('employment_type', ['COS', 'Permanent'])->nullable()->after('position');
+            // NOTE: do not use ->after('position') because "position" column may not exist
+            $table->enum('employment_type', ['COS', 'Permanent'])->nullable();
         });
     }
 

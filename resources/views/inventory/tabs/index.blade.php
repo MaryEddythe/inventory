@@ -1,7 +1,7 @@
 @extends('layout.app')
 
 @section('content')
-<div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+<div class="bg-white rounded-4 shadow-sm p-4 mb-3">
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-3">
         <h1 class="h4 fw-bold mb-0">Inventory</h1>
         <div class="d-flex gap-2 align-items-center">
             <form id="searchForm" class="d-flex align-items-center" style="min-width: 220px;">
@@ -74,7 +74,7 @@
     </div>
 
     <div id="table-container">
-        <div class="table-responsive">
+        <div class="table-responsive mt-2">
             @if(isset($items))
                 @include('inventory.table-data', compact('items', 'groupedItems', 'departments', 'employees'))
             @else
@@ -82,7 +82,7 @@
             @endif
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="d-flex justify-content-between align-items-center mt-3">
             <div class="text-muted small">Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} entries</div>
             <div>
                 {{ $items->links('vendor.pagination.bootstrap-5') }}

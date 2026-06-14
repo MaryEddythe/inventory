@@ -2,52 +2,38 @@
 @section('title', 'Employees')
 
 @section('content')
-<div id="employees-page">
-    {{-- Keep styling minimal: rely on global layout styles where possible --}}
-    <style>
-        .employees-info { display:flex; flex-direction:column; gap:.25rem; }
-        .table-wrapper {
-            background:#fff;
-            border-radius:8px;
-            border:1px solid #e2e8f0;
-            overflow:hidden;
-            box-shadow:0 1px 2px rgba(0,0,0,.04);
-            margin-bottom: 1.5rem;
-        }
-        .actions-cell { display:flex; gap:.6rem; flex-wrap:wrap; }
-        .employee-name { font-weight:700; color:#0f172a; font-size:.95rem; }
-        .empty-state { text-align:center; padding:4rem 2rem; color:#64748b; }
-        .empty-state-icon {
-            width:50px; height:50px; margin:0 auto 1rem;
-            background:linear-gradient(135deg,#e2e8f0 0%,#f1f5f9 100%);
-            border-radius:6px; display:flex; align-items:center; justify-content:center;
-            font-size:1rem; color:#94a3b8;
-        }
-        .empty-state-text { font-size:.95rem; margin-bottom:.85rem; font-weight:600; color:#475569; }
-        .empty-state-link { color:#0066cc; font-weight:700; text-decoration:none; transition:color .2s ease; font-size:.9rem; }
-        .empty-state-link:hover { color:#0052a3; }
-        .employee-actions-form { margin:0; }
-    </style>
-
-    <div class="page-header">
-        <div class="employees-info">
-            <div class="page-title">Employees</div>
-            <div class="page-subtitle">Total Records: <strong>{{ $employees->total() }}</strong></div>
-        </div>
-        <a href="{{ route('employees.create') }}" class="btn btn-primary">+ Add Employee</a>
-    </div>
-
-    @if(session('status') || session('error') || $errors->any())
-        <div style="margin:0.75rem 0;padding:0.75rem;border-radius:6px;background:#fff3f3;border:1px solid #ffd6d6;color:#922">
-            @if(session('status')) {{ session('status') }} @endif
-            @if(session('error')) {{ session('error') }} @endif
-            @if($errors->any()) {{ $errors->first() }} @endif
+<div class="bg-white rounded-4 shadow-sm p-4 mb-3">
+    @if(session('status'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('status') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    <div class="table-wrapper">
-        <div style="overflow-x:auto;">
-            <table>
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ $errors->first() }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-3">
+        <h1 class="h4 fw-bold mb-0">Employees</h1>
+        <a href="{{ route('employees.create') }}" class="btn btn-primary d-flex align-items-center gap-1">
+            <i class="bi bi-plus-circle"></i> Add Employee
+        </a>
+    </div>
+
+    <div class="table-responsive mt-2">
+        @if($employees->count() > 0)
+            <table class="table table-borderless mb-0">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -55,17 +41,13 @@
                         <th>Position</th>
                         <th>Employment Type</th>
                         <th>Folder</th>
-                        <th style="min-width:170px;">Actions</th>
+                        <th style="min-width: 170px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($employees as $emp)
+                    @foreach($employees as $emp)
                         <tr>
-                            <td>
-                                <div class="employee-name">
-                                    {{ $emp->lastname ?? $emp->last_name ?? 'N/A' }}, {{ $emp->firstname ?? $emp->first_name ?? 'N/A' }}
-                                </div>
-                            </td>
+                            <td class="fw-bold">{{ $emp->lastname ?? $emp->last_name ?? 'N/A' }}, {{ $emp->firstname ?? $emp->first_name ?? 'N/A' }}</td>
                             <td>
                                 @php
                                     $dept = $emp->department ?? null;
@@ -86,7 +68,6 @@
                                     COS
                                 @endif
                             </td>
-
                             <td>
                                 @if($emp->drive_folder_url)
                                     <a href="{{ $emp->drive_folder_url }}" target="_blank" rel="noopener">Open Folder</a>
@@ -94,38 +75,30 @@
                                     <span class="text-muted">Pending</span>
                                 @endif
                             </td>
-
                             <td>
-                                <div class="actions-cell">
-                                    <a href="{{ route('employees.show', $emp) }}" class="btn btn-outline btn-sm">View</a>
-                                    <a href="{{ route('employees.edit', $emp) }}" class="btn btn-outline btn-sm">Edit</a>
-
-                                    <form method="POST"
-                                          class="employee-actions-form"
-                                          action="{{ route('employees.destroy', $emp) }}"
-                                          onsubmit="return confirm('Delete {{ $emp->full_name }}? This cannot be undone.')">
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('employees.show', $emp) }}" class="btn btn-outline-secondary btn-sm">View</a>
+                                    <a href="{{ route('employees.edit', $emp) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                    <form method="POST" action="{{ route('employees.destroy', $emp) }}" style="display: inline;">
                                         @csrf @method('DELETE')
-                                        <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                                        <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Delete {{ $emp->full_name }}? This cannot be undone.')">Delete</button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6">
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">–</div>
-                                    <div class="empty-state-text">No employees found</div>
-                                    <a href="{{ route('employees.create') }}" class="empty-state-link">Add your first employee</a>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
-        </div>
+        @else
+            <div class="text-center py-4">No employees found</div>
+        @endif
     </div>
 
-    <div>{{ $employees->links() }}</div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted small">Showing {{ $employees->firstItem() ?? 0 }} to {{ $employees->lastItem() ?? 0 }} of {{ $employees->total() }} entries</div>
+        <div>
+            {{ $employees->links('vendor.pagination.bootstrap-5') }}
+        </div>
+    </div>
 </div>
 @endsection

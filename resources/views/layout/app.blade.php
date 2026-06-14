@@ -85,7 +85,7 @@
                     <i class="bi bi-people"></i>
                     <span>Employees</span>
                 </a>
-                <a href="#" onclick="return false;" class="" aria-disabled="true">
+                <a class="sidebar-nav-link {{ request()->routeIs('calendar.*') ? 'active' : '' }}" href="{{ route('calendar.index') }}">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -93,27 +93,46 @@
                         <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
                     Calendar
+                
                 </a>
-                </a>
+                    <!-- Leave Credits Dropdown -->
+                        <div class="sidebar-nav-dropdown">
+                            <button class="sidebar-nav-link sidebar-dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#leaveCreditsDropdown"
+                                    aria-expanded="{{ request()->routeIs('credits.*') ? 'true' : 'false' }}"
+                                    aria-controls="leaveCreditsDropdown">
 
-                    <div class="nav-dropdown">
-                    <button type="button" class="nav-dropdown-toggle {{ request()->routeIs('credits.*') ? 'active' : '' }}" onclick="toggleCreditsDropdown()" type="button">
+                                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                    <line x1="1" y1="10" x2="23" y2="10"/>
+                                </svg>
 
-                        <span class="nav-dropdown-left">
-                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                                <line x1="1" y1="10" x2="23" y2="10"/>
-                            </svg>
-                            Leave Credits
-                        </span>
-                        <span class="nav-dropdown-arrow" id="creditsDropdownArrow">&#9662;</span>
-                    </button>
-                    <div class="nav-dropdown-menu" id="creditsDropdownMenu">
-                        <a href="#" onclick="return false;" class="{{ request()->routeIs('credits.cto') ? 'active' : '' }}">CTO</a>
-                        <a href="#" onclick="return false;" class="{{ request()->routeIs('credits.index') ? 'active' : '' }}">Leave Credits</a>
+                                <span>Leave Credits</span>
+                                <i class="bi bi-chevron-down ms-auto"></i>
+                            </button>
 
-                    </div>
-                </div>
+                            <div class="collapse {{ request()->routeIs('credits.*') ? 'show' : '' }}"
+                                id="leaveCreditsDropdown">
+
+                                <div class="sidebar-dropdown-menu">
+
+                                    <a class="sidebar-dropdown-item {{ request()->routeIs('credits.cto') ? 'active' : '' }}"
+                                    href="{{ route('credits.cto') }}">
+                                        <span>CTO</span>
+                                    </a>
+
+                                    <a class="sidebar-dropdown-item {{ request()->routeIs('credits.index') ? 'active' : '' }}"
+                                    href="{{ route('credits.index') }}">
+                                        <span>Leave Credits</span>
+                                    </a>
+
+                                </div>
+                            </div>
+                        </div>
             </nav>
 
 

@@ -1,4 +1,4 @@
-<nav class="sidebar" id="appSidebar">
+<nav class="sidebar-nav" aria-label="Primary navigation">
     <a href="{{ route('employees.index') }}" class="brand">
         <span class="brand-full">
             <span class="brand-icon">
@@ -45,8 +45,8 @@
             Calendar
         </a>
 
-        <div class="nav-dropdown">
-            <button type="button" class="nav-dropdown-toggle {{ request()->routeIs('credits.*') ? 'active' : '' }}" onclick="toggleCreditsDropdown()">
+<div class="nav-dropdown">
+            <button type="button" class="sidebar-nav-link nav-dropdown-toggle {{ request()->routeIs('credits.*') ? 'active' : '' }}" onclick="toggleCreditsDropdown()">
                 <span class="nav-dropdown-left">
                     <svg cNaNinecap="round" stroke-linejoin="round">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>

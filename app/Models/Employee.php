@@ -25,14 +25,15 @@ class Employee extends Model
         'position',
         'employment_type',
         'leave_type',
-        'hired_at',
+        'dob',
         'drive_folder_id',
         'drive_folder_url',
     ];
 
     protected $casts = [
-        'hired_at' => 'date',
+        'dob' => 'date',
     ];
+
 
     public function getFullNameAttribute(): string
     {

@@ -3280,3 +3280,137 @@ mark {
 .filter-dropdown-panel .border-top {
     border-top-color: #dee2e6 !important;
 }
+
+/* ============================================
+   Employees - Create modal styles
+   (moved from resources/views/employees/create.blade.php)
+   ============================================ */
+
+.employees-create-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 9999;
+}
+
+.employees-create-modal-dialog {
+    width: 100%;
+    max-width: 700px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.employees-create-modal-header {
+    padding: 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: #fafbfc;
+}
+
+.employees-create-modal-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+}
+
+.employees-create-modal-subtitle {
+    margin-top: 0.4rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.employees-create-modal-body {
+    padding: 2rem;
+}
+
+.employees-create-modal-close {
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+    color: #475569;
+    border-radius: 5px;
+    padding: 0.45rem 0.65rem;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.employees-create-modal-close:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.employees-create-modal-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Employees - create form controls */
+.employees-create-modal-body .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .employees-create-modal-body .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.employees-create-modal-body .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.employees-create-modal-body label {
+    font-size: 0.92rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.employees-create-modal-body input[type="text"],
+.employees-create-modal-body input[type="date"],
+.employees-create-modal-body select {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+    outline: none;
+    background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.employees-create-modal-body input[type="text"]:focus,
+.employees-create-modal-body input[type="date"]:focus,
+.employees-create-modal-body select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.employees-create-modal-body .error-text {
+    color: #dc2626;
+    font-size: 0.85rem;
+}
+
+.required-asterisk {
+    color: #dc2626;
+}
+

@@ -100,11 +100,24 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-2">
-                                    <a href="{{ route('employees.show', $emp) }}" class="btn btn-outline-secondary btn-sm">View</a>
-                                    <a href="{{ route('employees.edit', $emp) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                    <a href="{{ route('employees.show', $emp) }}" class="btn btn-link p-0 text-decoration-none" title="View">
+                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition" aria-hidden="true">
+                                            <i class="bi bi-eye" style="font-size: 1rem;"></i>
+                                        </span>
+                                    </a>
+                                    <a href="{{ route('employees.edit', $emp) }}" class="btn btn-link p-0 text-decoration-none" title="Edit">
+                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition" aria-hidden="true">
+                                            <i class="bi bi-pencil-square" style="font-size: 1rem;"></i>
+                                        </span>
+                                    </a>
+
                                     <form method="POST" action="{{ route('employees.destroy', $emp) }}" style="display: inline;">
                                         @csrf @method('DELETE')
-                                        <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Delete {{ $emp->full_name }}? This cannot be undone.')">Delete</button>
+                                        <button class="btn btn-link p-0 text-decoration-none text-danger" type="submit" title="Delete" onclick="return confirm('Delete {{ $emp->full_name }}? This cannot be undone.')">
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition" aria-hidden="true">
+                                                <i class="bi bi-trash" style="font-size: 1rem;"></i>
+                                            </span>
+                                        </button>
                                     </form>
                                 </div>
                             </td>

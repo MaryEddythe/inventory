@@ -20,9 +20,10 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        $divisions = \App\Models\Division::latest()->get();
+        $divisions = \App\Models\Department::orderByDesc('last_updated')->get();
         return view('employees.create', compact('divisions'));
     }
+
 
 
     public function store(Request $request)
@@ -34,7 +35,7 @@ class EmployeeController extends Controller
             'division_id'     => 'required|exists:divisions,id',
             'position'        => 'required|string|max:255',
             'employment_type' => 'required|in:PERMANENT,COS',
-            'hired_at'        => 'required|date',
+            'dob'            => 'required|date',
         ]);
 
         // Generate unique employee_id server-side
@@ -80,7 +81,7 @@ class EmployeeController extends Controller
             'division_id'     => 'required|exists:divisions,id',
             'position'        => 'required|string|max:100',
             'employment_type' => 'required|in:COS,PERMANENT',
-            'hired_at'        => 'required|date',
+            'dob'            => 'required|date',
         ]);
 
         $employee->update($validated);

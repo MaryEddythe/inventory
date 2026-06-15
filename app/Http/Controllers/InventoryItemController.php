@@ -105,6 +105,20 @@ class InventoryItemController extends Controller
         }
     }
 
+    $employees = Employee::query()
+    ->leftJoin('inventory.employees as inv_emp', 'employees.emp_no', '=', 'inv_emp.emp_no')
+    ->select(
+        'employees.*',
+        'inv_emp.firstname as inv_firstname',
+        'inv_emp.lastname as inv_lastname',
+        'inv_emp.Role as inv_role'
+    )
+    ->orderBy('employees.lastname')
+    ->paginate(15)
+    ->withQueryString();
+
+return view('employees.index', compact('employees'));
+
 
     if ($request->filled('search')) {
         $search = $request->search;
@@ -1499,8 +1513,10 @@ class InventoryItemController extends Controller
         try {
             $employees = Employee::where('status', 'active')
                 ->where(function($q) use ($search) {
-                    $q->where('firstname', 'LIKE', "%{$search}%")
+                    $q->orWhere('firstname', 'LIKE', "%{$search}%")
                       ->orWhere('lastname', 'LIKE', "%{$search}%")
+                      ->orWhere('first_name', 'LIKE', "%{$search}%")
+                      ->orWhere('last_name', 'LIKE', "%{$search}%")
                       ->orWhere('emp_no', 'LIKE', "%{$search}%");
                 })
                 ->with('departmentInfo')
@@ -1511,15 +1527,32 @@ class InventoryItemController extends Controller
 
             $result = $employees->map(function($employee) {
                 $division = $employee->departmentInfo;
+
+                // Inventory/employee DB may store names as either:
+                // - first_name / last_name
+                // - firstname / lastname
+                $first = $employee->first_name ?? $employee->firstname ?? '';
+                $last  = $employee->last_name ?? $employee->lastname ?? '';
+
+                $divisionCodeOrName = null;
+                if ($division) {
+                    $divisionCodeOrName = $division->department ?? $division->code ?? $division->name ?? null;
+                }
+
                 return [
                     'emp_no' => (string)$employee->emp_no,
-                    'firstname' => $employee->firstname ?? '',
-                    'lastname' => $employee->lastname ?? '',
+
+                    // UI expects `firstname/lastname` (see create-icm-modal.blade.php)
+                    'firstname' => $first,
+                    'lastname' => $last,
+
                     // legacy field kept
-                    'department' => $employee->department ?? '',
+                    'department' => $divisionCodeOrName ?? '',
+
                     // what the UI needs: full division/department name
-                    'department_name' => $division ? ($division->department ?? ($division->name ?? $employee->department ?? 'Unknown')) : ($employee->department ?? 'Unknown'),
-                    'fullname' => trim(($employee->firstname ?? '') . ' ' . ($employee->lastname ?? ''))
+                    'department_name' => $divisionCodeOrName ?? 'Unknown',
+
+                    'fullname' => trim($first . ' ' . $last),
                 ];
             });
 

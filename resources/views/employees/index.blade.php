@@ -47,35 +47,12 @@
                 <tbody>
                     @foreach($employees as $emp)
                         <tr>
-                            <td class="fw-bold">{{ $emp->lastname ?? $emp->last_name ?? 'N/A' }}, {{ $emp->firstname ?? $emp->first_name ?? 'N/A' }}</td>
+                            <td class="fw-bold">
+                                {{ $emp->lastname ?? 'N/A' }}, {{ $emp->firstname ?? 'N/A' }}
+                            </td>
                             <td>
-                                @php
-                                    // Show department (dept_no) from inventory database.
-                                    // Fallback to division code/name if dept lookup fails.
-                                    $dept = null;
-
-                                    if (!empty($emp->department)) {
-                                        // If employees already has a dept_no or dept code stored
-                                        $dept = \App\Models\Department::query()
-                                            ->where('dept_no', $emp->department)
-                                            ->first();
-
-                                        if (!$dept) {
-                                            $dept = \App\Models\Department::query()
-                                                ->where('department', $emp->department)
-                                                ->first();
-                                        }
-                                    }
-
-                                    if (!$dept && !empty($emp->division)) {
-                                        $dept = \App\Models\Department::query()
-                                            ->where('department', optional($emp->division)->code ?? optional($emp->division)->name)
-                                            ->first();
-                                    }
-                                @endphp
-
-                                @if($dept)
-                                    <span class="badge badge-division badge-division-{{ $dept->department }}">{{ $dept->description }}</span>
+                                @if(!empty($emp->Role))
+                                    <span class="badge badge-division">{{ $emp->Role }}</span>
                                 @else
                                     N/A
                                 @endif

@@ -11,10 +11,14 @@ use Illuminate\Http\Request;
 class EmployeeController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $employees = Employee::orderByDesc('emp_no')->paginate(15);
-
+        // App\Models\Employee already maps directly to inventory.employees,
+        // so firstname/lastname/Role are native columns - no join needed.
+        $employees = Employee::query()
+            ->orderByDesc('emp_no')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('employees.index', compact('employees'));
     }

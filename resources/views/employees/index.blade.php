@@ -51,13 +51,9 @@
                                 {{ $emp->lastname ?? 'N/A' }}, {{ $emp->firstname ?? 'N/A' }}
                             </td>
                             <td>
-                                @if(!empty($emp->Role))
-                                    <span class="badge badge-division">{{ $emp->Role }}</span>
-                                @else
-                                    N/A
-                                @endif
+                                {{ $emp->department->description ?? $emp->description ?? 'N/A' }}
                             </td>
-                            <td>{{ $emp->position ?? 'N/A' }}</td>
+                            <td>{{ $emp->Role ?? 'N/A' }}</td>
                             <td>
                                 @php
                                     $et = $emp->employment_type ?? null;

@@ -96,6 +96,12 @@ class Employee extends Model
 
         return 'EMP-' . str_pad($number, 4, '0', STR_PAD_LEFT);
     }
+    public function department()
+    {
+        // inventory.employees.department stores inventory.departments.dept_no
+        return $this->belongsTo(Department::class, 'department', 'dept_no');
+    }
+
     public function departmentInfo()
     {
         // Legacy name expected by InventoryItemController::searchEmployees()

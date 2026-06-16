@@ -13,9 +13,17 @@ class EmployeeController extends Controller
 
     public function index(Request $request)
     {
-        // App\Models\Employee already maps directly to inventory.employees,
-        // so firstname/lastname/Role are native columns - no join needed.
         $employees = Employee::query()
+            ->leftJoin('inventory.departments as inv_dept',
+                \DB::raw('CAST(inventory.employees.department AS UNSIGNED)'),
+                '=',
+                'inv_dept.dept_no'
+            )
+            ->select(
+                'inventory.employees.*',
+                'inv_dept.description as inv_dept_description',
+                'inv_dept.department as inv_dept_code'
+            )
             ->orderByDesc('emp_no')
             ->paginate(15)
             ->withQueryString();

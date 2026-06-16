@@ -106,18 +106,38 @@ class InventoryItemController extends Controller
     }
 
     $employees = Employee::query()
-    ->leftJoin('inventory.employees as inv_emp', 'employees.emp_no', '=', 'inv_emp.emp_no')
-    ->select(
-        'employees.*',
-        'inv_emp.firstname as inv_firstname',
-        'inv_emp.lastname as inv_lastname',
-        'inv_emp.Role as inv_role'
-    )
-    ->orderBy('employees.lastname')
-    ->paginate(15)
-    ->withQueryString();
+        ->leftJoin('inventory.employees as inv_emp', 'employees.emp_no', '=', 'inv_emp.emp_no')
+        ->leftJoin('inventory.departments as inv_dept', \DB::raw('CAST(inv_emp.department AS UNSIGNED)'), '=', 'inv_dept.dept_no')
+        ->select(
+            'employees.*',
+            'inv_emp.firstname as inv_firstname',
+            'inv_emp.lastname as inv_lastname',
+            'inv_emp.Role as inv_role',
+            'inv_dept.description as inv_dept_description',
+            'inv_dept.department as inv_dept_code'
+        )
+        ->orderBy('employees.lastname')
+        ->paginate(15)
+        ->withQueryString();
 
-return view('employees.index', compact('employees'));
+    // DEBUG: verify joined department values reach the view
+    // (remove after confirming correctness)
+    try {
+        $sample = $employees->first();
+        if ($sample) {
+            \Log::info('employees.index sample dept join fields', [
+                'emp_no' => $sample->emp_no ?? null,
+                'inv_dept_description' => $sample->inv_dept_description ?? null,
+                'inv_dept_code' => $sample->inv_dept_code ?? null,
+                'inv_emp_department_raw' => $sample->department ?? null,
+                'inv_role' => $sample->inv_role ?? null,
+            ]);
+        }
+    } catch (\Throwable $e) {
+        \Log::warning('employees.index dept join debug failed: ' . $e->getMessage());
+    }
+
+    return view('employees.index', compact('employees'));
 
 
     if ($request->filled('search')) {

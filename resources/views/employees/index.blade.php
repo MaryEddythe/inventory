@@ -51,7 +51,22 @@
                                 {{ $emp->lastname ?? 'N/A' }}, {{ $emp->firstname ?? 'N/A' }}
                             </td>
                             <td>
-                                {{ $emp->department->description ?? $emp->description ?? 'N/A' }}
+                                @php
+                                    $deptDesc = $emp->inv_dept_description ?? ($emp->department->description ?? $emp->description ?? 'N/A');
+                                    $deptCode = strtoupper(trim($emp->inv_dept_code ?? ''));
+                                    $badgeClassMap = [
+                                        'MMD' => 'badge-division-MMD',
+                                        'MSESDD' => 'badge-division-MSESDD',
+                                        'GD' => 'badge-division-GD',
+                                        'GSS' => 'badge-division-GSS',
+                                        'ORD' => 'badge-division-ORD',
+                                        'FAD' => 'badge-division-FAD',
+                                        'COA' => 'badge-division-COA',
+                                    ];
+                                    $badgeClass = $badgeClassMap[$deptCode] ?? 'badge-division';
+                                @endphp
+
+                                <span class="badge {{ $badgeClass }}">{{ $deptDesc }}</span>
                             </td>
                             <td>{{ $emp->Role ?? 'N/A' }}</td>
                             <td>
@@ -111,3 +126,22 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .badge-division {
+        background-color: #6c757d;
+        color: #fff;
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+        border-radius: 0.375rem;
+    }
+    .badge-division-MMD    { background-color: #0d6efd; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
+    .badge-division-MSESDD { background-color: #6610f2; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
+    .badge-division-GD     { background-color: #198754; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
+    .badge-division-GSS    { background-color: #0dcaf0; color: #000; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
+    .badge-division-ORD    { background-color: #fd7e14; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
+    .badge-division-FAD    { background-color: #dc3545; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
+    .badge-division-COA    { background-color: #ffc107; color: #000; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
+</style>
+@endpush

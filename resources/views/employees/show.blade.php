@@ -27,23 +27,23 @@
                                 <div class="fw-semibold">{{ $employee->full_name }}</div>
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Email</div>
-                                <div class="fw-semibold">{{ $employee->email }}</div>
+                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Position</div>
+                                <div class="fw-semibold">{{ $employee->position ?? 'N/A' }}</div>
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Division</div>
-                                <div class="fw-semibold">{{ optional($employee->division)->code ?? 'N/A' }}</div>
-                            </div>
+    <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Division</div>
+    <div class="fw-semibold text-end">
+        <div>{{ optional($employee->division)->department ?? 'N/A' }}</div>
+        <div class="text-muted small" style="margin-top: 2px;">{{ optional($employee->division)->description ?? '' }}</div>
+    </div>
+</div>
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Employment Type</div>
                                 <div class="fw-semibold">
                                     {{ $employee->employment_type === 'PERMANENT' ? 'Permanent' : (($employee->employment_type === 'COS') ? 'COS' : ($employee->employment_type ?? 'N/A')) }}
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Position</div>
-                                <div class="fw-semibold">{{ $employee->position }}</div>
-                            </div>
+
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Date Hired</div>
                                 <div class="fw-semibold">{{ optional($employee->hired_at)->format('F d, Y') ?? '—' }}</div>

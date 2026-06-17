@@ -1,0 +1,10 @@
+/* HR styles kept minimal (Bootstrap-first pages) */
+
+/* Optional: small helper for consistent section title spacing if needed later */
+.hr-section-title {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 800;
+}
+
+

@@ -122,12 +122,14 @@ class Employee extends Model
 
     public function leaveBenefits()
     {
-        return $this->hasMany(EmployeeLeaveBenefit::class);
+        // employee_leave_benefits table uses `emp_no` to reference inventory.employees.emp_no
+        return $this->hasMany(EmployeeLeaveBenefit::class, 'emp_no', 'emp_no');
     }
 
     public function leaveHistory()
     {
-        return $this->hasMany(EmployeeLeaveHistory::class);
+        // employee_leave_history table uses `emp_no` to reference inventory.employees.emp_no
+        return $this->hasMany(EmployeeLeaveHistory::class, 'emp_no', 'emp_no');
     }
 
 }

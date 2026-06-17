@@ -26,10 +26,7 @@
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Full Name</div>
                                 <div class="fw-semibold">{{ $employee->full_name }}</div>
                             </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Email</div>
-                                <div class="fw-semibold">{{ $employee->email }}</div>
-                            </div>
+
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Division</div>
                                 <div class="fw-semibold">{{ optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A' }}</div>
@@ -45,9 +42,10 @@
                                 <div class="fw-semibold">{{ $employee->position }}</div>
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Date Hired</div>
-                                <div class="fw-semibold">{{ optional($employee->hired_at)->format('F d, Y') ?? '—' }}</div>
+                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Date of Birth (DOB)</div>
+                                <div class="fw-semibold">{{ optional($employee->dob)->format('F d, Y') ?? '—' }}</div>
                             </div>
+
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Added On</div>
                                 <div class="fw-semibold">{{ optional($employee->created_at)->format('M d, Y h:i A') ?? '—' }}</div>

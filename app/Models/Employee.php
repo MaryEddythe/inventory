@@ -32,6 +32,10 @@ class Employee extends Model
         'firstname',
         'lastname',
 
+        // Legacy columns used for division/role display
+        'department', // inventory.departments.dept_no
+        'Role', // legacy column name for position/title
+
         // Newer/alternate naming used elsewhere in the app
         'first_name',
         'last_name',

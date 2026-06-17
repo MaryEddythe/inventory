@@ -61,14 +61,9 @@ class EmployeeController extends Controller
             'firstname' => $validated['first_name'],
             'lastname'  => $validated['last_name'],
             'dob'        => $validated['dob'] ?? null,
-            // If your schema also requires these, you must add them here.
-            // 'division_id' => $validated['division_id'] ?? null,
-            // 'position'    => $validated['position'] ?? null,
         ];
 
-        // Your legacy DB schema uses different column names (firstname/lastname/etc)
-        // and may write into the `employees` table, not `inventory.employees`.
-        // Ensure we persist using the column names that exist.
+
         $employee = Employee::query()->create([
             'emp_no' => $request->input('emp_no') ?? null,
             'firstname' => $payload['firstname'],
@@ -128,17 +123,33 @@ class EmployeeController extends Controller
         $validated = $request->validate([
             'first_name'      => 'required|string|max:100',
             'last_name'       => 'required|string|max:100',
-            'email'           => 'required|email|max:255|unique:employees,email,' . $employee->emp_no,
-            'division_id'     => 'required|exists:divisions,id',
+            // Edit modal submits division_id (not dept_no)
+            'division_id'     => 'required',
             'position'        => 'required|string|max:100',
             'employment_type' => 'required|in:COS,PERMANENT',
-            'dob'            => 'required|date',
+            'dob'             => 'required|date',
         ]);
 
-        $employee->update($validated);
+        // Map modal field names to legacy inventory.employees columns.
+        $payload = [
+            'firstname' => $validated['first_name'],
+            'lastname'  => $validated['last_name'],
+            'dob'       => $validated['dob'],
+
+            // Legacy schema: inventory.employees.department stores inventory.departments.dept_no
+            'department' => $validated['division_id'],
+
+            // Legacy schema: inventory.employees.Role stores the position/title
+            'Role' => $validated['position'],
+
+            'employment_type' => $validated['employment_type'],
+        ];
+
+        $employee->update($payload);
 
         return redirect()->route('employees.show', $employee)->with('success', 'Employee updated successfully');
     }
+
 
 
     public function leaveHistory(Employee $employee)

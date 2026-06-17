@@ -54,6 +54,7 @@
                                 </option>
                             @endforeach
 
+
                         </select>
                         @error('division_id') <div class="error-text">{{ $message }}</div> @enderror
                     </div>
@@ -74,10 +75,11 @@
                     @error('employment_type') <div class="error-text">{{ $message }}</div> @enderror
                 </div>
 
+
                 <div class="form-group">
                     <label>Date Hired <span class="required-asterisk">*</span></label>
-                    <input type="date" name="hired_at" value="{{ old('hired_at', optional($employee->hired_at)->format('Y-m-d')) }}" required>
-                    @error('hired_at') <div class="error-text">{{ $message }}</div> @enderror
+                    <input type="date" name="dob" value="{{ old('dob', optional($employee->dob)->format('Y-m-d')) }}" required>
+                    @error('dob') <div class="error-text">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="modal-actions">

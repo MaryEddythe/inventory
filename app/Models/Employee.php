@@ -111,7 +111,7 @@ class Employee extends Model
 
     public function division()
     {
-        return $this->belongsTo(Department::class, 'division_id', 'dept_no');
+        return $this->belongsTo(Department::class, 'department', 'dept_no');
     }
 
 
@@ -130,6 +130,10 @@ class Employee extends Model
     {
         // employee_leave_history table uses `emp_no` to reference inventory.employees.emp_no
         return $this->hasMany(EmployeeLeaveHistory::class, 'emp_no', 'emp_no');
+    }
+    public function getPositionAttribute(): ?string
+    {
+        return $this->attributes['Role'] ?? null;
     }
 
 }

@@ -32,7 +32,7 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Division</div>
-                                <div class="fw-semibold">{{ optional($employee->division)->code ?? 'N/A' }}</div>
+                                <div class="fw-semibold">{{ optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A' }}</div>
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Employment Type</div>

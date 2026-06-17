@@ -57,28 +57,33 @@ class EmployeeController extends Controller
 
         // Map modern form fields to legacy columns.
         $payload = [
+            // legacy columns in inventory.employees
             'firstname' => $validated['first_name'],
             'lastname'  => $validated['last_name'],
             'dob'        => $validated['dob'] ?? null,
+            // If your schema also requires these, you must add them here.
+            // 'division_id' => $validated['division_id'] ?? null,
+            // 'position'    => $validated['position'] ?? null,
         ];
+
+        // Your legacy DB schema uses different column names (firstname/lastname/etc)
+        // and may write into the `employees` table, not `inventory.employees`.
+        // Ensure we persist using the column names that exist.
         $employee = Employee::query()->create([
             'emp_no' => $request->input('emp_no') ?? null,
-            'employee_id' => $request->input('employee_id') ?? null,
-
             'firstname' => $payload['firstname'],
             'lastname' => $payload['lastname'],
             'dob' => $payload['dob'],
-
-            'division_id' => $request->input('division_id'),
-            'department'      => $request->input('division_id'),
-            'Role'            => $request->input('position'),  // ← form field "position" saves to Role
-            'position' => $request->input('position'),
-            'employment_type' => $request->input('employment_type'),
-            'hired_at' => $request->input('hired_at'),
         ]);
 
+
+
+        // Dispatch job to create Drive folder
         CreateEmployeeDriveFolder::dispatch($employee);
 
+        // Also persist the latest known folder URLs for this employee (if job/controller sets them).
+        // The `drive` column is intended to store *all* links created on employee creation.
+        // Since the folder creation logic lives in CreateEmployeeDriveFolder, this is a best-effort fallback.
         try {
             $employee->refresh();
 

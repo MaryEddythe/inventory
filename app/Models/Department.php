@@ -19,8 +19,4 @@ class Department extends Model
     public $timestamps = false;
 
     const UPDATED_AT = 'last_updated';
-    public function division()
-{
-    return $this->belongsTo(Department::class, 'department', 'dept_no');
-}
 }

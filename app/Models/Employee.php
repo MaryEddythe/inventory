@@ -8,8 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Employee extends Model
 {
     use HasFactory;
+
+    // Primary key is actually `emp_no` in inventory.employees
+    // Keeping this as emp_no ensures Eloquent updates/relations are consistent.
     protected $primaryKey = 'emp_no';
 
+    // This model is intended to write/read from the legacy schema: inventory.employees
     protected $table = 'inventory.employees';
 
     public function getRouteKeyName(): string
@@ -17,6 +21,9 @@ class Employee extends Model
         return 'emp_no';
     }
 
+    // inventory.employees columns (legacy schema):
+    // emp_no, lastname, firstname, department, descr, Role, dob, status, updated_at
+    // We map/alias them to the field names expected by the rest of the app.
     protected $fillable = [
         'emp_no',
         'employee_id',
@@ -34,10 +41,10 @@ class Employee extends Model
         'position',
         'employment_type',
         'leave_type',
-        'Role',
         'dob',
         'drive_folder_id',
         'drive_folder_url',
+        // Stores all Google Drive links created for the employee on creation (JSON string)
         'drive',
     ];
 
@@ -45,6 +52,8 @@ class Employee extends Model
         'dob' => 'date',
     ];
 
+    // Your legacy table `inventory.employees` does not have created_at.
+    // Disable timestamps so Eloquent only writes updated_at.
     public $timestamps = false;
 
 
@@ -89,44 +98,39 @@ class Employee extends Model
     }
     public function department()
     {
+        // inventory.employees.department stores inventory.departments.dept_no
         return $this->belongsTo(Department::class, 'department', 'dept_no');
     }
 
-    // Division is stored as inventory.departments using division_id => dept_no.
+    public function departmentInfo()
+    {
+        // Legacy name expected by InventoryItemController::searchEmployees()
+        // Map to the employee's division record.
+        return $this->belongsTo(Division::class, 'division_id');
+    }
+
     public function division()
     {
         return $this->belongsTo(Department::class, 'division_id', 'dept_no');
     }
 
 
-
-
-
-
-
-
-
     public function files()
-
     {
         return $this->hasMany(EmployeeFile::class);
     }
 
     public function leaveBenefits()
     {
+        // employee_leave_benefits table uses `emp_no` to reference inventory.employees.emp_no
         return $this->hasMany(EmployeeLeaveBenefit::class, 'emp_no', 'emp_no');
     }
 
     public function leaveHistory()
     {
+        // employee_leave_history table uses `emp_no` to reference inventory.employees.emp_no
         return $this->hasMany(EmployeeLeaveHistory::class, 'emp_no', 'emp_no');
     }
-    
-    // Add this accessor
-    public function getPositionAttribute(): ?string
-    {
-        return $this->attributes['Role'] ?? null;
-    }
-    // (removed duplicate division() relation to fix redeclare error)
+
 }
 

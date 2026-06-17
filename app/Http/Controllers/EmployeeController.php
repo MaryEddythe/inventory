@@ -107,7 +107,9 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         $employee->load('division');
-        $divisions = \App\Models\Division::latest()->get();
+        // Division data is stored in inventory.departments (not inventory.divisions)
+        $divisions = \App\Models\Department::orderByDesc('last_updated')->get();
+
 
         return view('employees.edit', [
             'employee' => $employee,

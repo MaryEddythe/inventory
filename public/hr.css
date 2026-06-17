@@ -1,4 +1,7 @@
-/* HR styles kept minimal (Bootstrap-first pages) */
+/* HR styles (Bootstrap-first pages).
+   NOTE: Tailwind classes are not available in plain CSS, so we replicate the intended UI
+   for employees/edit.blade.php as semantic CSS utilities.
+*/
 
 /* Optional: small helper for consistent section title spacing if needed later */
 .hr-section-title {
@@ -6,5 +9,153 @@
     letter-spacing: 0.05em;
     font-weight: 800;
 }
+
+.hr-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 9999;
+}
+
+.hr-modal-dialog {
+    width: 100%;
+    max-width: 700px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.hr-modal-header {
+    padding: 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: #fafbfc;
+}
+
+.hr-modal-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+}
+
+.hr-modal-subtitle {
+    margin-top: 0.4rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.hr-modal-close {
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+    color: #475569;
+    border-radius: 5px;
+    padding: 0.45rem 0.65rem;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.hr-modal-close:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.hr-modal-body {
+    padding: 2rem;
+}
+
+.hr-modal-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.hr-required-asterisk {
+    color: #dc2626;
+}
+
+.hr-error-text {
+    color: #dc2626;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Form layout helpers used in edit.blade.php */
+.hr-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .hr-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.hr-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+/* Match Bootstrap-first input/select styling */
+.hr-modal-body input[type="text"],
+.hr-modal-body input[type="email"],
+.hr-modal-body input[type="date"],
+.hr-modal-body select {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+    outline: none;
+    background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hr-modal-body input[type="text"]:focus,
+.hr-modal-body input[type="email"]:focus,
+.hr-modal-body input[type="date"]:focus,
+.hr-modal-body select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.hr-modal-body label {
+    font-size: 0.92rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Backward-compat aliases (plain CSS) */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display:flex; align-items:center; justify-content:center; padding:1.5rem; z-index:9999; }
+.modal-dialog { width:100%; max-width:700px; background:#fff; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 20px 60px rgba(0,0,0,0.12); overflow:hidden; }
+.modal-header { padding:2rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:flex-start; justify-content:space-between; gap:1.5rem; background:#fafbfc; }
+.modal-title { font-size:1.3rem; font-weight:700; color:#0f172a; line-height:1.4; letter-spacing:-0.3px; }
+.modal-subtitle { margin-top:0.4rem; color:#64748b; font-size:0.9rem; font-weight:500; }
+.modal-close { background:transparent; border:1.5px solid #cbd5e1; color:#475569; border-radius:5px; padding:0.45rem 0.65rem; cursor:pointer; font-weight:700; font-size:0.9rem; line-height:1; transition:all 0.2s ease; }
+.modal-close:hover { background:#f1f5f9; border-color:#94a3b8; }
+.modal-body { padding:2rem; }
+.modal-actions { margin-top:2rem; display:flex; gap:1rem; flex-wrap:wrap; }
+.required-asterisk { color:#dc2626; }
+.error-text { color:#dc2626; font-size:0.85rem; margin-top:0.25rem; }
+
+
+
 
 

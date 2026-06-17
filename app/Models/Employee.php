@@ -92,10 +92,19 @@ class Employee extends Model
         return $this->belongsTo(Department::class, 'department', 'dept_no');
     }
 
-    public function departmentInfo()
+    // Division is stored as inventory.departments using division_id => dept_no.
+    public function division()
     {
-        return $this->belongsTo(Division::class, 'division_id');
+        return $this->belongsTo(Department::class, 'division_id', 'dept_no');
     }
+
+
+
+
+
+
+
+
 
     public function files()
 
@@ -118,8 +127,6 @@ class Employee extends Model
     {
         return $this->attributes['Role'] ?? null;
     }
-    public function division()
-    {
-        return $this->belongsTo(Department::class, 'department', 'dept_no');
-    }
+    // (removed duplicate division() relation to fix redeclare error)
 }
+

@@ -99,9 +99,14 @@
                                         </span>
                                     </a>
 
-                                    <form method="POST" action="{{ route('employees.destroy', $emp) }}" style="display: inline;">
+                                    <form method="POST" action="{{ route('employees.destroy', $emp) }}" style="display: inline;" class="employee-delete-form">
                                         @csrf @method('DELETE')
-                                        <button class="btn btn-link p-0 text-decoration-none text-danger" type="submit" title="Delete" onclick="return confirm('Delete {{ $emp->full_name }}? This cannot be undone.')">
+                                        <button
+                                            class="btn btn-link p-0 text-decoration-none text-danger employee-delete-btn"
+                                            type="button"
+                                            title="Delete"
+                                            data-employee-name="{{ $emp->full_name }}"
+                                        >
                                             <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition" aria-hidden="true">
                                                 <i class="bi bi-trash" style="font-size: 1rem;"></i>
                                             </span>
@@ -139,9 +144,40 @@
     .badge-division-MMD    { background-color: #0d6efd; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
     .badge-division-MSESDD { background-color: #6610f2; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
     .badge-division-GD     { background-color: #198754; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
-    .badge-division-GSS    { background-color: #0dcaf0; color: #000; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
     .badge-division-ORD    { background-color: #fd7e14; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
     .badge-division-FAD    { background-color: #dc3545; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
     .badge-division-COA    { background-color: #ffc107; color: #000; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.employee-delete-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const name = btn.getAttribute('data-employee-name') || 'this employee';
+                const form = btn.closest('form.employee-delete-form');
+                const row = btn.closest('tr');
+
+                Swal.fire({
+                    title: 'Delete Employee?',
+                    text: `Are you sure you want to deactivate ${name}?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, deactivate',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (form) form.submit();
+                        // Remove row only after submit is initiated to ensure backend update occurs
+                        if (row) row.remove();
+                    }
+                });
+            });
+        });
+    });
+</script>
 @endpush

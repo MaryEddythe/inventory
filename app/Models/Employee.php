@@ -50,6 +50,9 @@ class Employee extends Model
         'drive_folder_url',
         // Stores all Google Drive links created for the employee on creation (JSON string)
         'drive',
+
+        // legacy status column (used for deactivate)
+        'status',
     ];
 
     protected $casts = [

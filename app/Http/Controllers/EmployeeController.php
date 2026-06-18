@@ -24,6 +24,8 @@ class EmployeeController extends Controller
                 'inv_dept.description as inv_dept_description',
                 'inv_dept.department as inv_dept_code'
             )
+            // Don't show deactivated employees
+            ->where('inventory.employees.status', '!=', 'inactive')
             ->orderByDesc('emp_no')
             ->paginate(15)
             ->withQueryString();
@@ -221,10 +223,13 @@ class EmployeeController extends Controller
     {
         $name = $employee->full_name;
 
-        $employee->delete();
+        // Soft-delete by marking status as inactive (do not hard delete).
+        // Use save() to avoid any mass-assignment ambiguity.
+        $employee->status = 'inactive';
+        $employee->save();
 
         return redirect()
             ->route('employees.index')
-            ->with('success', "{$name} has been deleted.");
+            ->with('success', "{$name} has been deactivated.");
     }
 }

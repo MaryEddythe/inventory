@@ -58,7 +58,6 @@
                                         'MMD' => 'badge-division-MMD',
                                         'MSESDD' => 'badge-division-MSESDD',
                                         'GD' => 'badge-division-GD',
-                                        'GSS' => 'badge-division-GSS',
                                         'ORD' => 'badge-division-ORD',
                                         'FAD' => 'badge-division-FAD',
                                         'COA' => 'badge-division-COA',

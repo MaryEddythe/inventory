@@ -9,7 +9,7 @@
         <div class="page-title">Calendar</div>
         <div class="page-subtitle">Monthly view for travel orders, events, birthdays, and tasks.</div>
     </div>
-    <button onclick="openEventModal()" class="btn btn-primary">+ Add Event</button>
+    <button type="button" onclick="openEventModal(null);" class="btn btn-primary">+ Add Event</button>
 </div>
 
 <div class="calendar-shell">
@@ -38,6 +38,10 @@
         </div>
     </aside>
 </div>
+
+@push('styles')
+<link href="{{ asset('hr.css') }}" rel="stylesheet">
+@endpush
 
 <div class="modal-overlay" id="eventModalOverlay">
     <div class="modal-content">

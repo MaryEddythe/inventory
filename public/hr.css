@@ -155,7 +155,51 @@
 .required-asterisk { color:#dc2626; }
 .error-text { color:#dc2626; font-size:0.85rem; margin-top:0.25rem; }
 
+/* Calendar modal (index.blade.php)
+   index.blade.php uses:
+   - #eventModalOverlay.modal-overlay with class 'active' toggled in JS
+   - .modal-content wrapper
+*/
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: none; /* hidden by default; JS adds .active */
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 9999;
+}
 
+.modal-overlay.active {
+    display: flex;
+}
 
+.modal-content {
+    width: 100%;
+    max-width: 700px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
 
+/* Header/body/footer classes used by index.blade.php */
+.modal-header {
+    padding: 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: #fafbfc;
+}
 
+.modal-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+}

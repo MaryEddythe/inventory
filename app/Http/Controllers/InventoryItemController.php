@@ -92,62 +92,27 @@ class InventoryItemController extends Controller
     }
 
     public function index(Request $request)
-{
-    $query = InventoryItem::active();
+    {
+        $query = InventoryItem::active();
 
-    if ($request->filled('ppe_type')) {
-        if ($request->ppe_type === 'rpcsp') {
-            $query->where('unit_price', '<=', 49999)
-                ->whereNotNull('unit_price');
-        } elseif ($request->ppe_type === 'ppe') {
-            $query->where('unit_price', '>=', 50000)
-                ->where('co_mooe', 'CO');
+        if ($request->filled('ppe_type')) {
+            if ($request->ppe_type === 'rpcsp') {
+                $query->where('unit_price', '<=', 49999)
+                    ->whereNotNull('unit_price');
+            } elseif ($request->ppe_type === 'ppe') {
+                $query->where('unit_price', '>=', 50000)
+                    ->where('co_mooe', 'CO');
+            }
         }
-    }
 
-    $employees = Employee::query()
-        ->leftJoin('inventory.employees as inv_emp', 'employees.emp_no', '=', 'inv_emp.emp_no')
-        ->leftJoin('inventory.departments as inv_dept', \DB::raw('CAST(inv_emp.department AS UNSIGNED)'), '=', 'inv_dept.dept_no')
-        ->select(
-            'employees.*',
-            'inv_emp.firstname as inv_firstname',
-            'inv_emp.lastname as inv_lastname',
-            'inv_emp.Role as inv_role',
-            'inv_dept.description as inv_dept_description',
-            'inv_dept.department as inv_dept_code'
-        )
-        ->orderBy('employees.lastname')
-        ->paginate(15)
-        ->withQueryString();
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchTerms = array_filter(explode(' ', $search));
 
-    // DEBUG: verify joined department values reach the view
-    // (remove after confirming correctness)
-    try {
-        $sample = $employees->first();
-        if ($sample) {
-            \Log::info('employees.index sample dept join fields', [
-                'emp_no' => $sample->emp_no ?? null,
-                'inv_dept_description' => $sample->inv_dept_description ?? null,
-                'inv_dept_code' => $sample->inv_dept_code ?? null,
-                'inv_emp_department_raw' => $sample->department ?? null,
-                'inv_role' => $sample->inv_role ?? null,
-            ]);
-        }
-    } catch (\Throwable $e) {
-        \Log::warning('employees.index dept join debug failed: ' . $e->getMessage());
-    }
-
-    return view('employees.index', compact('employees'));
-
-
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $searchTerms = array_filter(explode(' ', $search));
-
-        $query->where(function($q) use ($searchTerms) {
-            foreach ($searchTerms as $term) {
-                $q->where(function($subQuery) use ($term) {
-                    $subQuery->where('division', 'LIKE', "%{$term}%")
+            $query->where(function ($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function ($subQuery) use ($term) {
+                        $subQuery->where('division', 'LIKE', "%{$term}%")
                             ->orWhere('enduser', 'LIKE', "%{$term}%")
                             ->orWhere('classification', 'LIKE', "%{$term}%")
                             ->orWhere('description', 'LIKE', "%{$term}%")
@@ -155,40 +120,49 @@ class InventoryItemController extends Controller
                             ->orWhere('property_number', 'LIKE', "%{$term}%")
                             ->orWhere('emp_no', 'LIKE', "%{$term}%")
                             ->orWhere('remarks', 'LIKE', "%{$term}%");
-                });
-            }
-        });
+                    });
+                }
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('division')) {
+            $query->where('division', $request->division);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date_acquired', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date_acquired', '<=', $request->date_to);
+        }
+
+        $allowedPerPage = [10, 25, 50, 100];
+        $perPage = (int) $request->get('per_page', 10);
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+
+        $items = $query->orderByRaw("SUBSTRING_INDEX(enduser, ' ', -1) ASC")
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $groupedItems = $items->getCollection()->groupBy('enduser');
+
+        $departments = Department::orderBy('department')->get();
+        $employees = Employee::orderBy('firstname')->get();
+
+        return view('inventory.tabs.index', compact(
+            'items',
+            'groupedItems',
+            'departments',
+            'employees',
+            'perPage'
+        ));
     }
-
-    if ($request->filled('status')) {
-        $query->where('status', $request->status);
-    }
-
-    if ($request->filled('division')) {
-        $query->where('division', $request->division);
-    }
-
-    if ($request->filled('date_from')) {
-        $query->whereDate('date_acquired', '>=', $request->date_from);
-    }
-    if ($request->filled('date_to')) {
-        $query->whereDate('date_acquired', '<=', $request->date_to);
-    }
-
-    $allowedPerPage = [10, 25, 50, 100];
-    $perPage = (int) $request->get('per_page', 10);
-    if (!in_array($perPage, $allowedPerPage)) {
-        $perPage = 10;
-    }
-
-    $items = $query->orderByRaw("SUBSTRING_INDEX(enduser, ' ', -1) ASC")->paginate($perPage)->withQueryString();
-    $groupedItems = $items->getCollection()->groupBy('enduser');
-
-    $departments = Department::orderBy('department')->get();
-    $employees = Employee::orderBy('firstname')->get();
-
-    return view('inventory.tabs.index', compact('items', 'groupedItems', 'departments', 'employees', 'perPage'));
-}
 
     public function create()
     {
@@ -199,11 +173,9 @@ class InventoryItemController extends Controller
 
     public function store(Request $request)
     {
-        // Check if this is an ICM submission
         $isIcmSubmission = $request->filled('icm_type') && $request->filled('priority') && $request->filled('problem_description');
 
         if ($isIcmSubmission) {
-            // ICM form validation
             $validated = $request->validate([
                 'division' => 'required|string|max:255',
                 'requesting_personnel' => 'required|string|max:255',
@@ -240,11 +212,6 @@ class InventoryItemController extends Controller
             }
 
             $validated['icm_no'] = str_pad($nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $currentYear;
-
-            // brand_model holds the inventory_items.no of the selected item.
-            // Look it up and denormalise description → brand_model (for display)
-            // and pull serial_number / property_number so the ICM record is
-            // self-contained even if the inventory item changes later.
             if (!empty($validated['brand_model'])) {
                 $linkedItem = InventoryItem::where('no', (int) $validated['brand_model'])
                     ->select('no', 'description', 'serial_number', 'property_number')
@@ -761,159 +728,114 @@ class InventoryItemController extends Controller
     }
 
     public function dashboard(Request $request)
-{
-    $filterableQuery = InventoryItem::active();
+    {
+        // Non-AJAX: return the blade page (initial render)
+        if (!$request->ajax() && $request->header('X-Requested-With') !== 'XMLHttpRequest') {
+            return view('inventory.tabs.dashboard');
+        }
 
-    // Apply date filters
-    $this->applyDateFilters($request, $filterableQuery);
+        // AJAX/XHR: return JSON expected by resources/views/inventory/tabs/dashboard.blade.php
+        $query = InventoryItem::active();
 
-    // Apply classification filters (RPCSP and PPE)
-    $classifications = $request->get('classifications');
-    if ($classifications) {
-        $classArray = explode(',', $classifications);
-        $filterableQuery->where(function ($query) use ($classArray) {
-            foreach ($classArray as $classification) {
-                if ($classification === 'rpcsp') {
-                    $query->orWhere(function ($q) {
-                        $q->where('unit_price', '<=', 49999)
-                          ->whereNotNull('unit_price');
-                    });
-                } elseif ($classification === 'ppe') {
-                    $query->orWhere(function ($q) {
-                        $q->where('unit_price', '>=', 50000)
-                          ->where('co_mooe', 'CO');
-                    });
+        // Apply same date filter logic used elsewhere
+        $this->applyDateFilters($request, $query);
+
+        // Classification filtering (rpcsp / ppe) driven by dashboard checkboxes
+        $classifications = $request->get('classifications', []);
+        if (is_string($classifications)) {
+            // dashboard JS sends comma-separated sometimes
+            $classifications = array_filter(array_map('trim', explode(',', $classifications)));
+        }
+
+        if (is_array($classifications) && !empty($classifications)) {
+            $query->where(function ($q) use ($classifications) {
+                foreach ($classifications as $classification) {
+                    if ($classification === 'rpcsp') {
+                        $q->orWhere(function ($rpcsp) {
+                            $rpcsp->where('unit_price', '<=', 49999)
+                                ->whereNotNull('unit_price');
+                        });
+                    }
+                    if ($classification === 'ppe') {
+                        $q->orWhere(function ($ppe) {
+                            $ppe->where('unit_price', '>=', 50000)
+                                ->where('co_mooe', 'CO');
+                        });
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
 
-    $totalItems = $filterableQuery->count();
-    $totalValue = $filterableQuery->sum('unit_price');
-    $rpcspValue = (clone $filterableQuery)->where('unit_price', '<=', 49999)
-    ->whereNotNull('unit_price')
-    ->sum('unit_price');
-    $ppeValue = (clone $filterableQuery)->where('unit_price', '>=', 50000)
-        ->where('co_mooe', 'CO')
-        ->sum('unit_price');
-    $itemsThisMonth = (clone $filterableQuery)->whereMonth('date_acquired', now()->month)
-        ->whereYear('date_acquired', now()->year)
-        ->count();
+        // Metrics
+        $totalItems = (clone $query)->count();
+        $rpcspValue = (clone $query)
+            ->where('unit_price', '<=', 49999)
+            ->whereNotNull('unit_price')
+            ->sum('unit_price');
 
-    // Get all divisions with item counts, including those with 0 items
-    $allDivisions = Department::orderBy('department')->pluck('department');
-    $divisionCounts = (clone $filterableQuery)
-        ->select('division', \DB::raw('count(*) as count'))
-        ->groupBy('division')
-        ->pluck('count', 'division');
+        $ppeValue = (clone $query)
+            ->where('unit_price', '>=', 50000)
+            ->where('co_mooe', 'CO')
+            ->sum('unit_price');
 
-    $divisionData = $allDivisions->map(function ($division) use ($divisionCounts) {
-        return (object) [
-            'division' => $division,
-            'count' => $divisionCounts->get($division, 0)
-        ];
-    });
+        $itemsThisMonth = (clone $query)
+            ->whereMonth('date_acquired', now()->month)
+            ->whereYear('date_acquired', now()->year)
+            ->count();
 
-    // Count only divisions with items
-    $totalDivisions = $divisionCounts->filter(function ($count) {
-        return $count > 0;
-    })->count();
+        // Division summary + breakdown
+        $divisionData = (clone $query)
+            ->select('division', 
+                \DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('division')
+            ->orderBy('count', 'desc')
+            ->get();
 
-    // Status data: Items less than 5 years and 5 years or more since date acquired
-    $fiveYearsAgo = now()->subYears(5);
-    $allStatusItems = (clone $filterableQuery)->get();
-    $lessThan5Years = 0;
-    $fiveYearsOrMore = 0;
+        $divisionBreakdown = [];
+        if ($divisionData->count() > 0) {
+            // classification counts inside each division
+            $breakdownRows = (clone $query)
+                ->select('division', 'classification', \DB::raw('COUNT(*) as count'))
+                ->groupBy('division', 'classification')
+                ->get();
 
-    foreach ($allStatusItems as $item) {
-        if ($item->date_acquired) {
-            // If date_acquired is before 5 years ago, it's 5 years or more
-            if ($item->date_acquired < $fiveYearsAgo) {
-                $fiveYearsOrMore++;
-            } else {
-                $lessThan5Years++;
+            foreach ($breakdownRows as $row) {
+                $divisionKey = $row->division;
+                if (!isset($divisionBreakdown[$divisionKey])) {
+                    $divisionBreakdown[$divisionKey] = [];
+                }
+                // The dashboard expects keys like Desktop/Laptop/Monitor/... based on classification value
+                $divisionBreakdown[$divisionKey][$row->classification] = (int) $row->count;
             }
         }
-    }
 
-    $statusData = collect([
-        (object)[
-            'status' => 'Less than 5 years',
-            'count' => $lessThan5Years
-        ],
-        (object)[
-            'status' => '5 years or more',
-            'count' => $fiveYearsOrMore
-        ],
-    ]);
+        // Status summary
+        $statusData = (clone $query)
+            ->select('status', \DB::raw('COUNT(*) as count'))
+            ->groupBy('status')
+            ->orderBy('count', 'desc')
+            ->get();
 
-    // Condition data: Functional and Nonfunctional
-    // Using backticks to escape 'condition' reserved word
-    $conditionCounts = (clone $filterableQuery)
-        ->selectRaw('`condition`, COUNT(*) as count')
-        ->whereNotNull('condition')
-        ->groupBy('condition')
-        ->pluck('count', 'condition');
+        // Condition summary (the dashboard expects `condition` and `count`)
+        // Use inventory_items.condition column directly.
+        $conditionData = (clone $query)
+            ->select('condition', \DB::raw('COUNT(*) as count'))
+            ->groupBy('condition')
+            ->orderBy('count', 'desc')
+            ->get();
 
-    $conditionData = collect([
-        (object)[
-            'condition' => 'Functional',
-            'count' => $conditionCounts->get('Functional', 0)
-        ],
-        (object)[
-            'condition' => 'Nonfunctional',
-            'count' => $conditionCounts->get('Nonfunctional', 0)
-        ],
-    ]);
-
-    // Division breakdown by classification
-    $divisionBreakdown = [];
-    foreach ($allDivisions as $division) {
-        $breakdown = (clone $filterableQuery)
-            ->where('division', $division)
-            ->select('classification', \DB::raw('count(*) as count'))
-            ->groupBy('classification')
-            ->pluck('count', 'classification');
-
-        $divisionBreakdown[$division] = [
-            'Desktop' => $breakdown->get('Desktop', 0),
-            'Laptop' => $breakdown->get('Laptop', 0),
-            'Monitor' => $breakdown->get('Monitor', 0),
-            'Printer' => $breakdown->get('Printer', 0),
-            'Scanner' => $breakdown->get('Scanner', 0),
-            'Others' => $breakdown->filter(function ($count, $classification) {
-                return !in_array($classification, ['Desktop', 'Laptop', 'Monitor', 'Printer', 'Scanner']);
-            })->sum(),
-        ];
-    }
-
-    if ($request->ajax()) {
         return response()->json([
-            'totalItems' => (int)$totalItems,
-            'totalValue' => (float)$totalValue,
-            'rpcspValue' => (float)$rpcspValue,
-            'ppeValue' => (float)$ppeValue,
-            'itemsThisMonth' => (int)$itemsThisMonth,
-            'totalDivisions' => (int)$totalDivisions,
+            'totalItems' => $totalItems,
+            'rpcspValue' => (float) $rpcspValue,
+            'ppeValue' => (float) $ppeValue,
+            'itemsThisMonth' => $itemsThisMonth,
+            'totalDivisions' => (int) $divisionData->count(),
             'divisionData' => $divisionData,
+            'divisionBreakdown' => $divisionBreakdown,
             'statusData' => $statusData,
             'conditionData' => $conditionData,
-            'divisionBreakdown' => $divisionBreakdown
         ]);
-    }
-
-    return view('inventory.tabs.dashboard', compact(
-        'totalItems',
-        'totalValue',
-        'rpcspValue',
-        'ppeValue',
-        'itemsThisMonth',
-        'totalDivisions',
-        'divisionData',
-        'statusData',
-        'conditionData',
-        'divisionBreakdown'
-    ));
     }
 
     public function ipm(Request $request)

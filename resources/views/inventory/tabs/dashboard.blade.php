@@ -66,7 +66,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">Total Items</span>
-                            <h2 class="metric-value"><span class="count-up" data-target="{{ $totalItems }}" id="totalItemsCount">{{ $totalItems }}</span></h2>
+                            <h2 class="metric-value"><span class="count-up" data-target="{{ $totalItems ?? 0 }}" id="totalItemsCount">{{ $totalItems ?? 0 }}</span></h2>
                         </div>
                     </div>
                     <div class="metric-footer">
@@ -82,7 +82,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">RPCSP Value</span>
-                            <h2 class="metric-value">₱<span class="count-up" data-target="{{ $rpcspValue }}" id="rpcspValueCount">{{ number_format($rpcspValue, 2) }}</span></h2>
+                            <h2 class="metric-value">₱<span class="count-up" data-target="{{ $rpcspValue ?? 0 }}" id="rpcspValueCount">{{ number_format($rpcspValue ?? 0, 2) }}</span></h2>
                         </div>
                     </div>
                     <div class="metric-footer">
@@ -98,7 +98,7 @@
                         </div>
                         <div class="metric-info">
                             <span class="metric-label">PPE Value</span>
-                            <h2 class="metric-value">₱<span class="count-up" data-target="{{ $ppeValue }}" id="ppeValueCount">{{ number_format($ppeValue, 2) }}</span></h2>
+                            <h2 class="metric-value">₱<span class="count-up" data-target="{{ $ppeValue ?? 0 }}" id="ppeValueCount">{{ number_format($ppeValue ?? 0, 2) }}</span></h2>
                         </div>
                     </div>
                     <div class="metric-footer">
@@ -121,7 +121,7 @@
                 </div>
                 <div class="section-body">
                     <div class="division-summary-row" id="division-summary-cards">
-                        @foreach($divisionData as $division)
+                        @foreach(($divisionData ?? []) as $division)
                         <div class="division-summary-card">
                             <div class="division-card division-card-{{ str_replace(' ', '-', strtolower(trim($division->division))) }} cursor-pointer division-summary-trigger" data-division="{{ $division->division }}" data-breakdown="{{ base64_encode(json_encode($divisionBreakdown[$division->division] ?? [])) }}">
                                 <div class="division-card-body">
@@ -155,7 +155,7 @@
                 </div>
                 <div class="section-body">
                     <div class="status-container" id="status-cards">
-                        @foreach($statusData as $status)
+                        @foreach(($statusData ?? []) as $status)
                         <div class="status-item status-{{ strtolower(str_replace(' ', '-', $status->status)) }}">
                             <div class="status-icon">
                                 <i class="bi {{ strpos($status->status, 'Less than') !== false ? 'bi-calendar-check' : 'bi-calendar-x' }}"></i>
@@ -181,7 +181,7 @@
                 </div>
                 <div class="section-body">
                     <div class="condition-container" id="condition-cards">
-                        @foreach($conditionData as $condition)
+                        @foreach(($conditionData ?? []) as $condition)
                         <div class="condition-item condition-{{ strtolower(str_replace(' ', '-', $condition->condition)) }}">
                             <div class="condition-icon">
                                 <i class="bi {{ $condition->condition == 'Functional' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' }}"></i>

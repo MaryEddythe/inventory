@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layout.app')
 @section('title', 'CTO')
 
 @section('content')
@@ -431,104 +431,126 @@
 </div>
 
 
-<div class="table-wrapper">
-    @php
-        $ctoGroups = $ctoBenefits->groupBy(function ($benefit) {
-            $remarks = trim((string) $benefit->remarks);
+<div class="card border-0 shadow-sm rounded-4" style="background: #fff;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            @php
+                $ctoGroups = $ctoBenefits->groupBy(function ($benefit) {
+                    $remarks = trim((string) $benefit->remarks);
+                    return $remarks !== '' ? $remarks : 'No special order / basis';
+                });
+            @endphp
 
-            return $remarks !== '' ? $remarks : 'No special order / basis';
-        });
-    @endphp
+            <table class="table table-hover align-middle" style="margin:0;">
+                <thead>
+                    <tr class="text-muted" style="font-size:0.85rem; letter-spacing:0.02em;">
+                        <th style="width:38%;">Special Order / Basis</th>
+                        <th style="width:10%;">Employees</th>
+                        <th style="width:12%;">Total Hours</th>
+                        <th style="width:12%;">Start Date</th>
+                        <th style="width:12%;">End Date</th>
+                        <th style="width:12%;">Status</th>
+                        <th style="width:14%;">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($ctoGroups as $basis => $groupBenefits)
+                        @php
+                            $groupId = 'cto-group-' . md5($basis);
+                            $firstBenefit = $groupBenefits->first();
+                            $startDate = $groupBenefits->min('start_date');
+                            $endDate = $groupBenefits->filter(fn ($benefit) => $benefit->end_date)->max('end_date');
+                        @endphp
 
-    <table>
-        <thead>
-            <tr>
-                <th>Special Order / Basis</th>
-                <th>Employees</th>
-                <th>Total Hours</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Status</th>
-                <th>Employees</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($ctoGroups as $basis => $groupBenefits)
-                @php
-                    $groupId = 'cto-group-' . md5($basis);
-                    $firstBenefit = $groupBenefits->first();
-                    $startDate = $groupBenefits->min('start_date');
-                    $endDate = $groupBenefits->filter(fn ($benefit) => $benefit->end_date)->max('end_date');
-                @endphp
-                <tr>
-                    <td>
-                        <div class="cto-group-title">{{ $basis }}</div>
-                        <div class="cto-group-meta">{{ $firstBenefit->credit_type ?? 'Credited Time-Off' }}</div>
-                    </td>
-                    <td>{{ $groupBenefits->count() }}</td>
-                    <td>{{ (int) $groupBenefits->sum('credit_hours') }}</td>
-                    <td><div class="leave-date">{{ $startDate?->format('M d, Y') }}</div></td>
-                    <td>
-                        <div class="leave-date">
-                            @if($endDate)
-                                {{ $endDate->format('M d, Y') }}
-                            @else
-                                <span style="color: #94a3b8;">—</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td>
-                        <span class="status-badge status-{{ strtolower($firstBenefit->status ?? 'ACTIVE') }}">
-                            {{ $firstBenefit->status ?? 'ACTIVE' }}
-                        </span>
-                    </td>
-                    <td>
-                        <button type="button" class="cto-group-toggle" aria-expanded="false" onclick="toggleCtoGroup('{{ $groupId }}', this)">
-                            Show employees
-                        </button>
-                    </td>
-                </tr>
-                <tr id="{{ $groupId }}" class="cto-detail-row">
-                    <td colspan="7">
-                        <table class="cto-detail-table">
-                            <thead>
-                                <tr>
-                                    <th>Employee ID</th>
-                                    <th>Name</th>
-                                    <th>Division</th>
-                                    <th>Position</th>
-                                    <th>Employment Type</th>
-                                    <th>Hours</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($groupBenefits as $benefit)
-                                    <tr>
-                                        <td><span class="badge badge-blue">{{ $benefit->employee->employee_id ?? 'N/A' }}</span></td>
-                                        <td><div class="leave-type-cell">{{ $benefit->name }}</div></td>
-                                        <td>{{ $benefit->division ?? 'N/A' }}</td>
-                                        <td>{{ $benefit->position ?? 'N/A' }}</td>
-                                        <td>{{ $benefit->employment_type === 'PERMANENT' ? 'Permanent' : 'COS' }}</td>
-                                        <td>{{ (int) $benefit->credit_hours }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">–</div>
-                            <div class="empty-state-text">No CTO credits found</div>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                        <tr>
+                            <td>
+                                <div class="fw-bold" style="color:#0f172a;">{{ $basis }}</div>
+                                <div class="text-secondary" style="font-size:0.8rem;">{{ $firstBenefit->credit_type ?? 'Credited Time-Off' }}</div>
+                            </td>
+                            <td class="fw-semibold">{{ $groupBenefits->count() }}</td>
+                            <td class="fw-semibold">{{ (int) $groupBenefits->sum('credit_hours') }}</td>
+                            <td>{{ $startDate?->format('M d, Y') }}</td>
+                            <td>
+                                @if($endDate)
+                                    {{ $endDate->format('M d, Y') }}
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill px-3 py-2" style="background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; font-weight:700;">
+                                    {{ $firstBenefit->status ?? 'ACTIVE' }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm" style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; font-weight:800;" aria-expanded="false" onclick="toggleCtoGroup('{{ $groupId }}', this)">
+                                    Show employees
+                                </button>
+                            </td>
+                        </tr>
+
+                        <tr id="{{ $groupId }}" class="cto-detail-row">
+                            <td colspan="7" class="bg-light">
+                                <div class="p-3">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="fw-bold" style="color:#0f172a;">Employees</div>
+                                        <div class="text-secondary" style="font-size:0.85rem;">{{ $groupBenefits->count() }} selected</div>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle" style="background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden;">
+                                            <thead style="background:#f8fafc;">
+                                                <tr class="text-muted" style="font-size:0.78rem;">
+                                                    <th>Employee ID</th>
+                                                    <th>Name</th>
+                                                    <th>Division</th>
+                                                    <th>Position</th>
+                                                    <th>Employment Type</th>
+                                                    <th class="text-end">Hours</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($groupBenefits as $benefit)
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge rounded-pill px-3 py-2" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; font-weight:800;">{{ $benefit->employee->employee_id ?? 'N/A' }}</span>
+                                                        </td>
+                                                        <td class="fw-semibold" style="color:#0f172a;">{{ $benefit->name }}</td>
+                                                        <td class="text-secondary">{{ $benefit->division ?? 'N/A' }}</td>
+                                                        <td class="text-secondary">{{ $benefit->position ?? 'N/A' }}</td>
+                                                        <td>
+                                                            <span class="badge rounded-pill px-3 py-2" style="background:#f1f5f9; color:#334155; border:1px solid #e2e8f0; font-weight:800;">
+                                                                {{ $benefit->employment_type === 'PERMANENT' ? 'Permanent' : 'COS' }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end fw-semibold">{{ (int) $benefit->credit_hours }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon" style="font-size:1.8rem; color:#94a3b8;">–</div>
+                                    <div class="empty-state-text" style="color:#64748b; font-weight:600;">No CTO credits found</div>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<script>
+// Ensures the nested table rows inherit the original expand/collapse behavior
+</script>
 
 <script>
     let selectedEmployees = [];

@@ -108,10 +108,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/export/{type}', [InventoryItemController::class, 'export'])->name('inventory.export');
     Route::get('/inventory/category-export/{category}/pdf', [InventoryItemController::class, 'exportCategoryPdf'])->name('inventory.category.export.pdf');
 
-    // API Routes for ICM - Keep only one version
+    // API Routes (Calendar/CTO/ICM)
+    // CTO search employees (expects route name: api.employees.search)
+    Route::get('/api/employees/search', [InventoryItemController::class, 'searchEmployees'])->name('api.employees.search');
+
+    // Existing ICM-related APIs
     Route::get('/api/search-employees', [InventoryItemController::class, 'searchEmployees'])->name('api.search-employees');
     Route::get('/api/items-by-personnel', [InventoryItemController::class, 'getItemsByPersonnel'])->name('api.items-by-personnel');
     Route::get('/api/item-details/{itemId}', [InventoryItemController::class, 'getItemDetails'])->name('api.item-details');
+
 
     // Profile Routes
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
@@ -123,6 +128,10 @@ Route::middleware(['auth'])->group(function () {
     // Credits routes
     Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');
     Route::get('/credits/cto', [CreditsController::class, 'cto'])->name('credits.cto');
+    Route::post('/credits', [CreditsController::class, 'store'])->name('credits.store');
+    Route::put('/credits/{credit}', [CreditsController::class, 'update'])->name('credits.update');
+    Route::delete('/credits/{credit}', [CreditsController::class, 'destroy'])->name('credits.destroy');
+
 
     // Calendar page
     Route::get('/calendar', function () {

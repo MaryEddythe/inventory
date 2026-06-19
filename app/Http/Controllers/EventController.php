@@ -29,8 +29,11 @@ class EventController extends Controller
         ]);
 
         $event = Event::create($validated);
-        return response()->json($event, 201);
+
+        return redirect()->route('calendar.index')
+            ->with('success', "Successfully added {$event->title}!");
     }
+
 
     public function show(Event $event)
     {

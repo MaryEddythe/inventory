@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\InventoryItemController;
 use Illuminate\Support\Facades\Route;
 
@@ -128,4 +129,17 @@ Route::middleware(['auth'])->group(function () {
         return view('calendar.index');
     })->name('calendar.index');
 
+    Route::get('/calendar/create', function () {
+        return view('calendar.create');
+    })->name('calendar.create');
+
+    // Calendar create (fix: POST /calendar)
+    Route::post('/calendar', [EventController::class, 'store'])->name('calendar.store');
+
+    // Calendar API endpoints for FullCalendar
+    Route::get('/api/events', [EventController::class, 'index'])->name('calendar.api.events');
+    Route::get('/api/events/types', [EventController::class, 'getTypes'])->name('calendar.api.events.types');
+
 });
+
+

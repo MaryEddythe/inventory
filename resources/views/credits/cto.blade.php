@@ -578,6 +578,45 @@
         document.getElementById('ctoSearchResults').style.display = 'none';
     }
 
+    function populateEmployeeDropdown() {
+    fetchEmployees()
+    .then(employees => {
+        // Clear the existing suggestions
+        const suggestionsDiv = document.getElementById('suggestions');
+        suggestionsDiv.innerHTML = '';
+
+        // Populate the suggestions
+        employees.forEach(employee => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'suggestion-item';
+            suggestionItem.innerHTML = `
+                <div class="suggestion-fullname"><strong>${employee.full_name}</strong></div>
+                <div class="suggestion-division"><small>${employee.division_code}</small></div>
+            `;
+
+            suggestionItem.dataset.index = employee.id;
+            suggestionItem.style.cursor = 'pointer';
+
+            // Use closure to properly capture the employee object
+            (function(employee) {
+                suggestionItem.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Selected employee:', employee);
+                    selectEmployee(employee);
+                });
+            })(employee);
+
+            suggestionsDiv.appendChild(suggestionItem);
+        });
+        currentIndex = -1;
+        console.log('🎉 Dropdown populated:', employees.length, 'items');
+    })
+    .catch(error => {
+        console.error('Error fetching employees:', error);
+    });
+}
+
     function closeCreateCtoModal(){
         const el = document.getElementById('createCtoModal');
         if(!el) return;
@@ -614,7 +653,21 @@
     async function searchEmployees(query) {
         if (!query || query.trim().length < 1) return [];
 
-        const res = await fetch(`{{ route('api.employees.search') }}?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`{{ route('api.employees.search') }}?query=${encodeURIComponent(query)}`, {
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        // Surface errors in UI/debugging instead of silently returning []
+        if (!res.ok) {
+            try {
+                const err = await res.json();
+                console.error('Employee search failed:', err);
+            } catch {
+                console.error('Employee search failed with status:', res.status);
+            }
+            return [];
+        }
         if (!res.ok) return [];
         return await res.json();
     }
@@ -639,13 +692,20 @@
             return;
         }
 
+        // Backend returns: emp_no, fullname, department_name (not id/full_name/division_code)
         const selectedIds = new Set(selectedEmployees.map(e => e.id));
         resultsEl.innerHTML = items.map(item => {
-            const isSelected = selectedIds.has(item.id);
+            const id = item.emp_no ?? item.id;
+            const fullName = item.fullname ?? item.full_name ?? '';
+            const employeeId = item.emp_no ?? item.employee_id ?? '';
+            const divisionCode = item.department_name ?? item.division_code ?? '';
+
+            const isSelected = selectedIds.has(id);
+
             return `
-                <button type="button" class="search-result-item ${isSelected ? 'already-selected' : ''}" data-employee-id="${item.id}">
-                    <div style="font-weight:700">${item.full_name}${isSelected ? ' <span style="color:#3b82f6;font-size:0.75em;">✓ selected</span>' : ''}</div>
-                    <div style="font-size:0.82em; color:#64748b;">${item.employee_id} · ${item.division_code}</div>
+                <button type="button" class="search-result-item ${isSelected ? 'already-selected' : ''}" data-employee-id="${id}">
+                    <div style="font-weight:700">${fullName}${isSelected ? ' <span style="color:#3b82f6;font-size:0.75em;">✓ selected</span>' : ''}</div>
+                    <div style="font-size:0.82em; color:#64748b;">${employeeId} · ${divisionCode}</div>
                 </button>
             `;
         }).join('');
@@ -660,16 +720,23 @@
         resultsEl.querySelectorAll('.search-result-item').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const employeeId = parseInt(btn.getAttribute('data-employee-id'));
-                const selected = lastSearchItems.find(x => x.id === employeeId);
+                const employeeIdRaw = btn.getAttribute('data-employee-id');
+                const employeeId = employeeIdRaw != null ? String(employeeIdRaw) : '';
 
+                const selected = lastSearchItems.find(x => String(x.emp_no ?? x.id) === employeeId);
                 if (!selected) return;
 
-                const existsIndex = selectedEmployees.findIndex(e => e.id === employeeId);
+                const existsIndex = selectedEmployees.findIndex(er => String(er.id) === employeeId);
                 if (existsIndex > -1) {
                     selectedEmployees.splice(existsIndex, 1);
                 } else {
-                    selectedEmployees.push(selected);
+                    // Normalize selected object shape so the rest of the UI works consistently
+                    selectedEmployees.push({
+                        id: String(selected.emp_no ?? selected.id),
+                        full_name: selected.fullname ?? selected.full_name ?? '',
+                        employee_id: selected.emp_no ?? selected.employee_id ?? '',
+                        division_code: selected.department_name ?? selected.division_code ?? '',
+                    });
                 }
 
                 const searchInput = document.getElementById('ctoEmployeeSearch');
@@ -702,8 +769,8 @@
 
         listEl.innerHTML = selectedEmployees.map(emp => `
             <span class="employee-pill">
-                <span class="employee-pill-name">${emp.full_name}</span>
-                <button type="button" class="employee-pill-remove" onclick="removeSelectedEmployee(${emp.id}, event)">&times;</button>
+                <span class="employee-pill-name">${emp.full_name || ''}</span>
+                <button type="button" class="employee-pill-remove" onclick="removeSelectedEmployee('${emp.id}', event)">&times;</button>
             </span>
         `).join('');
     }
@@ -711,7 +778,8 @@
     function removeSelectedEmployee(employeeId, event) {
         event.preventDefault();
         event.stopPropagation();
-        selectedEmployees = selectedEmployees.filter(e => e.id !== employeeId);
+        const id = String(employeeId);
+        selectedEmployees = selectedEmployees.filter(e => String(e.id) !== id);
         renderSelectedEmployees();
 
         if (lastSearchItems.length > 0) {

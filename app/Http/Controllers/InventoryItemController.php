@@ -1448,17 +1448,20 @@ class InventoryItemController extends Controller
      */
     public function searchEmployees(Request $request)
     {
-        $search = $request->get('query', '');
+        // Frontend historically used `q`; newer CTO modal uses `query`.
+        $search = $request->get('query', $request->get('q', ''));
 
-        \Log::info('searchEmployees called', ['search' => $search]);
+        \Log::info('searchEmployees called', [
+            'search' => $search,
+            'query_param_query' => $request->get('query'),
+            'query_param_q' => $request->get('q'),
+        ]);
 
         try {
             $employees = Employee::where('status', 'active')
                 ->where(function($q) use ($search) {
                     $q->orWhere('firstname', 'LIKE', "%{$search}%")
                       ->orWhere('lastname', 'LIKE', "%{$search}%")
-                      ->orWhere('first_name', 'LIKE', "%{$search}%")
-                      ->orWhere('last_name', 'LIKE', "%{$search}%")
                       ->orWhere('emp_no', 'LIKE', "%{$search}%");
                 })
                 ->with('departmentInfo')

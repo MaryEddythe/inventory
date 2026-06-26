@@ -233,9 +233,9 @@ class CreditsController extends Controller
         }
 
         $employees = Employee::with('division')
-            ->whereIn('id', $employeeIds)
+            ->whereIn('emp_no', $employeeIds)
             ->get()
-            ->keyBy('id');
+            ->keyBy('emp_no');
 
         if ($employees->count() !== count($employeeIds)) {
             throw ValidationException::withMessages([

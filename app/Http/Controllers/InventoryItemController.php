@@ -1498,6 +1498,10 @@ class InventoryItemController extends Controller
                     'department_name' => $divisionCodeOrName ?? 'Unknown',
 
                     'fullname' => trim($first . ' ' . $last),
+                    'full_name' => trim($first . ' ' . $last),
+                    'position' => $employee->position ?? $employee->Role ?? '',
+                    'division_code' => $divisionCodeOrName ?? '',
+                    'employment_type' => $employee->employment_type ?? 'PERMANENT',
                 ];
             });
 

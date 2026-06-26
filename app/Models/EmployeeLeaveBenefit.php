@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EmployeeLeaveBenefit extends Model
 {
     protected $fillable = [
-        'employee_id',
+        'emp_no',
         'name',
         'division',
         'position',

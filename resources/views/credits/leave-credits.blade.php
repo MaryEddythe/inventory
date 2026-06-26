@@ -526,9 +526,9 @@
             }
 
             searchResults.innerHTML = employees.map(emp => `
-                <div class="search-result-item" onclick="selectEmployee(${emp.id}, '${emp.full_name}', '${emp.division_code}', '${emp.position}', '${emp.employment_type}')">
+                <div class="search-result-item" onclick="selectEmployee(${emp.emp_no}, '${emp.full_name}', '${emp.division_code}', '${emp.position}', '${emp.employment_type}')">
                     <div class="search-result-name">${emp.full_name}</div>
-                    <div class="search-result-info">${emp.employee_id} · ${emp.division_code} · ${emp.position}</div>
+                    <div class="search-result-info">${emp.emp_no} · ${emp.division_code} · ${emp.position}</div>
                 </div>
             `).join('');
             searchResults.classList.add('active');
@@ -664,4 +664,3 @@
 </script>
 
 @endsection
-

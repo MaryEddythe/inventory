@@ -287,7 +287,7 @@ class CreditsController extends Controller
                 $currentCtoHours = 0;
 
                 if ($isCto) {
-                    $currentCtoHours = (int) EmployeeLeaveBenefit::where('employee_id', $employee->id)
+                    $currentCtoHours = (int) EmployeeLeaveBenefit::where('emp_no', $employee->emp_no)
                         ->where(function ($query) {
                             $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', [
                                 'credited time-off',
@@ -298,7 +298,7 @@ class CreditsController extends Controller
                 }
 
                 $creditData = [
-                    'employee_id' => $employee->id,
+                    'emp_no' => $employee->emp_no,
                     'name' => $employee->full_name,
                     'division' => optional($employee->division)->code ?? 'N/A',
                     'position' => $employee->position,
@@ -317,7 +317,7 @@ class CreditsController extends Controller
 
                 if ($isCto) {
                     EmployeeLeaveHistory::create([
-                        'employee_id' => $employee->id,
+                        'emp_no' => $employee->emp_no,
                         'leave_benefit_id' => $benefit->id,
                         'credit_type' => $creditType,
                         'credits_added' => $ctoAction === 'add' ? $creditHours : 0,

@@ -10,8 +10,8 @@ class EmployeeLeaveBenefit extends Model
     protected $fillable = [
         'emp_no',
         'name',
-        'division',
-        'position',
+        'departments',
+        'role',
         'employment_type',
         'credit_type',
         'start_date',

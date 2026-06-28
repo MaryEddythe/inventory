@@ -214,6 +214,7 @@ class CreditsController extends Controller
         $validated = $request->validate([
             'employee_id' => 'nullable|exists:employees,id',
             'employee_ids' => 'nullable',
+            'employment_type' => 'required|in:COS,PERMANENT',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'credit_type' => 'required|string',
@@ -300,8 +301,8 @@ class CreditsController extends Controller
                 $creditData = [
                     'emp_no' => $employee->emp_no,
                     'name' => $employee->full_name,
-                    'division' => optional($employee->division)->code ?? 'N/A',
-                    'position' => $employee->position,
+                    'departments' => optional($employee->division)->code ?? 'N/A',
+                    'role' => $employee->position,
                     'employment_type' => $employee->employment_type,
                     'credit_type' => $creditType,
                     'start_date' => $validated['start_date'],

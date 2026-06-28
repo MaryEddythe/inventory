@@ -291,6 +291,7 @@
                 <div>
                     <label class="form-group-label">Employment Type</label>
                     <input type="text" id="employmentType" class="form-control" disabled>
+                    <input type="hidden" name="employment_type" id="employmentTypeHidden">
                 </div>
 
                 <div class="form-grid">
@@ -549,6 +550,7 @@
         divisionField.value = division;
         positionField.value = position;
         employmentTypeField.value = employmentType;
+        document.getElementById('employmentTypeHidden').value = employmentType;
 
         updateCreditTypeOptions();
 
@@ -580,6 +582,7 @@
         divisionField.value = '';
         positionField.value = '';
         employmentTypeField.value = '';
+        document.getElementById('employmentTypeHidden').value = '';
         employeeSearch.value = '';
 
         window.__createCtoMode = false;

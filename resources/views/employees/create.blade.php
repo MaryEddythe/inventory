@@ -2,10 +2,6 @@
 @section('title', 'Add Employee')
 
 @section('content')
-{{--
-    Render the create employee form inside a modal popup.
-    This view is still served at /employees/create.
---}}
 
 <div class="employees-create-modal-backdrop" role="dialog" aria-modal="true" aria-label="Add Employee">
     <div class="employees-create-modal-dialog">

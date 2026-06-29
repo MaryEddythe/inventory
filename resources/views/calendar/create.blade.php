@@ -1,6 +1,5 @@
 @extends('layout.app')
 @section('content')
-    {{-- Load hr.css via the styles stack (as used in the main calendar view) --}}
     @push('styles')
         <link href="{{ asset('hr.css') }}" rel="stylesheet">
     @endpush

@@ -1,9 +1,4 @@
-/* HR styles (Bootstrap-first pages).
-   NOTE: Tailwind classes are not available in plain CSS, so we replicate the intended UI
-   for employees/edit.blade.php as semantic CSS utilities.
-*/
 
-/* Optional: small helper for consistent section title spacing if needed later */
 .hr-section-title {
     text-transform: uppercase;
     letter-spacing: 0.05em;

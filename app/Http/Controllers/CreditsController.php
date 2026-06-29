@@ -212,7 +212,7 @@ class CreditsController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'employee_id' => 'nullable|exists:employees,id',
+            'employee_id' => 'required|exists:inventory.employees,emp_no',
             'employee_ids' => 'nullable',
             'employment_type' => 'required|in:COS,PERMANENT',
             'start_date' => 'required|date',
@@ -317,15 +317,19 @@ class CreditsController extends Controller
                 $benefit = EmployeeLeaveBenefit::create($creditData);
 
                 if ($isCto) {
-                    EmployeeLeaveHistory::create([
-                        'emp_no' => $employee->emp_no,
-                        'leave_benefit_id' => $benefit->id,
-                        'credit_type' => $creditType,
-                        'credits_added' => $ctoAction === 'add' ? $creditHours : 0,
-                        'hours_used' => $ctoAction === 'deduct' ? abs($creditHours) : 0,
-                        'hours_remaining' => $currentCtoHours + $creditHours,
-                        'remarks' => $validated['remarks'] ?? null,
-                    ]);
+                    try {
+                        EmployeeLeaveHistory::create([
+                            'emp_no' => $employee->emp_no,
+                            'leave_benefit_id' => $benefit->id,
+                            'credit_type' => $creditType,
+                            'credits_added' => $ctoAction === 'add' ? $creditHours : 0,
+                            'hours_used' => $ctoAction === 'deduct' ? abs($creditHours) : 0,
+                            'hours_remaining' => $currentCtoHours + $creditHours,
+                            'remarks' => $validated['remarks'] ?? null,
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::warning('EmployeeLeaveHistory creation failed: ' . $e->getMessage());
+                    }
                 }
             }
         });

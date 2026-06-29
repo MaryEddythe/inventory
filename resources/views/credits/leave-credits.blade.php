@@ -663,6 +663,52 @@
         document.getElementById('editForm').submit();
     }
 
+    function handleSubmit(event) {
+        event.preventDefault();
+        const form = document.querySelector('#createModal form');
+
+        const employeeId = document.getElementById('employeeId').value;
+        const employmentType = document.getElementById('employmentTypeHidden').value;
+        const creditType = document.getElementById('creditTypeSelect').value;
+        const startDate = form.start_date.value;
+        const dateApplied = form.date_applied.value;
+        const dateEffective = form.date_effective.value;
+
+        if (!employeeId) {
+            alert('Please select an employee');
+            return;
+        }
+        if (!employmentType) {
+            alert('Employment type is missing');
+            return;
+        }
+        if (!creditType) {
+            alert('Please select a leave type');
+            return;
+        }
+        if (!startDate) {
+            alert('Please select a start date');
+            return;
+        }
+        if (!dateApplied) {
+            alert('Please select date applied');
+            return;
+        }
+        if (!dateEffective) {
+            alert('Please select date effective');
+            return;
+        }
+
+        console.log('Form data valid, submitting:', {
+            employee_id: employeeId,
+            employment_type: employmentType,
+            credit_type: creditType,
+            start_date: startDate,
+        });
+
+        form.submit();
+    }
+
     const allBenefits = @json($allBenefits);
 </script>
 

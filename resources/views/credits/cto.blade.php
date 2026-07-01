@@ -630,8 +630,13 @@
     function handleSubmit(event){
         const hiddenField = document.getElementById('selectedEmployeeIds');
         const startDate = document.getElementById('ctoStartDate')?.value;
+        const today = new Date().toISOString().slice(0, 10);
+
+        // FIX: Always write dates before any early return so they're never empty
         const dateApplied = document.getElementById('ctoDateApplied');
         const dateEffective = document.getElementById('ctoDateEffective');
+        if (dateApplied) dateApplied.value = dateApplied.value || today;
+        if (dateEffective) dateEffective.value = dateEffective.value || startDate || today;
 
         if (selectedEmployees.length === 0) {
             event.preventDefault();
@@ -639,21 +644,14 @@
             return false;
         }
 
-        if (dateApplied && !dateApplied.value) {
-            dateApplied.value = new Date().toISOString().slice(0, 10);
-        }
-
-        if (dateEffective && !dateEffective.value) {
-            dateEffective.value = startDate || new Date().toISOString().slice(0, 10);
-        }
-
-        hiddenField.value = JSON.stringify(selectedEmployees.map(e => e.id));
+        // FIX: Always sync hidden field to current selectedEmployees array before submit
+        hiddenField.value = JSON.stringify(selectedEmployees.map(e => String(e.id)));
     }
 
     async function searchEmployees(query) {
         if (!query || query.trim().length < 1) return [];
 
-        const res = await fetch(`{{ route('api.employees.search') }}?query=${encodeURIComponent(query)}`, {
+        const res = await fetch(`{{ route('api.employees.search') }}?q=${encodeURIComponent(query)}`, {
             credentials: 'same-origin',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });

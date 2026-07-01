@@ -468,7 +468,13 @@
                                 <div class="text-secondary" style="font-size:0.8rem;">{{ $firstBenefit->credit_type ?? 'Credited Time-Off' }}</div>
                             </td>
                             <td class="fw-semibold">{{ $groupBenefits->count() }}</td>
-                            <td class="fw-semibold">{{ (int) $groupBenefits->sum('credit_hours') }}</td>
+                            @php
+                                $firstB = $groupBenefits->first();
+                                $gS = !empty($firstB->start_date) ? \Carbon\Carbon::parse($firstB->start_date) : null;
+                                $gE = !empty($firstB->end_date)   ? \Carbon\Carbon::parse($firstB->end_date)   : $gS;
+                                $groupTotalHours = $gS ? (($gS->diffInDays($gE) + 1) * 10) : 0;
+                            @endphp
+                            <td class="fw-semibold">{{ $groupTotalHours }} hrs</td>
                             <td>{{ $startDate?->format('M d, Y') }}</td>
                             <td>
                                 @if($endDate)
@@ -523,7 +529,14 @@
                                                                 {{ $benefit->employment_type === 'PERMANENT' ? 'Permanent' : 'COS' }}
                                                             </span>
                                                         </td>
-                                                        <td class="text-end fw-semibold">{{ (int) $benefit->credit_hours }}</td>
+                                                        <td class="fw-semibold text-end">
+                                                                @php
+                                                                    $s = !empty($benefit->start_date) ? \Carbon\Carbon::parse($benefit->start_date) : null;
+                                                                    $e = !empty($benefit->end_date)   ? \Carbon\Carbon::parse($benefit->end_date)   : $s;
+                                                                    $hrs = $s ? (($s->diffInDays($e) + 1) * 10) : 0;
+                                                                @endphp
+                                                                {{ $hrs }} hrs
+                                                            </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>

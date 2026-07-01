@@ -417,6 +417,14 @@
                     </div>
                 </div>
 
+                <div class="form-grid">
+                    <div>
+                        <label class="form-group-label">Location</label>
+                        <input type="text" name="location" class="form-control" placeholder="Enter location">
+                    </div>
+                    <div></div>
+                </div>
+
                 <input type="hidden" name="date_applied" id="ctoDateApplied" />
                 <input type="hidden" name="date_effective" id="ctoDateEffective" />
 
@@ -444,7 +452,8 @@
             <table class="table table-hover align-middle" style="margin:0;">
                 <thead>
                     <tr class="text-muted" style="font-size:0.85rem; letter-spacing:0.02em;">
-                        <th style="width:38%;">Special Order / Basis</th>
+                        <th style="width:28%;">Special Order / Basis</th>
+                        <th style="width:12%;">Location</th>
                         <th style="width:10%;">Employees</th>
                         <th style="width:12%;">Total Hours</th>
                         <th style="width:12%;">Start Date</th>
@@ -460,6 +469,7 @@
                             $firstBenefit = $groupBenefits->first();
                             $startDate = $groupBenefits->min('start_date');
                             $endDate = $groupBenefits->filter(fn ($benefit) => $benefit->end_date)->max('end_date');
+                            $groupLocation = $groupBenefits->map(fn ($benefit) => trim((string) ($benefit->location ?? '')))->filter()->first();
                         @endphp
 
                         <tr>
@@ -467,6 +477,7 @@
                                 <div class="fw-bold" style="color:#0f172a;">{{ $basis }}</div>
                                 <div class="text-secondary" style="font-size:0.8rem;">{{ $firstBenefit->credit_type ?? 'Credited Time-Off' }}</div>
                             </td>
+                            <td class="fw-semibold">{{ $groupLocation ?: '—' }}</td>
                             <td class="fw-semibold">{{ $groupBenefits->count() }}</td>
                             @php
                                 $firstB = $groupBenefits->first();
@@ -496,7 +507,7 @@
                         </tr>
 
                         <tr id="{{ $groupId }}" class="cto-detail-row">
-                            <td colspan="7" class="bg-light">
+                            <td colspan="8" class="bg-light">
                                 <div class="p-3">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
                                         <div class="fw-bold" style="color:#0f172a;">Employees</div>
@@ -547,7 +558,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <div class="empty-state">
                                     <div class="empty-state-icon" style="font-size:1.8rem; color:#94a3b8;">–</div>
                                     <div class="empty-state-text" style="color:#64748b; font-weight:600;">No CTO credits found</div>

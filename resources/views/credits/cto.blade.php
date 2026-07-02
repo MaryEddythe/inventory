@@ -533,8 +533,8 @@
                                                             <span class="badge rounded-pill px-3 py-2" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; font-weight:800;">{{ $benefit->employee->employee_id ?? 'N/A' }}</span>
                                                         </td>
                                                         <td class="fw-semibold" style="color:#0f172a;">{{ $benefit->name }}</td>
-                                                        <td class="text-secondary">{{ $benefit->division ?? 'N/A' }}</td>
-                                                        <td class="text-secondary">{{ $benefit->position ?? 'N/A' }}</td>
+                                                        <td class="text-secondary">{{ $benefit->departments ?? 'N/A' }}</td>
+                                                        <td class="text-secondary">{{ $benefit->role ?? 'N/A' }}</td>
                                                         <td>
                                                             <span class="badge rounded-pill px-3 py-2" style="background:#f1f5f9; color:#334155; border:1px solid #e2e8f0; font-weight:800;">
                                                                 {{ $benefit->employment_type === 'PERMANENT' ? 'Permanent' : 'COS' }}

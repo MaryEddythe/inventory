@@ -33,9 +33,28 @@ class EmployeeLeaveBenefit extends Model
 
     /**
      * Get the employee that owns the leave benefit.
+     *
+     * employee_leave_benefits.emp_no  -> inventory.employees.emp_no
      */
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class, 'emp_no', 'emp_no');
+    }
+
+    /**
+     * Backward-compatibility alias for any legacy code expecting `employee_emp_no`.
+     * (Prevents SQL errors when some relationship usage still relies on the default FK name.)
+     */
+    public function employeeEmpNo(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'emp_no', 'emp_no');
+    }
+
+    /**
+     * Prevent legacy/automatic FK name fallback (`employee_emp_no`) from causing SQL errors.
+     */
+    public function employeeLeaveHistory(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(EmployeeLeaveHistory::class, 'leave_benefit_id');
     }
 }

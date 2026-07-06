@@ -1500,6 +1500,7 @@ class InventoryItemController extends Controller
                     'fullname' => trim($first . ' ' . $last),
                     'full_name' => trim($first . ' ' . $last),
                     'position' => $employee->position ?? $employee->Role ?? '',
+                    'role' => $employee->role ?? $employee->Role ?? 'N/A',
                     'division_code' => $divisionCodeOrName ?? '',
                     'employment_type' => $employee->employment_type ?? 'PERMANENT',
                 ];

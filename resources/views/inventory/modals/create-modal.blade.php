@@ -184,9 +184,11 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
         currentEmployees.forEach((emp, index) => {
             const suggestionItem = document.createElement('div');
             suggestionItem.className = 'suggestion-item';
+            const department = emp.department_name || 'Unknown';
+            const role = emp.role || 'N/A';
             suggestionItem.innerHTML = `
                 <div class="suggestion-fullname"><strong>${emp.fullname || 'N/A'}</strong></div>
-                <div class="suggestion-division"><small>${emp.department_name || emp.department || 'N/A'}</small></div>
+                <div class="suggestion-division"><small>${department} | ${role}</small></div>
             `;
 
             suggestionItem.dataset.index = index;

@@ -152,16 +152,17 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
     suggestionsDiv.innerHTML = '';
     
     if (data && data.length > 0) {
-        // 🔥 MASSIVE RED GLOW - IMPOSSIBLE TO MISS!
-        suggestionsDiv.style.border = '5px solid red !important';
-        suggestionsDiv.style.background = 'linear-gradient(45deg, #ff0000, #ff4444) !important';
-        suggestionsDiv.style.boxShadow = '0 0 0 3px orange, 0 8px 32px rgba(255,0,0,0.6) !important';
         suggestionsDiv.style.display = 'block';
         
         data.forEach(emp => {
             const suggestionItem = document.createElement('div');
             suggestionItem.className = 'suggestion-item';
-            suggestionItem.innerHTML = `<strong>${emp.fullname || emp.name || 'N/A'}</strong><br><small>(${emp.emp_no}) ${emp.department_name || 'N/A'}</small>`;
+            const department = emp.department_name || 'Unknown';
+            const role = emp.role || 'N/A';
+            suggestionItem.innerHTML = `
+                <div class="suggestion-fullname"><strong>${emp.fullname || emp.name || 'N/A'}</strong></div>
+                <div class="suggestion-division"><small>${department} | ${role}</small></div>
+            `;
             suggestionItem.addEventListener('click', function() {
                 employeeSearchInput.value = emp.fullname || emp.name;
                 empNoInput.value = emp.emp_no;
@@ -176,9 +177,7 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
 })
 .catch(error => {
     console.error('💥 EDIT AJAX ERROR:', error);
-    suggestionsDiv.innerHTML = '<div class=\"p-3 text-white\"><strong>ERROR</strong><br>Error: ' + error.message + '</div>';
-    suggestionsDiv.style.border = '5px solid #ff0000 !important';
-    suggestionsDiv.style.background = '#ff4444';
+    suggestionsDiv.innerHTML = '<div class=\"p-3 text-danger\"><small>Error: ' + error.message + '</small></div>';
     suggestionsDiv.style.display = 'block';
 });
     });

@@ -29,15 +29,31 @@ class CreditsController extends Controller
             ->orderBy('start_date', 'desc')
             ->get();
 
+        // Leave type dropdown should come from DB:
+        // employee_leave_benefits.credit_type
+        $allCreditTypesFromDb = EmployeeLeaveBenefit::query()
+            ->whereNotNull('credit_type')
+            ->distinct()
+            ->pluck('credit_type')
+            ->sort()
+            ->values()
+            ->all();
+
+        // Leave dropdowns should follow business rules (NOT only what exists in DB).
+        // Permanent: all leave types
+        // COS: only Wellness Leave + Credited Time-Off
+
         $leaveTypesPermanent = [
-            'Special Emergency Leave',
-            'Rehabilitation Leave',
-            'Solo Parent Leave',
-            'Paternity Leave',
-            'Maternity Leave',
-            'Special Privilege Leave',
-            'Wellness Leave',
             'Vacation Leave',
+            'Sick Leave',
+            'Wellness Leave',
+            'Special Privilege Leave',
+            'Maternity Leave',
+            'Paternity Leave',
+            'Solo Parent Leave',
+            'Rehabilitation Leave',
+            'Special Emergency Leave',
+            'Credited Time-Off',
         ];
 
         // Business rule: COS employees are only entitled to Wellness Leave and CTO
@@ -46,7 +62,15 @@ class CreditsController extends Controller
             'Credited Time-Off',
         ];
 
-        return view('credits.leave-credits', compact('allBenefits', 'leaveTypesPermanent', 'leaveTypesCos'));
+        // Used to initially populate the create modal select
+        $leaveTypesFromDb = $leaveTypesPermanent;
+
+        return view('credits.leave-credits', compact(
+            'allBenefits',
+            'leaveTypesFromDb',
+            'leaveTypesPermanent',
+            'leaveTypesCos'
+        ));
     }
 
     public function cto(): View

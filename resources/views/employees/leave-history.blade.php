@@ -70,7 +70,7 @@
             <th>start date</th>
             <th>end date</th>
             <th>credit_type</th>
-            <th>credit_hours</th>
+            <th>credit_hours (net)</th>
             <th>remarks</th>
         </tr>
         </thead>
@@ -93,7 +93,8 @@
 
                         <td>{{ $benefit->credit_type }}</td>
 
-                        <td>{{ $benefit->credits_added }}</td>
+                        @php($netHours = (int)($benefit->credits_added ?? 0) - (int)($benefit->hours_used ?? 0))
+                        <td>{{ $netHours }}</td>
 
                         <td>{{ $benefit->remarks ?? '—' }}</td>
 

@@ -138,8 +138,8 @@
 }
 
 /* Backward-compat aliases (plain CSS) */
-.modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display:flex; align-items:center; justify-content:center; padding:1.5rem; z-index:9999; }
-.modal-dialog { width:100%; max-width:700px; background:#fff; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 20px 60px rgba(0,0,0,0.12); overflow:hidden; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display:flex; align-items:center; justify-content:center; padding:1.5rem; z-index:1040; }
+.modal-dialog { width:100%; max-width:700px; background:#fff; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 20px 60px rgba(0,0,0,0.12); overflow:hidden; z-index:1055; }
 .modal-header { padding:2rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:flex-start; justify-content:space-between; gap:1.5rem; background:#fafbfc; }
 .modal-title { font-size:1.3rem; font-weight:700; color:#0f172a; line-height:1.4; letter-spacing:-0.3px; }
 .modal-subtitle { margin-top:0.4rem; color:#64748b; font-size:0.9rem; font-weight:500; }

@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+/* Fix: ensure Bootstrap modal sits above the dark backdrop */
+.modal { z-index: 1060; }
+.modal-backdrop { z-index: 1055; }
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';

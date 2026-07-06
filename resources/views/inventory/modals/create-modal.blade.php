@@ -7,12 +7,24 @@
         </ul>
     </div>
 @endif
-<form action="{{ route('inventory.store') }}" method="POST" id="add-inventory-form">
+
+<style>
+    #employee_suggestions {
+        z-index: 1060 !important;
+        pointer-events: auto;
+    }
+    
+    .suggestion-item {
+        pointer-events: auto;
+    }
+</style>
+
+<form action="{{ route('inventory.store') }}" method="POST" id="add-inventory-form-create" autocomplete="off">
     @csrf
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label for="division" class="form-label">Division <span class="text-danger">*</span></label>
-            <select class="form-select" id="division" name="division" required>
+<label for="division-create" class="form-label">Division <span class="text-danger">*</span></label>
+<select class="form-select" id="division-create" name="division" required>
                 <option value="" disabled {{ old('division') ? '' : 'selected' }}>Select Division</option>
                 @foreach($departments as $dept)
                     <option value="{{ $dept->department }}" {{ old('division') == $dept->department ? 'selected' : '' }}>{{ $dept->department }}</option>
@@ -21,7 +33,7 @@
         </div>
         <div class="col-md-6 mb-3 position-relative">
             <label for="employee_search" class="form-label">Employee <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="employee_search" placeholder="Search Employee..." autocomplete="off" required>
+            <input type="text" class="form-control" id="employee_search" placeholder="Search Employee..." autocomplete="off" autofocus required>
             <div id="employee_suggestions" class="suggestions-list"></div>
             <input type="hidden" id="emp_no" name="emp_no" value="{{ old('emp_no') }}">
             <input type="hidden" id="enduser" name="enduser" value="{{ old('enduser') }}">
@@ -112,11 +124,18 @@
 </form>
 
 <script>
+// NOTE: this script must not be global for pages that may render other modals.
+// If multiple modals exist on the page, using duplicate IDs breaks event targeting.
 document.addEventListener('DOMContentLoaded', function() {
     const employeeSearchInput = document.getElementById('employee_search');
     const suggestionsDiv = document.getElementById('employee_suggestions');
     const empNoInput = document.getElementById('emp_no');
     const enduserInput = document.getElementById('enduser');
+
+    // guard against duplicate IDs / missing elements
+    if (!employeeSearchInput || !suggestionsDiv || !empNoInput || !enduserInput) return;
+
+    const divisionSelect = document.getElementById('division-create');
     let currentIndex = -1;
     let suggestionItems = [];
     let currentEmployees = [];
@@ -235,7 +254,7 @@ fetch(`/api/search-employees?query=${encodeURIComponent(query)}`, {
             });
 
             // Auto-select division based on employee's department name
-const divisionSelect = document.getElementById('division');
+            const divisionSelect = document.getElementById('division-create');
             if (divisionSelect && (emp.department_name || emp.department)) {
                 const deptName = (emp.department_name || emp.department || '').trim();
                 // Match either the full division name (value) or the name text
@@ -294,12 +313,17 @@ const divisionSelect = document.getElementById('division');
         }
     });
 
-    // Hide suggestions when clicking outside
+    // Hide suggestions when clicking outside - only for the search input
     document.addEventListener('click', function(e) {
+        // Only hide if clicking outside both the search input AND suggestions AND the entire form
         if (!employeeSearchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
-            suggestionsDiv.style.display = 'none';
-            currentIndex = -1;
-            suggestionItems.forEach(item => item.classList.remove('highlighted'));
+            // Check if click is within the modal form - if so, don't interfere
+            const form = document.getElementById('add-inventory-form-create');
+            if (form && !form.contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
+                currentIndex = -1;
+                suggestionItems.forEach(item => item.classList.remove('highlighted'));
+            }
         }
     });
 

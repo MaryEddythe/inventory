@@ -2,7 +2,8 @@
 @section('title', 'Employees')
 
 @section('content')
-<div class="bg-white rounded-4 shadow-sm p-4 mb-3">
+<div class="bg-white rounded-4 shadow-sm p-4 mb-3" data-page="employees-index">
+
     @if(session('status'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('status') }}
@@ -26,10 +27,34 @@
 
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-3">
         <h1 class="h4 fw-bold mb-0">Employees</h1>
-        <a href="{{ route('employees.create') }}" class="btn btn-primary d-flex align-items-center gap-1">
-            <i class="bi bi-plus-circle"></i> Add Employee
-        </a>
+
+        <div class="d-flex flex-wrap gap-3 justify-content-end align-items-center w-100">
+            <form class="d-flex gap-2 align-items-center" method="GET" action="{{ route('employees.index') }}">
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    class="form-control"
+                    style="min-width: 280px;"
+                    placeholder="Search employees (name, department, position, folder)"
+                    aria-label="Search employees"
+                >
+                <button type="submit" class="btn btn-outline-secondary">
+                    <i class="bi bi-search"></i>
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary" title="Clear">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                @endif
+            </form>
+
+            <a href="{{ route('employees.create') }}" class="btn btn-primary d-flex align-items-center gap-1">
+                <i class="bi bi-plus-circle"></i> Add Employee
+            </a>
+        </div>
     </div>
+
 
     <div class="table-responsive mt-2">
         @if($employees->count() > 0)
@@ -152,9 +177,24 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Live (server-side) search: debounce input and submit GET form
+        // This triggers GET /employees?search=... (controller already paginates with withQueryString).
+        const searchInput = document.querySelector('input[name="search"]');
+        const searchForm = searchInput ? searchInput.closest('form') : null;
+        if (searchInput && searchForm) {
+            let t = null;
+            const submit = () => searchForm.submit();
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(t);
+                t = setTimeout(submit, 300);
+            });
+        }
+
         document.querySelectorAll('.employee-delete-btn').forEach(function (btn) {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
+
 
                 const name = btn.getAttribute('data-employee-name') || 'this employee';
                 const form = btn.closest('form.employee-delete-form');

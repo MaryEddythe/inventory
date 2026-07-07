@@ -3294,7 +3294,7 @@ mark {
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
-    z-index: 9999;
+    z-index: 1040;
 }
 
 .employees-create-modal-dialog {
@@ -3303,6 +3303,7 @@ mark {
     background: #fff;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
+    z-index: 1055;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
     overflow: hidden;
 }

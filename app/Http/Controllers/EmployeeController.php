@@ -13,6 +13,8 @@ class EmployeeController extends Controller
 
     public function index(Request $request)
     {
+        $search = trim((string) $request->query('search', ''));
+
         $employees = Employee::query()
             ->leftJoin('inventory.departments as inv_dept',
                 \DB::raw('CAST(inventory.employees.department AS UNSIGNED)'),
@@ -26,12 +28,25 @@ class EmployeeController extends Controller
             )
             // Don't show deactivated employees
             ->where('inventory.employees.status', '!=', 'inactive')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('inventory.employees.firstname', 'like', "%{$search}%")
+                        ->orWhere('inventory.employees.lastname', 'like', "%{$search}%")
+                        ->orWhere('inventory.employees.Role', 'like', "%{$search}%")
+                        ->orWhere('inv_dept.description', 'like', "%{$search}%")
+                        ->orWhere('inv_dept.department', 'like', "%{$search}%");
+                });
+            })
+
+
+
             ->orderByDesc('emp_no')
             ->paginate(15)
             ->withQueryString();
 
         return view('employees.index', compact('employees'));
     }
+
 
     public function create()
     {

@@ -268,6 +268,7 @@
         </div>
         <form method="POST" action="{{ route('credits.store') }}" onsubmit="handleSubmit(event)">
             @csrf
+            <input type="hidden" name="cto_action" id="ctoAction" value="deduct">
                 <div class="modal-body">
                 <div class="search-container">
                     <label class="form-group-label">Employee *</label>
@@ -308,7 +309,7 @@
                     <label class="form-group-label">Leave Type *</label>
                     <select name="credit_type" id="creditTypeSelect" class="form-control" required>
                         <option value="">-- Select Leave Type --</option>
-                        @foreach($leaveTypesPermanent as $type)
+                        @foreach($leaveTypesFromDb as $type)
                             <option value="{{ $type }}">{{ $type }}</option>
                         @endforeach
                     </select>
@@ -452,7 +453,17 @@
     };
 
     function updateCreditTypeOptions() {
-        const employmentType = (employmentTypeField?.value || '').toString().trim();
+        // Normalize employment type from API/inputs to match keys in leaveTypesByEmploymentType:
+        // 'PERMANENT' or 'COS'
+        let employmentType = (employmentTypeField?.value || '').toString().trim();
+
+        const upper = employmentType.toUpperCase();
+        if (upper.includes('PER')) {
+            employmentType = 'PERMANENT';
+        } else if (upper.includes('COS')) {
+            employmentType = 'COS';
+        }
+
         const allowed = leaveTypesByEmploymentType[employmentType] || [];
 
         creditTypeSelect.innerHTML = '<option value="">-- Select Leave Type --</option>';
@@ -492,6 +503,12 @@
 
         const creditType = (creditTypeSelect?.value || '').toString().toLowerCase();
         const isCto = creditType.includes('cto') || creditType.includes('credited time-off') || creditType.includes('credited time off') || creditType.includes('credited');
+
+        // Always deduct for CTO (backend reads cto_action when it detects CTO credit_type)
+        const ctoActionHidden = document.getElementById('ctoAction');
+        if (ctoActionHidden) {
+            ctoActionHidden.value = isCto ? 'deduct' : '';
+        }
 
         wrapper.style.display = isCto ? 'block' : 'none';
         if (isCto) {

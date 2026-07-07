@@ -296,7 +296,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function attachFormListeners() {
         // Client-side validation for add inventory form
-        const addInventoryForm = document.getElementById('add-inventory-form');
+        // The actual create modal form id is `add-inventory-form-create`.
+        // Keep a fallback to `add-inventory-form` to avoid regressions if other pages use it.
+        const addInventoryForm =
+            document.getElementById('add-inventory-form-create') ||
+            document.getElementById('add-inventory-form');
+
         if (addInventoryForm && !addInventoryForm._listenerAttached) {
             // Only attach once per form instance
             addInventoryForm._listenerAttached = true;
@@ -360,7 +365,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: formData,
                     headers: {
                         'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
-                        'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
@@ -378,6 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (data.metrics) {
                             updateDashboardMetrics(data.metrics);
                         }
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Success!',
@@ -385,9 +390,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             timer: 2000,
                             showConfirmButton: false
                         }).then(() => {
-                            console.log('Closing modal and reloading page...');
                             $('#addInventoryModal').modal('hide');
-                            location.reload();
+                            // Force full page refresh (prevents any JSON response from being rendered into the UI)
+                            window.location.href = window.location.pathname + window.location.search;
                         });
                     } else {
                         console.error('❌ ERROR - Server returned failure:', data.message);
@@ -534,7 +539,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: formData,
                     headers: {
                         'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
-                        'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
@@ -546,16 +550,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (data.metrics) {
                             updateDashboardMetrics(data.metrics);
                         }
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: data.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            $(`#editInventoryModal${itemId}`).modal('hide');
-                            location.reload();
-                        });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $(`#editInventoryModal${itemId}`).modal('hide');
+                        // DO NOT show JSON; keep UI update behavior only
+                        location.reload();
+                    });
                     } else {
                         // Show validation errors if present
                         let errorMessage = data.message || 'An error occurred while updating the item';

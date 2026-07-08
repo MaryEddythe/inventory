@@ -212,19 +212,49 @@ class InventoryItemController extends Controller
             }
 
             $validated['icm_no'] = str_pad($nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $currentYear;
+
+            // If brand_model contains an inventory "no", link and replace with authoritative description.
             if (!empty($validated['brand_model'])) {
                 $linkedItem = InventoryItem::where('no', (int) $validated['brand_model'])
                     ->select('no', 'description', 'serial_number', 'property_number')
                     ->first();
 
                 if ($linkedItem) {
-                    // Store the human-readable description in brand_model column
                     $validated['brand_model']    = $linkedItem->description;
-                    // Overwrite serial/property with the authoritative values from inventory
                     $validated['serial_number']  = $linkedItem->serial_number;
                     $validated['property_number'] = $linkedItem->property_number;
                 }
             }
+
+            // Prevent MySQL "Data too long" errors by truncating to safe limits.
+            // (DB column sizes may be smaller than form payloads.)
+            $validated['brand_model'] = isset($validated['brand_model'])
+                ? mb_substr((string) $validated['brand_model'], 0, 255)
+                : null;
+
+            $validated['division'] = isset($validated['division'])
+                ? mb_substr((string) $validated['division'], 0, 255)
+                : null;
+
+            $validated['requesting_personnel'] = isset($validated['requesting_personnel'])
+                ? mb_substr((string) $validated['requesting_personnel'], 0, 255)
+                : null;
+
+            $validated['problem_description'] = isset($validated['problem_description'])
+                ? mb_substr((string) $validated['problem_description'], 0, 5000)
+                : null;
+
+            $validated['icm_findings'] = isset($validated['icm_findings'])
+                ? mb_substr((string) $validated['icm_findings'], 0, 5000)
+                : null;
+
+            $validated['actions_taken'] = isset($validated['actions_taken'])
+                ? mb_substr((string) $validated['actions_taken'], 0, 5000)
+                : null;
+
+            $validated['icm_recommendations'] = isset($validated['icm_recommendations'])
+                ? mb_substr((string) $validated['icm_recommendations'], 0, 5000)
+                : null;
 
             $item = Icm::create($validated);
             $metrics = $this->getDashboardMetrics();

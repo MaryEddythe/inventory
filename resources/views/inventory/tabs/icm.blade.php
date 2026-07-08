@@ -147,7 +147,7 @@
                         </span>
                     </td>
                     <td>{{ $item->hardware_software ?? 'N/A' }}</td>
-                    <td>{{ $item->brand_model ?? 'N/A' }}</td>
+                    <td>{{ mb_substr($item->brand_model ?? 'N/A', 0, 10) }}</td>
                     <td class="item-serial">
                         {{ Str::limit($item->serial_number ?? 'N/A', 12) }}
                     </td>

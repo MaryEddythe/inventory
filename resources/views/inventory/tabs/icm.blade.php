@@ -40,6 +40,24 @@
 
             <input type="hidden" name="tab" value="icm" form="searchForm" />
 
+            <div class="dropdown">
+                <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item export-icm-option" href="#" data-type="pdf">
+                            <i class="bi bi-file-earmark-pdf text-danger me-2"></i>ICM as PDF
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item export-icm-option" href="#" data-type="csv">
+                            <i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>ICM as CSV
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
             <button type="button" class="btn btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addIcmModal">
                 <i class="bi bi-plus-circle"></i> Add ICM
             </button>
@@ -273,6 +291,25 @@
 document.addEventListener('DOMContentLoaded', function() {
     let searchTimer;
     const searchInput = document.querySelector('input[name="search"]');
+
+    // Export ICM handler (PDF/CSV) - keeps current filter/search/per_page
+    document.querySelectorAll('.export-icm-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const type = this.getAttribute('data-type'); // pdf | csv
+            const searchParams = new URLSearchParams(window.location.search);
+
+            // Ensure tab is set so backend knows this is ICM
+            searchParams.set('tab', 'icm');
+
+            // For CSV/PDF exports, controller export() uses the same query params (search, filter, per_page, etc.)
+            if (type) {
+                const exportUrl = `{{ route('inventory.export', ':type') }}?${searchParams.toString()}`.replace(':type', type);
+                window.location.href = exportUrl;
+            }
+        });
+    });
 
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimer);

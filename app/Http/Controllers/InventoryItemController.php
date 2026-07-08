@@ -460,6 +460,126 @@ class InventoryItemController extends Controller
 
     public function export(Request $request, $type)
 {
+    $tab = $request->tab ?? 'inventory';
+    $subtype = $request->get('subtype', 'inventory');
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // ICM export (inventory.icm table only)
+    // ─────────────────────────────────────────────────────────────────────────────
+    if ($tab === 'icm') {
+        $query = Icm::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchTerms = array_filter(explode(' ', $search));
+
+            $query->where(function ($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function ($subQuery) use ($term) {
+                        $subQuery->where('division', 'LIKE', "%{$term}%")
+                            ->orWhere('classification', 'LIKE', "%{$term}%")
+                            ->orWhere('icm_no', 'LIKE', "%{$term}%")
+                            ->orWhere('problem_description', 'LIKE', "%{$term}%")
+                            ->orWhere('requesting_personnel', 'LIKE', "%{$term}%")
+                            ->orWhere('brand_model', 'LIKE', "%{$term}%")
+                            ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                            ->orWhere('property_number', 'LIKE', "%{$term}%")
+                            ->orWhere('icm_findings', 'LIKE', "%{$term}%")
+                            ->orWhere('actions_taken', 'LIKE', "%{$term}%")
+                            ->orWhere('icm_recommendations', 'LIKE', "%{$term}%");
+                    });
+                }
+            });
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        if ($request->filled('division')) {
+            $query->where('division', $request->division);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('open_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('open_date', '<=', $request->date_to);
+        }
+
+        // Keep consistent ordering with icm() page
+        $items = $query->orderBy('icm_no', 'desc')->get();
+
+        $css = File::get(public_path('pdf-styles.css'));
+        $mgbLogo = base64_encode(file_get_contents(public_path('assets/mgb.jpg')));
+        $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
+
+        if ($type === 'pdf') {
+            $pdf = Pdf::loadView('inventory.export-icm', [
+                'items' => $items,
+                'tab' => 'icm',
+                'title' => 'ICM',
+                'css' => $css,
+                'mgbLogo' => $mgbLogo,
+                'bpLogo' => $bpLogo,
+            ])->setPaper('landscape');
+
+            return $pdf->download('icm.pdf');
+        }
+
+        if ($type === 'csv') {
+            $csv = Writer::createFromString('');
+            $headers = [
+                'ICM No',
+                'Div.',
+                'Personnel',
+                'Problem Description',
+                'Type',
+                'Priority',
+                'HW/SW',
+                'Brand/Model',
+                'Serial No',
+                'Prop. No',
+                'Open Date',
+                'Close Date',
+                'Findings',
+                'Actions',
+                'Recommendations',
+            ];
+
+            $csv->insertOne($headers);
+
+            foreach ($items as $item) {
+                $csv->insertOne([
+                    $item->icm_no ?? 'N/A',
+                    $item->division ?? 'N/A',
+                    $item->requesting_personnel ?? 'N/A',
+                    $item->problem_description ?? 'N/A',
+                    $item->icm_type ?? 'N/A',
+                    $item->priority ?? 'N/A',
+                    $item->hardware_software ?? 'N/A',
+                    $item->brand_model ?? 'N/A',
+                    $item->serial_number ?? 'N/A',
+                    $item->property_number ?? 'N/A',
+                    $item->open_date ? $item->open_date->format('M d, Y') : 'N/A',
+                    $item->close_date ? $item->close_date->format('M d, Y') : 'N/A',
+                    $item->icm_findings ?? 'N/A',
+                    $item->actions_taken ?? 'N/A',
+                    $item->icm_recommendations ?? 'N/A',
+                ]);
+            }
+
+            return response($csv->getContent(), 200)
+                ->header('Content-Type', 'text/csv')
+                ->header('Content-Disposition', 'attachment; filename="icm.csv"');
+        }
+
+        return back()->with('error', 'Invalid export type');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Existing Inventory/IPM/RPCSP/PPE exports
+    // ─────────────────────────────────────────────────────────────────────────────
     $query = InventoryItem::active();
 
     if ($request->filled('search')) {
@@ -470,13 +590,13 @@ class InventoryItemController extends Controller
             foreach ($searchTerms as $term) {
                 $q->where(function($subQuery) use ($term) {
                     $subQuery->where('division', 'LIKE', "%{$term}%")
-                            ->orWhere('enduser', 'LIKE', "%{$term}%")
-                            ->orWhere('classification', 'LIKE', "%{$term}%")
-                            ->orWhere('description', 'LIKE', "%{$term}%")
-                            ->orWhere('remarks', 'LIKE', "%{$term}%")
-                            ->orWhere('serial_number', 'LIKE', "%{$term}%")
-                            ->orWhere('property_number', 'LIKE', "%{$term}%")
-                            ->orWhere('emp_no', 'LIKE', "%{$term}%");
+                        ->orWhere('enduser', 'LIKE', "%{$term}%")
+                        ->orWhere('classification', 'LIKE', "%{$term}%")
+                        ->orWhere('description', 'LIKE', "%{$term}%")
+                        ->orWhere('remarks', 'LIKE', "%{$term}%")
+                        ->orWhere('serial_number', 'LIKE', "%{$term}%")
+                        ->orWhere('property_number', 'LIKE', "%{$term}%")
+                        ->orWhere('emp_no', 'LIKE', "%{$term}%");
                 });
             }
         });
@@ -497,19 +617,16 @@ class InventoryItemController extends Controller
         $query->whereDate('date_acquired', '<=', $request->date_to);
     }
 
-    // GET THE SUBTYPE FROM REQUEST (must be declared before any use of $subtype)
-    $subtype = $request->get('subtype', 'inventory');
-
     if ($request->tab === 'ipm' && $subtype === 'inventory') {
         $query->where('classification', '!=', 'Monitor');
     }
-    
+
     if ($subtype === 'rpcsp') {
         $query->where('unit_price', '<=', 49999)
-              ->whereNotNull('unit_price');
+            ->whereNotNull('unit_price');
     } elseif ($subtype === 'ppe') {
         $query->where('unit_price', '>=', 50000)
-              ->where('co_mooe', 'CO');
+            ->where('co_mooe', 'CO');
     }
 
     if ($subtype === 'ppe') {
@@ -518,19 +635,12 @@ class InventoryItemController extends Controller
         $items = $query->orderBy('enduser')->orderBy('no', 'desc')->get();
     }
 
-    // NOTE: do NOT reassign $items after this point — the line below was removed
-    // because it was clobbering the filtered result set, causing RPCSP/PPE PDF
-    // exports to include ALL items instead of only those matching the subtype filter.
-
-    $tab = $request->tab ?? 'inventory';
     $css = File::get(public_path('pdf-styles.css'));
 
-    // Encode logos for PDF
     $mgbLogo = base64_encode(file_get_contents(public_path('assets/mgb.jpg')));
     $bpLogo = base64_encode(file_get_contents(public_path('assets/bp.jpg')));
 
     if ($type === 'pdf') {
-        // Use the subtype already determined above
         if ($subtype === 'rpcsp') {
             $view = 'inventory.export-rpcsp-pdf';
         } elseif ($subtype === 'ppe') {
@@ -538,10 +648,13 @@ class InventoryItemController extends Controller
         } else {
             $view = $tab === 'ipm' ? 'inventory.export-ipm-pdf' : 'inventory.export-pdf';
         }
+
         $rpcspValue = InventoryItem::active()->where('unit_price', '<=', 49999)->whereNotNull('unit_price')->sum('unit_price');
         $rpcspCount = InventoryItem::active()->where('unit_price', '<=', 49999)->whereNotNull('unit_price')->count();
+
         $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo', 'rpcspValue', 'rpcspCount'))
             ->setPaper('landscape');
+
         return $pdf->download($subtype . '.pdf');
     }
 
@@ -549,7 +662,6 @@ class InventoryItemController extends Controller
         $csv = Writer::createFromString('');
 
         if ($tab === 'ipm') {
-            // IPM-specific CSV headers and data
             $headers = [
                 'No',
                 'Div.',
@@ -594,7 +706,6 @@ class InventoryItemController extends Controller
 
             $filename = 'ipm_inventory.csv';
         } else {
-            // For RPCSP CSV export, add note about filtering
             if ($subtype === 'rpcsp') {
                 $headers = [
                     'No', 'Division', 'Enduser', 'Classification', 'Description',
@@ -608,7 +719,7 @@ class InventoryItemController extends Controller
                     'Date Acquired', 'Remarks', 'Status'
                 ];
             }
-            
+
             $csv->insertOne($headers);
 
             foreach ($items as $item) {
@@ -626,7 +737,7 @@ class InventoryItemController extends Controller
                         $item->date_acquired->format('M d, Y'),
                         $item->remarks ?? 'N/A',
                         $item->status,
-                        'RPCSP Export' // Add note for RPCSP
+                        'RPCSP Export'
                     ];
                 } else {
                     $row = [

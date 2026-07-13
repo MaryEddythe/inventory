@@ -22,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'emp_no',
+        'employee',
     ];
 
     /**
@@ -46,4 +48,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Link user to the legacy employee record using emp_no.
+     */
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'emp_no', 'emp_no');
+    }
 }
+

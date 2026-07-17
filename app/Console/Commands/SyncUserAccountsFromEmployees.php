@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SyncUserAccountsFromEmployees extends Command
 {
@@ -14,76 +14,101 @@ class SyncUserAccountsFromEmployees extends Command
      *
      * @var string
      */
-    protected $signature = 'users:sync-from-employees
-        {--emp-no= : Sync only one employee number}
-        {--email= : Force the user email to this value}
-        {--default-password= : Password to hash for created users}
-        {--dry-run : Show what would change without saving}';
+    protected $signature = 'users:sync-from-employees {--default-password=} {--dry-run}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create or update user accounts from inventory.employees using emp_no.';
+    protected $description = 'Create missing users accounts from inventory.employees using emp_no. Only creates users for employees with a non-null email.';
 
     public function handle(): int
     {
         $defaultPassword = (string) $this->option('default-password');
-        $defaultPassword = $defaultPassword !== '' ? $defaultPassword : null;
-
-        $forcedEmail = trim((string) $this->option('email'));
-        $empNoFilter = trim((string) $this->option('emp-no'));
-        $dryRun = (bool) $this->option('dry-run');
-
-        $query = Employee::query()->select([
-            'emp_no',
-            'firstname',
-            'lastname',
-        ]);
-
-        if ($empNoFilter !== '') {
-            $query->where('emp_no', $empNoFilter);
+        if ($defaultPassword === '') {
+            $defaultPassword = null;
         }
 
-        $employees = $query->get();
+
+        $dryRun = (bool) $this->option('dry-run');
 
         $this->info('Syncing user accounts from employees...');
-        $this->info('Dry run: ' . ($dryRun ? 'yes' : 'no'));
-        $this->info('Forced email: ' . ($forcedEmail !== '' ? $forcedEmail : '(none)'));
+        $this->info('Default password: ' . ($dryRun ? '*** (dry-run)' : $defaultPassword));
 
         $created = 0;
-        $updated = 0;
         $skipped = 0;
+        $updated = 0;
+
+        $employees = Employee::query()
+            ->select(['emp_no', 'email'])
+            ->whereNotNull('email')
+            ->where('email', '!=', '')
+            ->get();
 
         foreach ($employees as $employee) {
             $empNo = (string) $employee->emp_no;
-            $name = trim(($employee->firstname ?? '') . ' ' . ($employee->lastname ?? '')) ?: 'Employee ' . $empNo;
-            $email = $forcedEmail !== '' ? $forcedEmail : null;
+            $email = (string) $employee->email;
 
-            if ($email === null) {
-                $this->warn("Skipping emp_no={$empNo} because no email was supplied and inventory.employees has no email column.");
+            if (!Str::contains($email, '@')) {
                 $skipped++;
                 continue;
             }
 
-            $user = User::query()
-                ->where('emp_no', $empNo)
-                ->orWhere('email', $email)
-                ->first();
+            $user = User::query()->where('emp_no', $empNo)->first();
 
             if (!$user) {
                 $user = new User();
                 $user->emp_no = $empNo;
-                $user->employee = $empNo;
-                $user->name = $name;
+                $user->employee = $empNo; // keep consistent with your design
+                $user->name = $employee->full_name ?? $empNo;
                 $user->email = $email;
-                if ($defaultPassword !== null) {
-                    $user->password = $defaultPassword;
+
+                $passwordToUse = $defaultPassword;
+
+                try {
+                    $overrideRow = \Illuminate\Support\Facades\DB::table('inventory.users')
+                        ->where('emp_no', $empNo)
+                        ->first();
+
+                    if (!$overrideRow) {
+                        $overrideRow = \Illuminate\Support\Facades\DB::table('inventory_users_override')
+                            ->where('emp_no', $empNo)
+                            ->first();
+                    }
+
+                    if (!$overrideRow) {
+                        $overrideRow = \Illuminate\Support\Facades\DB::table('users_override')
+                            ->where('emp_no', $empNo)
+                            ->first();
+                    }
+
+
+
+                    if ($overrideRow) {
+                        if (!empty($overrideRow->email)) {
+                            $user->email = $overrideRow->email;
+                        }
+
+                        if (!empty($overrideRow->password)) {
+                            $user->password = $overrideRow->password;
+                        } elseif (!empty($passwordToUse)) {
+                            $user->password = bcrypt($passwordToUse);
+                        }
+                    } else {
+                        if (!empty($passwordToUse)) {
+                            $user->password = bcrypt($passwordToUse);
+                        }
+                    }
+
+                } catch (\Throwable $e) {
+                    $user->password = bcrypt($passwordToUse);
                 }
 
+
+
                 if ($dryRun) {
-                    $this->line("[DRY] create user emp_no={$empNo}, name={$name}, email={$email}");
+                    $this->line("[DRY] Create user emp_no={$empNo}, email={$email}");
                     $created++;
                     continue;
                 }
@@ -93,31 +118,25 @@ class SyncUserAccountsFromEmployees extends Command
                 continue;
             }
 
+
+            // If user exists but email/name empty, patch it.
             $needsUpdate = false;
-
-            if ($user->name !== $name) {
-                $user->name = $name;
-                $needsUpdate = true;
-            }
-
-            if ($user->email !== $email) {
+            if (empty($user->email) && !empty($email)) {
                 $user->email = $email;
                 $needsUpdate = true;
             }
-
-            if ($user->emp_no !== $empNo) {
-                $user->emp_no = $empNo;
+            if (empty($user->name) && !empty($employee->full_name)) {
+                $user->name = $employee->full_name;
                 $needsUpdate = true;
             }
-
-            if (($user->employee ?? null) !== $empNo) {
+            if (empty($user->employee) && !empty($empNo)) {
                 $user->employee = $empNo;
                 $needsUpdate = true;
             }
 
             if ($needsUpdate) {
                 if ($dryRun) {
-                    $this->line("[DRY] update user emp_no={$empNo}, name={$name}, email={$email}");
+                    $this->line("[DRY] Update user emp_no={$empNo}");
                     $updated++;
                     continue;
                 }
@@ -130,7 +149,7 @@ class SyncUserAccountsFromEmployees extends Command
         }
 
         $this->info("Done. Created: {$created}, Updated: {$updated}, Skipped: {$skipped}");
-
-        return self::SUCCESS;
+        return 0;
     }
 }
+

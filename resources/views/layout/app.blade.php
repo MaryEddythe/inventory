@@ -27,114 +27,11 @@
             </a>
 
             <nav class="sidebar-nav" aria-label="Primary navigation">
-                <a class="sidebar-nav-link {{ request()->routeIs('inventory.dashboard') ? 'active' : '' }}" href="{{ route('inventory.dashboard') }}">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
-                </a>
-
-                <!-- Inventory Dropdown -->
-                <div class="sidebar-nav-dropdown">
-                    <button class="sidebar-nav-link sidebar-dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#inventoryDropdown" aria-expanded="false">
-                        <i class="bi bi-archive"></i>
-                        <span>Inventory</span>
-                        <i class="bi bi-chevron-down ms-auto"></i>
-                    </button>
-                    <div class="collapse" id="inventoryDropdown">
-                        <div class="sidebar-dropdown-menu">
-                            <a class="sidebar-dropdown-item {{ request()->routeIs('inventory.index') ? 'active' : '' }}" href="{{ route('inventory.index') }}">
-                                <span>Inventory</span>
-                            </a>
-                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.moto-vehicle') }}">
-                                <span>Motor Vehicle</span>
-                            </a>
-                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.cip') }}">
-                                <span>CIP</span>
-                            </a>
-                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.machine-equipment') }}">
-                                <span>Machine & Equipment</span>
-                            </a>
-                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.office-equipment') }}">
-                                <span>Office Equipment</span>
-                            </a>
-                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.technical-scientific-equipment') }}">
-                                <span>Technical and Scientific Equipment</span>
-                            </a>
-                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.other-ppe') }}">
-                                <span>Other PPE</span>
-                            </a>
-                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.furniture-fixtures') }}">
-                                <span>Furnitures and Fixtures</span>
-                            </a>
-
-                            <a class="sidebar-dropdown-item" href="{{ route('inventory.tabs.military-police-security') }}">
-                                <span>Military, Police &amp; Security Equipment</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <a class="sidebar-nav-link {{ request()->routeIs('inventory.ipm') ? 'active' : '' }}" href="{{ route('inventory.ipm') }}">
-                    <i class="bi bi-clipboard-check"></i>
-                    <span>IPM</span>
-                </a>
-                <a class="sidebar-nav-link {{ request()->routeIs('inventory.icm') ? 'active' : '' }}" href="{{ route('inventory.icm') }}">
-                    <i class="bi bi-tools"></i>
-                    <span>ICM</span>
-                </a>
-                <a class="sidebar-nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}" href="{{ route('employees.index') }}">
-                    <i class="bi bi-people"></i>
-                    <span>Employees</span>
-                </a>
-                <a class="sidebar-nav-link {{ request()->routeIs('calendar.*') ? 'active' : '' }}" href="{{ route('calendar.index') }}">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    Calendar
-                
-                </a>
-                    <!-- Leave Credits Dropdown -->
-                        <div class="sidebar-nav-dropdown">
-                            <button class="sidebar-nav-link sidebar-dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#leaveCreditsDropdown"
-                                    aria-expanded="{{ request()->routeIs('credits.*') ? 'true' : 'false' }}"
-                                    aria-controls="leaveCreditsDropdown">
-
-                                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                                    <line x1="1" y1="10" x2="23" y2="10"/>
-                                </svg>
-
-                                <span>Leave Credits</span>
-                                <i class="bi bi-chevron-down ms-auto"></i>
-                            </button>
-
-                            <div class="collapse {{ request()->routeIs('credits.*') ? 'show' : '' }}"
-                                id="leaveCreditsDropdown">
-
-                                <div class="sidebar-dropdown-menu">
-
-                                    <a class="sidebar-dropdown-item {{ request()->routeIs('credits.cto') ? 'active' : '' }}"
-                                    href="{{ route('credits.cto') }}">
-                                        <span>CTO</span>
-                                    </a>
-
-                                    <a class="sidebar-dropdown-item {{ request()->routeIs('credits.index') ? 'active' : '' }}"
-                                    href="{{ route('credits.index') }}">
-                                        <span>Leave Credits</span>
-                                    </a>
-
-                                </div>
-                            </div>
-                        </div>
+                @php($sidebarNavigation = auth()->user()?->sidebarNavigation() ?? collect())
+                @foreach($sidebarNavigation as $item)
+                    @include('layout.sidebar-item', ['item' => $item])
+                @endforeach
             </nav>
-
 
             @auth
             <div class="sidebar-account dropdown">
@@ -161,7 +58,6 @@
         </aside>
         <button class="sidebar-backdrop" type="button" data-sidebar-close aria-label="Close sidebar"></button>
 
-        <!-- Main Content -->
         <main class="app-main bg-light">
             <div class="app-main-toolbar">
                 <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-controls="appSidebar" aria-expanded="true" aria-label="Toggle sidebar">
@@ -176,14 +72,14 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
-                
+
                 @if(session('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         {{ session('error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
-                
+
                 @yield('content')
             </div>
         </main>
@@ -194,7 +90,7 @@
             const body = document.body;
             const toggle = document.getElementById('sidebarToggle');
             const closeButtons = document.querySelectorAll('[data-sidebar-close]');
-            const sidebarLinks = document.querySelectorAll('.sidebar-nav-link');
+            const sidebarLinks = document.querySelectorAll('.sidebar-nav-link, .sidebar-dropdown-item');
             const mobileQuery = window.matchMedia('(max-width: 991.98px)');
             const storageKey = 'inventorySidebarCollapsed';
 
@@ -238,12 +134,14 @@
 
             closeButtons.forEach(button => button.addEventListener('click', closeSidebar));
             sidebarLinks.forEach(link => {
-                link.addEventListener('click', function (e) {
-                    // Don't close sidebar if clicking dropdown toggle
+                link.addEventListener('click', function () {
                     if (this.classList.contains('sidebar-dropdown-toggle')) {
                         return;
                     }
-                    if (mobileQuery.matches) closeSidebar();
+
+                    if (mobileQuery.matches) {
+                        closeSidebar();
+                    }
                 });
             });
 

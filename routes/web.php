@@ -13,9 +13,11 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/', function () {
-        return redirect()->route('inventory.dashboard');
+        $user = auth()->user();
+
+        return redirect()->route($user?->defaultLandingRouteName() ?? 'inventory.dashboard');
     });
 
     Route::get('/dashboard', [InventoryItemController::class, 'dashboard'])->name('inventory.dashboard');
@@ -150,5 +152,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/events/types', [EventController::class, 'getTypes'])->name('calendar.api.events.types');
 
 });
-
 

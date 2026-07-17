@@ -38,7 +38,9 @@ class AuthController extends Controller
 
         if (Auth::attempt($attempts[0]) || (isset($attempts[1]) && Auth::attempt($attempts[1]))) {
             $request->session()->regenerate();
-            return redirect()->intended('dashboard');
+            $user = Auth::user();
+
+            return redirect()->route($user?->defaultLandingRouteName() ?? 'inventory.dashboard');
         }
 
         return back()->withErrors([
@@ -60,6 +62,7 @@ class AuthController extends Controller
             'username' => $validated['username'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role_id' => \App\Models\Role::where('slug', 'employee')->value('id'),
         ]);
 
         Auth::login($user);

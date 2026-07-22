@@ -211,8 +211,8 @@
                 <td>
                     <div class="leave-type-cell">{{ $benefit->name }}</div>
                 </td>
-                <td>{{ $benefit->division ?? 'N/A' }}</td>
-                <td>{{ $benefit->position ?? 'N/A' }}</td>
+                <td>{{ $benefit->departments ?? 'N/A' }}</td>
+                <td>{{ $benefit->role ?? 'N/A' }}</td>
                 <td>{{ $benefit->employment_type === 'PERMANENT' ? 'Permanent' : 'COS' }}</td>
                 <td>
                     <div class="leave-date">{{ $benefit->start_date->format('M d, Y') }}</div>
@@ -266,7 +266,7 @@
             <h2 class="modal-title">Add Leave Credit</h2>
             <button class="modal-close" onclick="closeCreateModal()">×</button>
         </div>
-        <form method="POST" action="{{ route('credits.store') }}" onsubmit="handleSubmit(event)">
+        <form method="POST" action="{{ route('credits.store') }}">
             @csrf
             <input type="hidden" name="cto_action" id="ctoAction" value="deduct">
                 <div class="modal-body">
@@ -328,10 +328,6 @@
                     <div>
                         <label class="form-group-label">Date Applied *</label>
                         <input type="date" name="date_applied" class="form-control" required>
-                    </div>
-                    <div>
-                        <label class="form-group-label">Date Effective *</label>
-                        <input type="date" name="date_effective" class="form-control" required>
                     </div>
                 </div>
             </div>
@@ -412,10 +408,6 @@
                     <div>
                         <label class="form-group-label">Date Applied *</label>
                         <input type="date" id="editDateApplied" name="date_applied" class="form-control" required>
-                    </div>
-                    <div>
-                        <label class="form-group-label">Date Effective *</label>
-                        <input type="date" id="editDateEffective" name="date_effective" class="form-control" required>
                     </div>
                 </div>
 
@@ -618,13 +610,13 @@
             }
 
             document.getElementById('editEmployeeName').value = benefit.name ?? benefit.employee?.full_name ?? 'N/A';
-            document.getElementById('editDivision').value = benefit.division ?? benefit.employee?.division?.code ?? 'N/A';
-            document.getElementById('editPosition').value = benefit.position ?? benefit.employee?.position ?? 'N/A';
+            document.getElementById('editDivision').value = benefit.departments ?? benefit.employee?.division?.code ?? 'N/A';
+            document.getElementById('editPosition').value = benefit.role ?? benefit.employee?.position ?? 'N/A';
             document.getElementById('editEmploymentType').value = (benefit.employment_type === 'PERMANENT') ? 'Permanent' : 'COS';
             document.getElementById('editStartDate').value = benefit.start_date ?? '';
             document.getElementById('editEndDate').value = benefit.end_date ?? '';
             document.getElementById('editDateApplied').value = benefit.date_applied ?? '';
-            document.getElementById('editDateEffective').value = benefit.date_effective ?? '';
+
             document.getElementById('editStatus').value = benefit.status ?? 'ACTIVE';
 
             updateEditCreditTypeOptions(benefit.employment_type, benefit.credit_type);

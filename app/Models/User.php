@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
@@ -66,6 +67,11 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
+    public function sidebarItems(): BelongsToMany
+    {
+        return $this->belongsToMany(SidebarItem::class, 'user_sidebar_item')->orderBy('sort_order');
+    }
+
     public function isSuperAdmin(): bool
     {
         return (bool) ($this->role?->is_superadmin || $this->role?->slug === 'superadmin');
@@ -77,11 +83,15 @@ class User extends Authenticatable
             return true;
         }
 
-        if (! $this->role) {
-            return false;
+        $directIds = $this->sidebarItems()->pluck('sidebar_items.id')->all();
+
+        if (count($directIds) > 0) {
+            return in_array($item->id, $directIds, true);
         }
 
-        return $this->role->sidebarItems->contains('id', $item->id);
+        return $this->role
+            ? $this->role->sidebarItems->contains('id', $item->id)
+            : false;
     }
 
     public function sidebarNavigation(): Collection
@@ -95,7 +105,11 @@ class User extends Authenticatable
 
         $allowedIds = $this->isSuperAdmin()
             ? $items->pluck('id')->all()
-            : $this->role?->sidebarItems()->pluck('sidebar_items.id')->all() ?? [];
+            : (
+                $this->sidebarItems()->exists()
+                    ? $this->sidebarItems()->pluck('sidebar_items.id')->all()
+                    : ($this->role?->sidebarItems()->pluck('sidebar_items.id')->all() ?? [])
+            );
 
         return $items
             ->whereNull('parent_id')

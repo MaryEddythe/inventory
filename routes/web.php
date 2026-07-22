@@ -5,6 +5,7 @@ use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\InventoryItemController;
+use App\Http\Controllers\SidebarAccessController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes
@@ -125,6 +126,11 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
 
+    Route::get('/roles', [SidebarAccessController::class, 'index'])->name('roles.index');
+    Route::put('/roles/{user}', [SidebarAccessController::class, 'update'])->name('roles.update');
+
+    Route::redirect('/sidebar-access', '/roles');
+
     // PDF - Controller
 
     // Credits routes
@@ -152,4 +158,3 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/api/events/types', [EventController::class, 'getTypes'])->name('calendar.api.events.types');
 
 });
-

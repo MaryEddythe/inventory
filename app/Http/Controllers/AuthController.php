@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Role;
 
 class AuthController extends Controller
 {
@@ -62,11 +63,12 @@ class AuthController extends Controller
             'username' => $validated['username'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role_id' => \App\Models\Role::where('slug', 'employee')->value('id'),
+            'role_id' => Role::where('slug', 'employee')->value('id'),
         ]);
 
         Auth::login($user);
-        return redirect('dashboard');
+
+        return redirect()->route($user->defaultLandingRouteName());
     }
 
     public function logout(Request $request)

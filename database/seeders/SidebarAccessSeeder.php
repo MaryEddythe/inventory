@@ -13,127 +13,89 @@ class SidebarAccessSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::transaction(function () {
-            $superadmin = Role::updateOrCreate(
-                ['slug' => 'superadmin'],
-                ['name' => 'Super Admin', 'is_superadmin' => true]
-            );
+        $inventoryConfig = config('inventory');
+        $rolesConfig = $inventoryConfig['roles'] ?? [];
+        $sidebarItemsConfig = $inventoryConfig['sidebar_items'] ?? [];
 
-            $employeeRole = Role::updateOrCreate(
-                ['slug' => 'employee'],
-                ['name' => 'Employee', 'is_superadmin' => false]
-            );
-
-            SidebarItem::updateOrCreate(
-                ['key' => 'dashboard'],
-                ['label' => 'Dashboard', 'route_name' => 'inventory.dashboard', 'route_pattern' => 'inventory.dashboard', 'icon' => 'bi bi-speedometer2', 'parent_id' => null, 'sort_order' => 10]
-            );
-
-            $inventory = SidebarItem::updateOrCreate(
-                ['key' => 'inventory'],
-                ['label' => 'Inventory', 'route_name' => null, 'route_pattern' => 'inventory.*', 'icon' => 'bi bi-archive', 'parent_id' => null, 'sort_order' => 20]
-            );
-
-            SidebarItem::updateOrCreate(
-                ['key' => 'inventory.index'],
-                ['label' => 'Inventory', 'route_name' => 'inventory.index', 'route_pattern' => 'inventory.index', 'icon' => null, 'parent_id' => $inventory->id, 'sort_order' => 10]
-            );
-
-            $inventoryTabs = [
-                ['key' => 'inventory.tabs.moto-vehicle', 'label' => 'Motor Vehicle', 'route_name' => 'inventory.tabs.moto-vehicle', 'sort_order' => 20],
-                ['key' => 'inventory.tabs.cip', 'label' => 'CIP', 'route_name' => 'inventory.tabs.cip', 'sort_order' => 30],
-                ['key' => 'inventory.tabs.machine-equipment', 'label' => 'Machine & Equipment', 'route_name' => 'inventory.tabs.machine-equipment', 'sort_order' => 40],
-                ['key' => 'inventory.tabs.office-equipment', 'label' => 'Office Equipment', 'route_name' => 'inventory.tabs.office-equipment', 'sort_order' => 50],
-                ['key' => 'inventory.tabs.technical-scientific-equipment', 'label' => 'Technical and Scientific Equipment', 'route_name' => 'inventory.tabs.technical-scientific-equipment', 'sort_order' => 60],
-                ['key' => 'inventory.tabs.other-ppe', 'label' => 'Other PPE', 'route_name' => 'inventory.tabs.other-ppe', 'sort_order' => 70],
-                ['key' => 'inventory.tabs.furniture-fixtures', 'label' => 'Furnitures and Fixtures', 'route_name' => 'inventory.tabs.furniture-fixtures', 'sort_order' => 80],
-                ['key' => 'inventory.tabs.military-police-security', 'label' => 'Military, Police & Security Equipment', 'route_name' => 'inventory.tabs.military-police-security', 'sort_order' => 90],
-            ];
-
-            foreach ($inventoryTabs as $item) {
-                SidebarItem::updateOrCreate(
-                    ['key' => $item['key']],
+        DB::transaction(function () use ($inventoryConfig, $rolesConfig, $sidebarItemsConfig) {
+            $rolesBySlug = [];
+            foreach ($rolesConfig as $roleConfig) {
+                $role = Role::updateOrCreate(
+                    ['slug' => $roleConfig['slug']],
                     [
-                        'label' => $item['label'],
-                        'route_name' => $item['route_name'],
-                        'route_pattern' => $item['route_name'],
-                        'icon' => null,
-                        'parent_id' => $inventory->id,
-                        'sort_order' => $item['sort_order'],
+                        'name' => $roleConfig['name'],
+                        'is_superadmin' => (bool) ($roleConfig['is_superadmin'] ?? false),
                     ]
                 );
+
+                $rolesBySlug[$role->slug] = $role;
             }
 
-            SidebarItem::updateOrCreate(
-                ['key' => 'inventory.ipm'],
-                ['label' => 'IPM', 'route_name' => 'inventory.ipm', 'route_pattern' => 'inventory.ipm', 'icon' => 'bi bi-clipboard-check', 'parent_id' => null, 'sort_order' => 30]
-            );
+            $itemsByKey = [];
+            foreach ($sidebarItemsConfig as $itemConfig) {
+                $parentId = null;
+                if (! empty($itemConfig['parent_key']) && isset($itemsByKey[$itemConfig['parent_key']])) {
+                    $parentId = $itemsByKey[$itemConfig['parent_key']]->id;
+                }
 
-            SidebarItem::updateOrCreate(
-                ['key' => 'inventory.icm'],
-                ['label' => 'ICM', 'route_name' => 'inventory.icm', 'route_pattern' => 'inventory.icm', 'icon' => 'bi bi-tools', 'parent_id' => null, 'sort_order' => 40]
-            );
+                $item = SidebarItem::updateOrCreate(
+                    ['key' => $itemConfig['key']],
+                    [
+                        'label' => $itemConfig['label'],
+                        'route_name' => $itemConfig['route_name'] ?? null,
+                        'route_pattern' => $itemConfig['route_pattern'] ?? $itemConfig['route_name'] ?? null,
+                        'icon' => $itemConfig['icon'] ?? null,
+                        'parent_id' => $parentId,
+                        'sort_order' => $itemConfig['sort_order'] ?? 0,
+                    ]
+                );
 
-            $employees = SidebarItem::updateOrCreate(
-                ['key' => 'employees'],
-                ['label' => 'Employees', 'route_name' => 'employees.index', 'route_pattern' => 'employees.*', 'icon' => 'bi bi-people', 'parent_id' => null, 'sort_order' => 50]
-            );
-
-            $calendar = SidebarItem::updateOrCreate(
-                ['key' => 'calendar'],
-                ['label' => 'Calendar', 'route_name' => 'calendar.index', 'route_pattern' => 'calendar.*', 'icon' => 'bi bi-calendar3', 'parent_id' => null, 'sort_order' => 60]
-            );
-
-            $leaveCredits = SidebarItem::updateOrCreate(
-                ['key' => 'leave-credits'],
-                ['label' => 'Leave Credits', 'route_name' => null, 'route_pattern' => 'credits.*', 'icon' => 'bi bi-wallet2', 'parent_id' => null, 'sort_order' => 70]
-            );
-
-            SidebarItem::updateOrCreate(
-                ['key' => 'credits.cto'],
-                ['label' => 'CTO', 'route_name' => 'credits.cto', 'route_pattern' => 'credits.cto', 'icon' => null, 'parent_id' => $leaveCredits->id, 'sort_order' => 10]
-            );
-
-            SidebarItem::updateOrCreate(
-                ['key' => 'credits.index'],
-                ['label' => 'Leave Credits', 'route_name' => 'credits.index', 'route_pattern' => 'credits.index', 'icon' => null, 'parent_id' => $leaveCredits->id, 'sort_order' => 20]
-            );
-
-            $superadmin->sidebarItems()->sync(SidebarItem::query()->pluck('id')->all());
-            $employeeRole->sidebarItems()->sync([$employees->id, $calendar->id]);
-
-            $ictUsers = User::query()
-                ->where(function ($query) {
-                    $query->where('name', 'like', '%ict%')
-                        ->orWhere('email', 'like', '%ict%');
-
-                    if (Schema::hasColumn('users', 'username')) {
-                        $query->orWhere('username', 'like', '%ict%');
-                    }
-                })
-                ->get();
-
-            foreach ($ictUsers as $user) {
-                $user->role_id = $superadmin->id;
-                $user->save();
+                $itemsByKey[$item->key] = $item;
             }
 
-            $glennUsers = User::query()
-                ->where(function ($query) {
-                    $query->where('name', 'like', '%glenn%')
-                        ->orWhere('name', 'like', '%umipig%')
-                        ->orWhere('email', 'like', '%glenn%');
+            foreach ($rolesConfig as $roleConfig) {
+                $role = $rolesBySlug[$roleConfig['slug']];
+                $keys = $roleConfig['sidebar_item_keys'] ?? [];
 
-                    if (Schema::hasColumn('users', 'username')) {
-                        $query->orWhere('username', 'like', '%glenn%')
-                            ->orWhere('username', 'like', '%umipig%');
+                if (in_array('*', $keys, true)) {
+                    $role->sidebarItems()->sync(SidebarItem::query()->pluck('id')->all());
+                    continue;
+                }
+
+                $itemIds = collect($keys)
+                    ->map(fn (string $key) => $itemsByKey[$key]->id ?? null)
+                    ->filter()
+                    ->values()
+                    ->all();
+
+                $role->sidebarItems()->sync($itemIds);
+            }
+
+            $superadminEmail = $inventoryConfig['superadmin_email'] ?? null;
+            $superadminUsername = $inventoryConfig['superadmin_username'] ?? null;
+            $superadminRole = $rolesBySlug['superadmin'] ?? null;
+
+            if ($superadminRole && ($superadminEmail || $superadminUsername)) {
+                $query = User::query()->where(function ($subQuery) use ($superadminEmail, $superadminUsername) {
+                    if ($superadminEmail) {
+                        $subQuery->where('email', $superadminEmail);
                     }
-                })
-                ->get();
 
-            foreach ($glennUsers as $user) {
-                $user->role_id = $employeeRole->id;
-                $user->save();
+                    if ($superadminUsername) {
+                        $subQuery->orWhere(function ($nameQuery) use ($superadminUsername) {
+                            if (Schema::hasColumn('users', 'username')) {
+                                $nameQuery->orWhere('username', $superadminUsername);
+                            }
+
+                            $nameQuery->orWhere('name', $superadminUsername);
+                        });
+                    }
+                });
+
+                $query->get()->each(function (User $user) use ($superadminRole) {
+                    $user->role_id = $superadminRole->id;
+                    $user->save();
+                });
             }
         });
     }

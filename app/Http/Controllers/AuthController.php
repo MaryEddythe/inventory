@@ -81,7 +81,13 @@ class AuthController extends Controller
 
     public function showProfile()
     {
-        return view('auth.profile');
+        $user = Auth::user();
+
+        $leaveApplications = $user?->employee
+            ? $user->employee->leaveApplications()->latest()->get()
+            : collect();
+
+        return view('auth.profile', compact('user', 'leaveApplications'));
     }
 
     public function updateProfile(Request $request)
@@ -93,6 +99,7 @@ class AuthController extends Controller
             'username' => 'required|string|min:3|max:255|unique:users,' . $usernameColumn . ',' . $user->id,
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'signature_path' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
 
         $updates = [
@@ -107,6 +114,11 @@ class AuthController extends Controller
         if ($request->hasFile('profile_image')) {
             $imagePath = $request->file('profile_image')->store('profile_images', 'public');
             $updates['profile_image'] = $imagePath;
+        }
+
+        if ($request->hasFile('signature_path')) {
+            $signaturePath = $request->file('signature_path')->store('signatures', 'public');
+            $updates['signature_path'] = $signaturePath;
         }
 
         $user->update($updates);

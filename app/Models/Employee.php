@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Employee extends Model
 {
@@ -100,6 +102,11 @@ class Employee extends Model
         return $this->hasMany(EmployeeFile::class);
     }
 
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'emp_no', 'emp_no');
+    }
+
     public function leaveBenefits()
     {
         // employee_leave_benefits.emp_no -> inventory.employees.emp_no
@@ -108,7 +115,12 @@ class Employee extends Model
 
     public function leaveHistory()
     {
-        return $this->hasMany(EmployeeLeaveHistory::class);
+        return $this->hasMany(EmployeeLeaveHistory::class, 'employee_id', 'emp_no');
+    }
+
+    public function leaveApplications()
+    {
+        return $this->hasMany(EmployeeLeaveApplication::class, 'employee_id', 'emp_no');
     }
 
 }

@@ -4,13 +4,12 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
     <div>
-        <a href="{{ route('employees.index') }}" class="btn btn-outline-primary btn-sm">← Back to List</a>
+        <a href="{{ route('employees.index') }}" class="btn btn-outline-primary btn-sm"><- Back to List</a>
     </div>
 </div>
 
 <div class="container-fluid px-0">
     <div class="row g-4">
-        {{-- LEFT: Employee Details --}}
         <div class="col-12 col-lg-6">
             <div class="card h-100">
                 <div class="card-body">
@@ -26,7 +25,6 @@
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Full Name</div>
                                 <div class="fw-semibold">{{ $employee->full_name }}</div>
                             </div>
-
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Division</div>
                                 <div class="fw-semibold">{{ optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A' }}</div>
@@ -43,12 +41,11 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Date of Birth (DOB)</div>
-                                <div class="fw-semibold">{{ optional($employee->dob)->format('F d, Y') ?? '—' }}</div>
+                                <div class="fw-semibold">{{ optional($employee->dob)->format('F d, Y') ?? '-' }}</div>
                             </div>
-
                             <div class="d-flex justify-content-between align-items-center py-2 border-top">
                                 <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Added On</div>
-                                <div class="fw-semibold">{{ optional($employee->created_at)->format('M d, Y h:i A') ?? '—' }}</div>
+                                <div class="fw-semibold">{{ optional($employee->created_at)->format('M d, Y h:i A') ?? '-' }}</div>
                             </div>
                         </div>
                     </div>
@@ -56,15 +53,19 @@
                     <div class="border-top mt-3 pt-3">
                         <form method="POST" action="{{ route('employees.destroy', $employee) }}" class="d-inline"
                               onsubmit="return confirm('Delete {{ $employee->full_name }}? This cannot be undone.')">
-                            @csrf @method('DELETE')
+                            @csrf
+                            @method('DELETE')
                             <button class="btn btn-danger btn-sm">Delete Employee</button>
                         </form>
+
+                        <a href="{{ route('leave-applications.index') }}" class="btn btn-outline-primary btn-sm ms-2">
+                            Apply Leave
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- RIGHT: Drive Folder + Upload --}}
         <div class="col-12 col-lg-6">
             <div class="card h-100">
                 <div class="card-body">
@@ -84,7 +85,6 @@
                         </div>
                     @endif
 
-                    {{-- File Upload Section --}}
                     @if($employee->drive_folder_id)
                         <div class="border rounded-3 p-3 bg-light">
                             <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .05em;">File Upload</div>
@@ -96,7 +96,7 @@
                                     <label class="form-label fw-semibold">File Type</label>
                                     @php
                                         $uploadedTypes = $employee->files ? $employee->files->pluck('file_type')->all() : [];
-                                        $types = ['PDS','SALN','NBI Clearance','Medical Certificate','PAG-IBIG','PhilHealth'];
+                                        $types = ['PDS', 'SALN', 'NBI Clearance', 'Medical Certificate', 'PAG-IBIG', 'PhilHealth'];
                                         $availableTypes = array_values(array_diff($types, $uploadedTypes));
                                     @endphp
                                     <select name="file_type" class="form-select form-select-sm" required {{ empty($availableTypes) ? 'disabled' : '' }}>
@@ -110,12 +110,10 @@
 
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Upload File <span class="text-muted">(max 20MB)</span></label>
-
                                     <label class="btn btn-outline-secondary w-100 text-start">
                                         <i class="bi bi-upload me-2"></i> Choose file
                                         <input type="file" name="file" required class="d-none" />
                                     </label>
-
                                     @error('file') <div class="text-danger mt-1 fw-semibold">{{ $message }}</div> @enderror
                                 </div>
 
@@ -135,8 +133,6 @@
     </div>
 
     @php
-        // Leave benefits shown depend on employee employment_type.
-        // Business rule: COS employees are only entitled to Wellness Leave (+ Credited Time-off).
         $leaveBenefits = [
             'PERMANENT' => [
                 ['Vacation Leave', 15],
@@ -172,81 +168,81 @@
         });
 
         $ctoTotalHours = (int) $ctoCredits->sum('credit_hours');
-        $dayBasedCreditFactor = 10; // 1 day = 10 hours
+        $dayBasedCreditFactor = 10;
     @endphp
 
-    <div class="card mt-4">
-        <div class="card-body">
-            <h3 class="card-title h5 fw-bold mb-3">Leave Benefits</h3>
+    @if(auth()->user()?->isSuperAdmin() || auth()->user()?->isHr())
+        <div class="card mt-4">
+            <div class="card-body">
+                <h3 class="card-title h5 fw-bold mb-3">Leave Benefits</h3>
 
-            @foreach($benefitRows as $row)
-                @php
-                    $label = $row[0];
-                    $annualDays = $row[1];
-                    $isCtoBenefit = in_array(strtolower($label), ['credited time-off', 'credited time off'], true);
+                @foreach($benefitRows as $row)
+                    @php
+                        $label = $row[0];
+                        $annualDays = $row[1];
+                        $isCtoBenefit = in_array(strtolower($label), ['credited time-off', 'credited time off'], true);
 
-                    $usedDays = 0;
-                    if (is_int($annualDays)) {
-                        $usedHours = (int) ($benefitsByType->get($label)?->sum('credit_hours') ?? 0);
-                        $usedDays = intdiv($usedHours, $dayBasedCreditFactor);
-                        $remainingDays = max(0, (int)$annualDays - $usedDays);
-                    } else {
-                        $remainingDays = $annualDays;
-                    }
-                @endphp
+                        if (is_int($annualDays)) {
+                            $usedHours = (int) ($benefitsByType->get($label)?->sum('credit_hours') ?? 0);
+                            $usedDays = intdiv($usedHours, $dayBasedCreditFactor);
+                            $remainingDays = max(0, (int) $annualDays - $usedDays);
+                        } else {
+                            $remainingDays = $annualDays;
+                        }
+                    @endphp
 
-                <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                    <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">{{ $label }}</div>
-                    <div class="fw-semibold">
-                        @if(is_int($remainingDays))
-                            {{ $remainingDays }} days annually
-                        @elseif($isCtoBenefit)
-                            {{ $ctoTotalHours }} hours
-                        @else
-                            {{ $remainingDays ?? 'As per policy' }}
-                        @endif
+                    <div class="d-flex justify-content-between align-items-center py-2 border-top">
+                        <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">{{ $label }}</div>
+                        <div class="fw-semibold">
+                            @if(is_int($remainingDays))
+                                {{ $remainingDays }} days annually
+                            @elseif($isCtoBenefit)
+                                {{ $ctoTotalHours }} hours
+                            @else
+                                {{ $remainingDays ?? 'As per policy' }}
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+
+                <div class="mt-4 pt-3 border-top">
+                    <div class="fw-bold" style="color: #0f172a;">Leave History</div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>credit_type</th>
+                                    <th>start date</th>
+                                    <th>end date</th>
+                                    <th>credit_hours</th>
+                                    <th>remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($benefits as $benefit)
+                                    <tr>
+                                        <td>{{ $benefit->credit_type }}</td>
+                                        <td>{{ $benefit->start_date?->format('M d, Y') }}</td>
+                                        <td>{{ $benefit->end_date ? $benefit->end_date->format('M d, Y') : '-' }}</td>
+                                        <td>{{ $benefit->credit_hours }}</td>
+                                        <td>{{ $benefit->remarks ?? '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center">No leave history found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            @endforeach
-
-            <div class="mt-4 pt-3 border-top">
-                <div class="fw-bold" style="color: #0f172a;">Leave History</div>
-
-                <div class="table-responsive mt-3">
-                    <table class="table table-sm table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>credit_type</th>
-                                <th>start date</th>
-                                <th>end date</th>
-                                <th>credit_hours</th>
-                                <th>remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        @forelse($benefits as $benefit)
-                            <tr>
-                                <td>{{ $benefit->credit_type }}</td>
-                                <td>{{ $benefit->start_date?->format('M d, Y') }}</td>
-                                <td>
-                                    {{ $benefit->end_date ? $benefit->end_date->format('M d, Y') : '—' }}
-                                </td>
-                                <td>{{ $benefit->credit_hours }}</td>
-                                <td>{{ $benefit->remarks ?? '—' }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center">No leave history found</td>
-                            </tr>
-                        @endforelse
-                        </tbody>
-                    </table>
-                </div>
             </div>
-
         </div>
-    </div>
+    @else
+        <div class="alert alert-info mt-4 mb-0">
+            Leave balances and leave credit history are visible to HR only.
+        </div>
+    @endif
 </div>
-
 @endsection
-

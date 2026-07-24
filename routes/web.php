@@ -4,8 +4,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\LeaveApplicationController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\SidebarAccessController;
+use Laravel\Fortify\Http\Controllers\ConfirmablePasswordController;
+use Laravel\Fortify\Http\Controllers\ConfirmedPasswordStatusController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes
@@ -125,6 +128,26 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
+    Route::get('/notifications/{notification}/read', function (string $notification) {
+        $user = auth()->user();
+        $record = $user?->notifications()->findOrFail($notification);
+
+        $record->markAsRead();
+
+        return redirect()->to(data_get($record->data, 'url', route('leave-applications.index')));
+    })->name('notifications.read');
+    Route::post('/notifications/read-all', function () {
+        auth()->user()?->unreadNotifications->markAsRead();
+
+        return back();
+    })->name('notifications.read-all');
+
+    Route::get('/user/confirm-password', [ConfirmablePasswordController::class, 'show'])
+        ->name('password.confirm');
+    Route::post('/user/confirm-password', [ConfirmablePasswordController::class, 'store'])
+        ->name('password.confirm.store');
+    Route::get('/user/confirmed-password-status', [ConfirmedPasswordStatusController::class, 'show'])
+        ->name('password.confirmation');
 
     Route::get('/roles', [SidebarAccessController::class, 'index'])->name('roles.index');
     Route::put('/roles/{user}', [SidebarAccessController::class, 'update'])->name('roles.update');
@@ -134,11 +157,17 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     // PDF - Controller
 
     // Credits routes
-    Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');
-    Route::get('/credits/cto', [CreditsController::class, 'cto'])->name('credits.cto');
-    Route::post('/credits', [CreditsController::class, 'store'])->name('credits.store');
-    Route::put('/credits/{credit}', [CreditsController::class, 'update'])->name('credits.update');
-    Route::delete('/credits/{credit}', [CreditsController::class, 'destroy'])->name('credits.destroy');
+    Route::middleware('hr.access')->group(function () {
+        Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');
+        Route::get('/credits/cto', [CreditsController::class, 'cto'])->name('credits.cto');
+        Route::post('/credits', [CreditsController::class, 'store'])->name('credits.store');
+        Route::put('/credits/{credit}', [CreditsController::class, 'update'])->name('credits.update');
+        Route::delete('/credits/{credit}', [CreditsController::class, 'destroy'])->name('credits.destroy');
+    });
+
+    // Leave application routes
+    Route::get('/leave-applications', [LeaveApplicationController::class, 'index'])->name('leave-applications.index');
+    Route::post('/leave-applications', [LeaveApplicationController::class, 'store'])->name('leave-applications.store');
 
 
     // Calendar page

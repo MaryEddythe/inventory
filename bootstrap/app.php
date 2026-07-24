@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'sidebar.access' => \App\Http\Middleware\EnsureSidebarAccess::class,
+            'hr.access' => \App\Http\Middleware\EnsureHrAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

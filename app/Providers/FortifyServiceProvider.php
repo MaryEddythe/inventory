@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Fortify;
+
+class FortifyServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        Fortify::ignoreRoutes();
+    }
+
+    public function boot(): void
+    {
+        Fortify::confirmPasswordView(function () {
+            return view('auth.confirm-password');
+        });
+    }
+}

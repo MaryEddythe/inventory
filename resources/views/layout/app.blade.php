@@ -63,6 +63,67 @@
                 <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-controls="appSidebar" aria-expanded="true" aria-label="Toggle sidebar">
                     <i class="bi bi-list"></i>
                 </button>
+
+                @php
+                    $headerUser = auth()->user();
+                    $headerNotifications = $headerUser?->notifications()->latest()->take(5)->get() ?? collect();
+                    $headerUnreadCount = $headerUser?->unreadNotifications()->count() ?? 0;
+                @endphp
+
+                <div class="app-toolbar-actions">
+                    <div class="dropdown notification-dropdown">
+                        <button class="btn btn-link notification-btn dropdown-toggle" type="button" id="notificationDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+                            <i class="bi bi-bell"></i>
+                            @if($headerUnreadCount > 0)
+                                <span class="notification-badge">{{ $headerUnreadCount > 99 ? '99+' : $headerUnreadCount }}</span>
+                            @endif
+                        </button>
+
+                        <div class="dropdown-menu dropdown-menu-end notification-menu" aria-labelledby="notificationDropdown">
+                            <div class="notification-menu-header d-flex align-items-center justify-content-between gap-3">
+                                <div>
+                                    <div class="notification-menu-title">Notifications</div>
+                                    <div class="notification-menu-subtitle">{{ $headerUnreadCount }} unread</div>
+                                </div>
+
+                                @if($headerUnreadCount > 0)
+                                    <form method="POST" action="{{ route('notifications.read-all') }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Mark all read</button>
+                                    </form>
+                                @endif
+                            </div>
+
+                            <div class="notification-menu-list">
+                                @forelse($headerNotifications as $notification)
+                                    @php
+                                        $notificationData = $notification->data ?? [];
+                                        $isUnread = is_null($notification->read_at);
+                                    @endphp
+                                    <a class="notification-item {{ $isUnread ? 'is-unread' : '' }}"
+                                       href="{{ route('notifications.read', $notification->id) }}">
+                                        <div class="notification-item-top">
+                                            <span class="notification-item-title">{{ $notificationData['headline'] ?? 'Leave update' }}</span>
+                                            @if($isUnread)
+                                                <span class="notification-item-dot"></span>
+                                            @endif
+                                        </div>
+                                        <div class="notification-item-message">{{ $notificationData['message'] ?? 'You have a new leave update.' }}</div>
+                                        <div class="notification-item-meta">
+                                            <span>{{ $notificationData['step'] ?? 'Leave Application' }}</span>
+                                            <span>{{ $notification->created_at?->diffForHumans() }}</span>
+                                        </div>
+                                    </a>
+                                @empty
+                                    <div class="notification-empty">
+                                        No notifications yet.
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="container-fluid px-4 pb-4">

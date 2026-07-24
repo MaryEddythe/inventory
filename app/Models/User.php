@@ -28,6 +28,7 @@ class User extends Authenticatable
         'password',
         'emp_no',
         'employee',
+        'signature_path',
         'role_id',
     ];
 
@@ -75,6 +76,11 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return (bool) ($this->role?->is_superadmin || $this->role?->slug === 'superadmin');
+    }
+
+    public function isHr(): bool
+    {
+        return (bool) ($this->role?->slug === 'hr');
     }
 
     public function canAccessSidebarItem(SidebarItem $item): bool

@@ -70,6 +70,20 @@
                                             </div>
                                         </div>
 
+                                        <div class="mb-3">
+                                            <label for="signature_path" class="form-label">Signature Image</label>
+                                            <input type="file" class="form-control" id="signature_path" name="signature_path" accept="image/png,image/jpeg">
+                                            <small class="form-text text-muted">Upload this once. The system will reuse it when you sign leave documents.</small>
+                                            @if(Auth::user()->signature_path)
+                                                <div class="mt-2">
+                                                    <img src="{{ asset('storage/' . Auth::user()->signature_path) }}"
+                                                         alt="Signature Preview"
+                                                         class="img-fluid border rounded bg-white p-2"
+                                                         style="max-width: 240px; max-height: 120px; object-fit: contain;">
+                                                </div>
+                                            @endif
+                                        </div>
+
                                         <button type="button" id="update-profile-btn" class="btn btn-primary w-100" disabled>
                                             <span class="spinner-border spinner-border-sm me-2" id="update-spinner" style="display: none;"></span>
                                             <i class="bi bi-check-circle me-2"></i>Update Profile
@@ -132,6 +146,86 @@
                             </div>
                         </div>
                     </div>
+
+                    @php
+                        $profileLeaveStatusLabels = [
+                            'pending_hr' => ['label' => 'Pending HR', 'class' => 'bg-warning text-dark'],
+                            'pending_division_chief' => ['label' => 'Pending Division Chief', 'class' => 'bg-info text-dark'],
+                            'pending_regional_director' => ['label' => 'Pending Regional Director', 'class' => 'bg-primary'],
+                            'approved' => ['label' => 'Approved', 'class' => 'bg-success'],
+                            'rejected' => ['label' => 'Rejected', 'class' => 'bg-danger'],
+                        ];
+                    @endphp
+
+                    @if($user?->employee)
+                        <div class="card mt-4 shadow-sm">
+                            <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <div>
+                                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Leave Applications</h5>
+                                    <small class="text-muted">Your submitted leave requests and approvals.</small>
+                                </div>
+
+                                <a href="{{ route('leave-applications.index') }}" class="btn btn-sm btn-outline-primary">
+                                    Open Leave Applications
+                                </a>
+                            </div>
+
+                            <div class="card-body">
+                                @if($leaveApplications->isNotEmpty())
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Leave Type</th>
+                                                    <th>Date Range</th>
+                                                    <th>Status</th>
+                                                    <th>Current Step</th>
+                                                    <th>Submitted</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($leaveApplications as $application)
+                                                    @php
+                                                        $statusKey = (string) $application->status;
+                                                        $status = $profileLeaveStatusLabels[$statusKey] ?? [
+                                                            'label' => strtoupper(str_replace('_', ' ', $statusKey)),
+                                                            'class' => 'bg-secondary',
+                                                        ];
+                                                    @endphp
+                                                    <tr>
+                                                        <td class="fw-semibold">{{ $application->leave_type }}</td>
+                                                        <td>
+                                                            <div>{{ $application->date_from?->format('M d, Y') }}</div>
+                                                            <small class="text-muted">to {{ $application->date_to?->format('M d, Y') ?? 'Open ended' }}</small>
+                                                        </td>
+                                                        <td><span class="badge {{ $status['class'] }}">{{ $status['label'] }}</span></td>
+                                                        <td class="text-capitalize">{{ str_replace('_', ' ', $application->current_step ?? 'hr') }}</td>
+                                                        <td>{{ $application->created_at?->format('M d, Y h:i A') }}</td>
+                                                    </tr>
+                                                    @if($application->reason)
+                                                        <tr class="table-light">
+                                                            <td colspan="5">
+                                                                <div class="small text-muted fw-semibold mb-1">Reason</div>
+                                                                <div>{{ $application->reason }}</div>
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <div class="alert alert-info mb-0">
+                                        You have not submitted any leave applications yet.
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @else
+                        <div class="alert alert-warning mt-4 mb-0">
+                            No linked employee record was found for this account, so leave applications cannot be shown here.
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -148,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const updateSpinner = document.getElementById('update-spinner');
     const changeSpinner = document.getElementById('change-spinner');
     const profileImageInput = document.getElementById('profile_image');
+    const signatureInput = document.getElementById('signature_path');
     const imagePreviewContainer = document.getElementById('image-preview-container');
     const imagePreview = document.getElementById('image-preview');
 
@@ -184,7 +279,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check if any field has changed
         const originalUsername = @js(Auth::user()->username ?: Auth::user()->name);
         const originalEmail = @js(Auth::user()->email);
-        const hasChanges = usernameInput.value !== originalUsername || emailInput.value !== originalEmail || profileImageInput.files.length > 0;
+        const hasChanges = usernameInput.value !== originalUsername
+            || emailInput.value !== originalEmail
+            || profileImageInput.files.length > 0
+            || signatureInput.files.length > 0;
 
         updateBtn.disabled = !isValid || !hasChanges;
         return isValid && hasChanges;
@@ -193,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
     usernameInput.addEventListener('input', validateProfileForm);
     emailInput.addEventListener('input', validateProfileForm);
     profileImageInput.addEventListener('change', validateProfileForm);
+    signatureInput.addEventListener('change', validateProfileForm);
 
     // Real-time validation for change password form
     const currentPasswordInput = document.getElementById('current_password');

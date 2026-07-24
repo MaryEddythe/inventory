@@ -180,84 +180,9 @@
 <div class="page-header">
     <div class="credits-info">
         <div class="page-title">Leave Credits</div>
-        <div class="page-subtitle">All employee leave benefits and credit status</div>
+        <div class="page-subtitle">Manage employee leave benefits and credits</div>
     </div>
     <button onclick="openCreateModal()" class="btn btn-primary">+ Add Leave Credit</button>
-</div>
-
-<div class="table-wrapper">
-    <table>
-        <thead>
-            <tr>
-                <th>Employee ID</th>
-                <th>Name</th>
-                <th>Division</th>
-                <th>Position</th>
-                <th>Employment Type</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Leave Type</th>
-                <th>Status</th>
-                <th>Actions</th>
-
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($allBenefits as $benefit)
-            <tr>
-                <td>
-                    <span class="badge badge-blue">{{ $benefit->employee->employee_id ?? 'N/A' }}</span>
-                </td>
-                <td>
-                    <div class="leave-type-cell">{{ $benefit->name }}</div>
-                </td>
-                <td>{{ $benefit->departments ?? 'N/A' }}</td>
-                <td>{{ $benefit->role ?? 'N/A' }}</td>
-                <td>{{ $benefit->employment_type === 'PERMANENT' ? 'Permanent' : 'COS' }}</td>
-                <td>
-                    <div class="leave-date">{{ $benefit->start_date->format('M d, Y') }}</div>
-                </td>
-                <td>
-                    <div class="leave-date">
-                        @if($benefit->end_date)
-                            {{ $benefit->end_date->format('M d, Y') }}
-                        @else
-                            <span style="color: #94a3b8;">—</span>
-                        @endif
-                    </div>
-                </td>
-                <td>
-                    <div class="leave-type-cell">{{ $benefit->credit_type }}</div>
-                </td>
-                <td>
-                    <span class="status-badge status-{{ strtolower($benefit->status) }}">
-                        {{ $benefit->status }}
-                    </span>
-                </td>
-                <td>
-                    <div style="display:flex; gap:0.5rem;">
-                        <button type="button" onclick="openEditModal({{ $benefit->id }})" class="btn btn-outline btn-sm">Edit</button>
-                        <form method="POST" action="{{ route('credits.destroy', $benefit->id) }}" onsubmit="return confirm('Delete leave credit?');" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </form>
-                    </div>
-                </td>
-
-            </tr>
-            @empty
-            <tr>
-                <td colspan="9">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">–</div>
-                        <div class="empty-state-text">No leave credits found</div>
-                    </div>
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
 </div>
 
 <div class="modal-overlay" id="createModal">

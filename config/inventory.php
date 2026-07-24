@@ -41,7 +41,7 @@ return [
             'slug' => 'hr',
             'name' => 'HR',
             'is_superadmin' => false,
-            'sidebar_item_keys' => ['employees', 'calendar', 'leave-applications', 'leave-credits', 'credits.cto', 'credits.index'],
+            'sidebar_item_keys' => ['employees', 'calendar', 'leave-applications'],
         ],
         [
             'slug' => 'rd',

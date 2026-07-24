@@ -16,6 +16,10 @@
     @stack('scripts')
 </head>
 <body>
+    @php
+        $headerNotifications = $headerNotifications ?? collect();
+        $headerUnreadCount = $headerUnreadCount ?? 0;
+    @endphp
     <div class="app-shell">
         <aside class="app-sidebar" id="appSidebar">
             <a class="sidebar-brand" href="{{ route('inventory.dashboard') }}">
@@ -27,9 +31,45 @@
             </a>
 
             <nav class="sidebar-nav" aria-label="Primary navigation">
-                @php($sidebarNavigation = auth()->user()?->sidebarNavigation() ?? collect())
+                @php
+                    $sidebarNavigation = auth()->user()?->sidebarNavigation() ?? collect();
+
+                    $__renderSidebarItem = function($item, $isChild = false) use (&$__renderSidebarItem) {
+                        $hasChildren = isset($item['children']) && count($item['children']) > 0;
+                        $active = $item['active'] ?? false;
+                        $html = '';
+
+                        if ($hasChildren) {
+                            $html .= '<div class="sidebar-nav-dropdown">';
+                            $html .= '<button class="sidebar-nav-link sidebar-dropdown-toggle ' . ($active ? 'active' : '') . '" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarItem' . $item['id'] . '" aria-expanded="' . ($active ? 'true' : 'false') . '" aria-controls="sidebarItem' . $item['id'] . '">';
+                            if (!empty($item['icon'])) {
+                                $html .= '<i class="' . e($item['icon']) . '"></i>';
+                            }
+                            $html .= '<span>' . e($item['label']) . '</span>';
+                            $html .= '<i class="bi bi-chevron-down ms-auto"></i>';
+                            $html .= '</button>';
+                            $html .= '<div class="collapse ' . ($active ? 'show' : '') . '" id="sidebarItem' . $item['id'] . '">';
+                            $html .= '<div class="sidebar-dropdown-menu">';
+                            foreach ($item['children'] as $child) {
+                                $html .= $__renderSidebarItem($child, true);
+                            }
+                            $html .= '</div></div></div>';
+                        } else {
+                            $url = !empty($item['url']) ? e($item['url']) : '#';
+                            $class = ($isChild ? 'sidebar-dropdown-item' : 'sidebar-nav-link') . ($active ? ' active' : '');
+                            $html .= '<a class="' . $class . '" href="' . $url . '">';
+                            if (!empty($item['icon'])) {
+                                $html .= '<i class="' . e($item['icon']) . '"></i>';
+                            }
+                            $html .= '<span>' . e($item['label']) . '</span>';
+                            $html .= '</a>';
+                        }
+
+                        return $html;
+                    };
+                @endphp
                 @foreach($sidebarNavigation as $item)
-                    @include('layout.sidebar-item', ['item' => $item])
+                    {!! $__renderSidebarItem($item) !!}
                 @endforeach
             </nav>
 
@@ -64,12 +104,6 @@
                     <i class="bi bi-list"></i>
                 </button>
 
-                @php
-                    $headerUser = auth()->user();
-                    $headerNotifications = $headerUser?->notifications()->latest()->take(5)->get() ?? collect();
-                    $headerUnreadCount = $headerUser?->unreadNotifications()->count() ?? 0;
-                @endphp
-
                 <div class="app-toolbar-actions">
                     <div class="dropdown notification-dropdown">
                         <button class="btn btn-link notification-btn dropdown-toggle" type="button" id="notificationDropdown"
@@ -96,30 +130,32 @@
                             </div>
 
                             <div class="notification-menu-list">
-                                @forelse($headerNotifications as $notification)
-                                    @php
-                                        $notificationData = $notification->data ?? [];
-                                        $isUnread = is_null($notification->read_at);
-                                    @endphp
-                                    <a class="notification-item {{ $isUnread ? 'is-unread' : '' }}"
-                                       href="{{ route('notifications.read', $notification->id) }}">
-                                        <div class="notification-item-top">
-                                            <span class="notification-item-title">{{ $notificationData['headline'] ?? 'Leave update' }}</span>
-                                            @if($isUnread)
-                                                <span class="notification-item-dot"></span>
-                                            @endif
-                                        </div>
-                                        <div class="notification-item-message">{{ $notificationData['message'] ?? 'You have a new leave update.' }}</div>
-                                        <div class="notification-item-meta">
-                                            <span>{{ $notificationData['step'] ?? 'Leave Application' }}</span>
-                                            <span>{{ $notification->created_at?->diffForHumans() }}</span>
-                                        </div>
-                                    </a>
-                                @empty
+                                @if($headerNotifications->isNotEmpty())
+                                    @foreach($headerNotifications as $notification)
+                                        @php
+                                            $notificationData = $notification->data ?? [];
+                                            $isUnread = is_null($notification->read_at);
+                                        @endphp
+                                        <a class="notification-item {{ $isUnread ? 'is-unread' : '' }}"
+                                           href="{{ route('notifications.read', $notification->id) }}">
+                                            <div class="notification-item-top">
+                                                <span class="notification-item-title">{{ $notificationData['headline'] ?? 'Leave update' }}</span>
+                                                @if($isUnread)
+                                                    <span class="notification-item-dot"></span>
+                                                @endif
+                                            </div>
+                                            <div class="notification-item-message">{{ $notificationData['message'] ?? 'You have a new leave update.' }}</div>
+                                            <div class="notification-item-meta">
+                                                <span>{{ $notificationData['step'] ?? 'Leave Application' }}</span>
+                                                <span>{{ $notification->created_at?->diffForHumans() }}</span>
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                @else
                                     <div class="notification-empty">
                                         No notifications yet.
                                     </div>
-                                @endforelse
+                                @endif
                             </div>
                         </div>
                     </div>

@@ -45,6 +45,12 @@ return [
             'is_superadmin' => false,
             'sidebar_item_keys' => ['employees', 'calendar', 'leave-credits', 'credits.cto', 'credits.index'],
         ],
+        [
+            'slug' => 'rd',
+            'name' => 'Regional Director',
+            'is_superadmin' => false,
+            'sidebar_item_keys' => ['employees', 'calendar', 'leave-credits', 'credits.cto', 'credits.index'],
+        ],
     ],
     'sidebar_items' => [
         [

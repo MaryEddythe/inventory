@@ -252,6 +252,20 @@ class EmployeeController extends Controller
         $employee->profile_image = $path;
         $employee->save();
 
+        // Sync the profile image to the associated user so the sidebar avatar reflects the same image
+        $user = $employee->relationLoaded('user') && $employee->user
+            ? $employee->user
+            : User::where('emp_no', $employee->emp_no)->first();
+
+        if ($user) {
+            if ($user->profile_image && $user->profile_image !== $employee->getOriginal('profile_image')) {
+                Storage::disk('public')->delete($user->profile_image);
+            }
+
+            $user->profile_image = $path;
+            $user->save();
+        }
+
         return back()->with('success', 'Profile image updated successfully.');
     }
 

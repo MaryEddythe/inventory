@@ -29,6 +29,7 @@ class User extends Authenticatable
         'emp_no',
         'employee',
         'signature_path',
+        'profile_image',
         'role_id',
     ];
 

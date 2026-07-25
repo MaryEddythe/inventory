@@ -54,8 +54,18 @@
                             @endif
                         </div>
 
-                        <div>
-                            <h3 class="card-title h5 fw-bold mb-0">{{ $employee->full_name }}</h3>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <h3 class="card-title h5 fw-bold mb-0">{{ $employee->full_name }}</h3>
+                                @if(auth()->id() === optional($employee->user)->id || auth()->user()?->isSuperAdmin() || auth()->user()?->isHr())
+                                    <button type="button" onclick="openProfileEditModal()" class="btn btn-sm p-0 border-0 bg-transparent" title="Edit Profile Settings">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="3"/>
+                                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                        </svg>
+                                    </button>
+                                @endif
+                            </div>
                             <small class="text-muted">{{ $employee->position }}</small>
                         </div>
                     </div>
@@ -477,6 +487,79 @@
     </div>
 </div>
 
+{{-- Profile Edit Modal --}}
+<div class="leave-modal-overlay" id="profileEditModal">
+    <div class="leave-modal-content">
+        <div class="leave-modal-header">
+            <h2 class="leave-modal-title">Edit Profile Settings</h2>
+            <button class="leave-modal-close" onclick="closeProfileEditModal()">×</button>
+        </div>
+        <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <div class="leave-modal-body">
+                @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
+
+                <div class="leave-form-grid full">
+                    <div>
+                        <label class="leave-form-label">Username</label>
+                        <input type="text" name="username" class="leave-form-control" value="{{ old('username', auth()->user()->username ?: auth()->user()->name) }}" required>
+                    </div>
+                </div>
+
+                <div class="leave-form-grid full">
+                    <div>
+                        <label class="leave-form-label">Email</label>
+                        <input type="email" name="email" class="leave-form-control" value="{{ old('email', auth()->user()->email) }}" required>
+                    </div>
+                </div>
+
+                <div class="leave-form-grid full">
+                    <div>
+                        <label class="leave-form-label">Signature Image</label>
+                        <input type="file" name="signature_path" class="leave-form-control" accept="image/png,image/jpeg">
+                        @if(auth()->user()->signature_path)
+                            <div class="mt-2">
+                                <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Signature" class="img-fluid border rounded bg-white p-1" style="max-width: 180px; max-height: 80px; object-fit: contain;">
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="leave-form-grid full">
+                    <div>
+                        <label class="leave-form-label">Current Password</label>
+                        <input type="password" name="current_password" class="leave-form-control" minlength="8">
+                    </div>
+                </div>
+
+                <div class="leave-form-grid">
+                    <div>
+                        <label class="leave-form-label">New Password</label>
+                        <input type="password" name="new_password" class="leave-form-control" minlength="8">
+                    </div>
+                    <div>
+                        <label class="leave-form-label">Confirm Password</label>
+                        <input type="password" name="new_password_confirmation" class="leave-form-control" minlength="8">
+                    </div>
+                </div>
+            </div>
+
+            <div class="leave-modal-footer">
+                <button type="button" onclick="closeProfileEditModal()" class="btn btn-outline">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @php
     $leaveTypesForModal = [
         'PERMANENT' => [
@@ -499,6 +582,14 @@
 @endphp
 
 <script>
+    function openProfileEditModal() {
+        document.getElementById('profileEditModal').classList.add('active');
+    }
+
+    function closeProfileEditModal() {
+        document.getElementById('profileEditModal').classList.remove('active');
+    }
+
     const leaveTypesByEmploymentType = @json($leaveTypesForModal);
 
     const currentEmployee = {

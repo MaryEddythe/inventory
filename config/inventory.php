@@ -14,7 +14,7 @@ return [
             'slug' => 'employee',
             'name' => 'Employee',
             'is_superadmin' => false,
-            'sidebar_item_keys' => ['employees', 'calendar', 'leave-applications'],
+            'sidebar_item_keys' => ['profile', 'employees', 'calendar', 'leave-applications'],
         ],
         [
             'slug' => 'division-chief',
@@ -194,6 +194,15 @@ return [
             'icon' => 'bi bi-calendar3',
             'parent_key' => null,
             'sort_order' => 60,
+        ],
+        [
+            'key' => 'profile',
+            'label' => 'Profile',
+            'route_name' => 'profile',
+            'route_pattern' => 'profile',
+            'icon' => 'bi bi-person-circle',
+            'parent_key' => null,
+            'sort_order' => 5,
         ],
         [
             'key' => 'leave-applications',

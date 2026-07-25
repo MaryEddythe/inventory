@@ -126,7 +126,42 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
 
 
     // Profile Routes
-    Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
+    Route::get('/profile', function () {
+        $user = auth()->user();
+        $empNo = $user->emp_no;
+        
+        // Try to get emp_no from the employee relationship if not directly available
+        if (!$empNo && method_exists($user, 'employee')) {
+            $employee = $user->employee()->first();
+            if ($employee) {
+                $empNo = $employee->emp_no;
+            }
+        }
+        
+        // If we have emp_no, redirect to employee show page
+        if ($empNo) {
+            return redirect('/employees/' . $empNo);
+        }
+        
+        // Last resort: try to find employee by user id or email or name
+        if ($user->email) {
+            $employee = \App\Models\Employee::where('email', $user->email)->first();
+            if ($employee) {
+                return redirect('/employees/' . $employee->emp_no);
+            }
+        }
+        
+        // Try by matching name
+        if ($user->name) {
+            $employee = \App\Models\Employee::whereRaw("CONCAT(first_name, ' ', last_name) = ?", [$user->name])->first();
+            if ($employee) {
+                return redirect('/employees/' . $employee->emp_no);
+            }
+        }
+        
+        // If no employee found, redirect to employees list with error
+        return redirect()->route('employees.index')->with('error', 'No employee record linked to your account. Please contact HR.');
+    })->name('profile');
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
     Route::get('/notifications/{notification}/read', function (string $notification) {

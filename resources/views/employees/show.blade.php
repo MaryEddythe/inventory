@@ -232,133 +232,127 @@
         $dayBasedCreditFactor = 10;
     @endphp
 
-    @if(auth()->user()?->isSuperAdmin() || auth()->user()?->isHr())
-        <div class="card mt-4">
-            <div class="card-body">
-                <h3 class="card-title h5 fw-bold mb-3">Leave Benefits</h3>
+<div class="card mt-4">
+        <div class="card-body">
+            <h3 class="card-title h5 fw-bold mb-3">Leave Benefits</h3>
 
-                @foreach($benefitRows as $row)
-                    @php
-                        $label = $row[0];
-                        $annualDays = $row[1];
-                        $isCtoBenefit = in_array(strtolower($label), ['credited time-off', 'credited time off'], true);
+            @foreach($benefitRows as $row)
+                @php
+                    $label = $row[0];
+                    $annualDays = $row[1];
+                    $isCtoBenefit = in_array(strtolower($label), ['credited time-off', 'credited time off'], true);
 
-                        if (is_int($annualDays)) {
-                            $usedHours = (int) ($benefitsByType->get($label)?->sum('credit_hours') ?? 0);
-                            $usedDays = intdiv($usedHours, $dayBasedCreditFactor);
-                            $remainingDays = max(0, (int) $annualDays - $usedDays);
-                        } else {
-                            $remainingDays = $annualDays;
-                        }
-                    @endphp
+                    if (is_int($annualDays)) {
+                        $usedHours = (int) ($benefitsByType->get($label)?->sum('credit_hours') ?? 0);
+                        $usedDays = intdiv($usedHours, $dayBasedCreditFactor);
+                        $remainingDays = max(0, (int) $annualDays - $usedDays);
+                    } else {
+                        $remainingDays = $annualDays;
+                    }
+                @endphp
 
-                    <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                        <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">{{ $label }}</div>
-                        <div class="fw-semibold">
-                            @if(is_int($remainingDays))
-                                {{ $remainingDays }} days annually
-                            @elseif($isCtoBenefit)
-                                {{ $ctoTotalHours }} hours
-                            @else
-                                {{ $remainingDays ?? 'As per policy' }}
-                            @endif
-                        </div>
+                <div class="d-flex justify-content-between align-items-center py-2 border-top">
+                    <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">{{ $label }}</div>
+                    <div class="fw-semibold">
+                        @if(is_int($remainingDays))
+                            {{ $remainingDays }} days annually
+                        @elseif($isCtoBenefit)
+                            {{ $ctoTotalHours }} hours
+                        @else
+                            {{ $remainingDays ?? 'As per policy' }}
+                        @endif
                     </div>
-                @endforeach
+                </div>
+            @endforeach
 
-                <div class="mt-4 pt-3 border-top">
-                    <div class="fw-bold" style="color: #0f172a;">Leave Credits History</div>
+            <div class="mt-4 pt-3 border-top">
+                <div class="fw-bold" style="color: #0f172a;">Leave Credits History</div>
 
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Credit Type</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Hours</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($benefits as $benefit)
+                                <tr>
+                                    <td>{{ $benefit->credit_type }}</td>
+                                    <td>{{ $benefit->start_date?->format('M d, Y') }}</td>
+                                    <td>{{ $benefit->end_date ? $benefit->end_date->format('M d, Y') : '-' }}</td>
+                                    <td>{{ $benefit->credit_hours }}</td>
+                                    <td>{{ $benefit->remarks ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">No leave credits found</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($leaveApplications->isNotEmpty())
+                    <div class="fw-bold mt-4" style="color: #0f172a;">Leave Applications</div>
                     <div class="table-responsive mt-3">
                         <table class="table table-sm table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Credit Type</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Hours</th>
-                                    <th>Remarks</th>
+                                    <th>Leave Type</th>
+                                    <th>Date From</th>
+                                    <th>Date To</th>
+                                    <th>Status</th>
+                                    <th>HR</th>
+                                    <th>Div Chief</th>
+                                    <th>RD</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($benefits as $benefit)
+                                @forelse($leaveApplications as $application)
                                     <tr>
-                                        <td>{{ $benefit->credit_type }}</td>
-                                        <td>{{ $benefit->start_date?->format('M d, Y') }}</td>
-                                        <td>{{ $benefit->end_date ? $benefit->end_date->format('M d, Y') : '-' }}</td>
-                                        <td>{{ $benefit->credit_hours }}</td>
-                                        <td>{{ $benefit->remarks ?? '-' }}</td>
+                                        <td>{{ $application->leave_type }}</td>
+                                        <td>{{ $application->date_from?->format('M d, Y') }}</td>
+                                        <td>{{ $application->date_to ? $application->date_to->format('M d, Y') : '-' }}</td>
+                                        <td>
+                                            @php
+                                                $statusClass = match (true) {
+                                                    str_contains($application->status, 'pending_hr') || str_contains($application->status, 'PendingHr') => 'warning',
+                                                    str_contains($application->status, 'pending_division') || str_contains($application->status, 'PendingDivision') => 'info',
+                                                    str_contains($application->status, 'pending_regional') || str_contains($application->status, 'PendingRegional') => 'primary',
+                                                    str_contains($application->status, 'Approved') => 'success',
+                                                    str_contains($application->status, 'Denied') => 'danger',
+                                                    default => 'secondary',
+                                                };
+                                                $statusLabel = match (true) {
+                                                    str_contains($application->status, 'pending_hr') || str_contains($application->status, 'PendingHr') => 'Pending HR',
+                                                    str_contains($application->status, 'pending_division') || str_contains($application->status, 'PendingDivision') => 'Pending Div Chief',
+                                                    str_contains($application->status, 'pending_regional') || str_contains($application->status, 'PendingRegional') => 'Pending RD',
+                                                    str_contains($application->status, 'Approved') => 'Approved',
+                                                    str_contains($application->status, 'Denied') => 'Denied',
+                                                    default => $application->status,
+                                                };
+                                            @endphp
+                                            <span class="badge bg-{{ $statusClass }}">{{ $statusLabel }}</span>
+                                        </td>
+                                        <td>@if($application->hr_signature_path)<span class="text-success" title="{{ optional($application->hrSigner)->name ?? 'HR' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
+                                        <td>@if($application->division_chief_signature_path)<span class="text-success" title="{{ optional($application->divisionChiefSigner)->name ?? 'Div Chief' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
+                                        <td>@if($application->regional_director_signature_path)<span class="text-success" title="{{ optional($application->regionalDirectorSigner)->name ?? 'RD' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center">No leave credits found</td>
-                                    </tr>
+                                    <tr><td colspan="7" class="text-center">No leave applications</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-
-                    @if($leaveApplications->isNotEmpty())
-                        <div class="fw-bold mt-4" style="color: #0f172a;">Leave Applications</div>
-                        <div class="table-responsive mt-3">
-                            <table class="table table-sm table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Leave Type</th>
-                                        <th>Date From</th>
-                                        <th>Date To</th>
-                                        <th>Status</th>
-                                        <th>HR</th>
-                                        <th>Div Chief</th>
-                                        <th>RD</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($leaveApplications as $application)
-                                        <tr>
-                                            <td>{{ $application->leave_type }}</td>
-                                            <td>{{ $application->date_from?->format('M d, Y') }}</td>
-                                            <td>{{ $application->date_to ? $application->date_to->format('M d, Y') : '-' }}</td>
-                                            <td>
-                                                @php
-                                                    $statusClass = match (true) {
-                                                        str_contains($application->status, 'pending_hr') || str_contains($application->status, 'PendingHr') => 'warning',
-                                                        str_contains($application->status, 'pending_division') || str_contains($application->status, 'PendingDivision') => 'info',
-                                                        str_contains($application->status, 'pending_regional') || str_contains($application->status, 'PendingRegional') => 'primary',
-                                                        str_contains($application->status, 'Approved') => 'success',
-                                                        str_contains($application->status, 'Denied') => 'danger',
-                                                        default => 'secondary',
-                                                    };
-                                                    $statusLabel = match (true) {
-                                                        str_contains($application->status, 'pending_hr') || str_contains($application->status, 'PendingHr') => 'Pending HR',
-                                                        str_contains($application->status, 'pending_division') || str_contains($application->status, 'PendingDivision') => 'Pending Div Chief',
-                                                        str_contains($application->status, 'pending_regional') || str_contains($application->status, 'PendingRegional') => 'Pending RD',
-                                                        str_contains($application->status, 'Approved') => 'Approved',
-                                                        str_contains($application->status, 'Denied') => 'Denied',
-                                                        default => $application->status,
-                                                    };
-                                                @endphp
-                                                <span class="badge bg-{{ $statusClass }}">{{ $statusLabel }}</span>
-                                            </td>
-                                            <td>@if($application->hr_signature_path)<span class="text-success" title="{{ optional($application->hrSigner)->name ?? 'HR' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
-                                            <td>@if($application->division_chief_signature_path)<span class="text-success" title="{{ optional($application->divisionChiefSigner)->name ?? 'Div Chief' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
-                                            <td>@if($application->regional_director_signature_path)<span class="text-success" title="{{ optional($application->regionalDirectorSigner)->name ?? 'RD' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="7" class="text-center">No leave applications</td></tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
-                </div>
+                @endif
             </div>
         </div>
-    @else
-        <div class="alert alert-info mt-4 mb-0">
-            Leave balances and leave credit history are visible to HR only.
-        </div>
-    @endif
+    </div>
 </div>
 
 {{-- Leave Application Modal --}}

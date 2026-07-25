@@ -23,17 +23,36 @@
                             );
                         @endphp
 
-                        @if($user && $user->profile_image)
-                            <img src="{{ asset('storage/' . $user->profile_image) }}"
-                                 alt="{{ $employee->full_name }}"
-                                 class="rounded-circle"
-                                 style="width: 72px; height: 72px; object-fit: cover; border: 2px solid #dee2e6;">
-                        @else
-                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white fw-bold"
-                                 style="width: 72px; height: 72px; font-size: 1.5rem; border: 2px solid #dee2e6;">
-                                {{ $initials ?: '?' }}
-                            </div>
-                        @endif
+                        <div class="position-relative d-inline-block">
+                            @if($employee->profile_image)
+                                <img src="{{ asset('storage/' . $employee->profile_image) }}"
+                                     alt="{{ $employee->full_name }}"
+                                     id="profileAvatar"
+                                     class="rounded-circle"
+                                     style="width: 72px; height: 72px; object-fit: cover; border: 2px solid #dee2e6;">
+                            @else
+                                <div id="profileAvatar"
+                                     class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white fw-bold"
+                                     style="width: 72px; height: 72px; font-size: 1.5rem; border: 2px solid #dee2e6;">
+                                    {{ $initials ?: '?' }}
+                                </div>
+                            @endif
+
+                            @if(auth()->user()?->isSuperAdmin() || auth()->user()?->isHr())
+                                <label for="profileImageUpload"
+                                       class="position-absolute rounded-circle d-flex align-items-center justify-content-center"
+                                       style="width: 28px; height: 28px; background: #0066cc; color: #fff; bottom: -4px; right: -4px; cursor: pointer; border: 2px solid #fff; font-size: 14px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                        <circle cx="12" cy="13" r="4"/>
+                                    </svg>
+                                </label>
+                                <form id="profileImageForm" method="POST" action="{{ route('employees.upload-profile-image', $employee) }}" enctype="multipart/form-data" style="display:none;">
+                                    @csrf
+                                    <input type="file" id="profileImageUpload" name="profile_image" accept="image/*" onchange="this.form.submit()">
+                                </form>
+                            @endif
+                        </div>
 
                         <div>
                             <h3 class="card-title h5 fw-bold mb-0">{{ $employee->full_name }}</h3>

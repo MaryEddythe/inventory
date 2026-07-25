@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Jobs\CreateEmployeeDriveFolder;
 use App\Models\Employee;
 use App\Models\Department;
-
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
 {
@@ -232,6 +233,26 @@ class EmployeeController extends Controller
                 'Upload failed: ' . $e->getMessage()
             );
         }
+    }
+
+    public function uploadProfileImage(Request $request, Employee $employee)
+    {
+        $request->validate([
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB
+        ]);
+
+        // Delete old image if exists
+        if ($employee->profile_image) {
+            Storage::disk('public')->delete($employee->profile_image);
+        }
+
+        // Store new image
+        $path = $request->file('profile_image')->store('profile-images', 'public');
+
+        $employee->profile_image = $path;
+        $employee->save();
+
+        return back()->with('success', 'Profile image updated successfully.');
     }
 
     public function destroy(Employee $employee)

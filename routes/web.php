@@ -27,6 +27,7 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/dashboard', [InventoryItemController::class, 'dashboard'])->name('inventory.dashboard');
 
     Route::resource('employees', EmployeeController::class);
+    Route::post('/employees/{employee}/upload-profile-image', [EmployeeController::class, 'uploadProfileImage'])->name('employees.upload-profile-image');
     Route::put('/inventory/{inventory}', [InventoryItemController::class, 'update'])->name('inventory.update');
     Route::resource('inventory', InventoryItemController::class);
     Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])

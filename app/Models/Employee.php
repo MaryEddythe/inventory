@@ -40,6 +40,7 @@ class Employee extends Model
         'drive_folder_id',
         'drive_folder_url',
         'drive',
+        'profile_image',
     ];
 
     protected $casts = [

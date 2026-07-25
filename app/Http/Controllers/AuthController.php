@@ -114,6 +114,12 @@ class AuthController extends Controller
         if ($request->hasFile('profile_image')) {
             $imagePath = $request->file('profile_image')->store('profile_images', 'public');
             $updates['profile_image'] = $imagePath;
+
+            // Sync profile image to linked employee record
+            if ($user->employee) {
+                $user->employee->profile_image = $imagePath;
+                $user->employee->save();
+            }
         }
 
         if ($request->hasFile('signature_path')) {

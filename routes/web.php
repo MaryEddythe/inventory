@@ -30,44 +30,35 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::post('/employees/{employee}/upload-profile-image', [EmployeeController::class, 'uploadProfileImage'])->name('employees.upload-profile-image');
     Route::put('/inventory/{inventory}', [InventoryItemController::class, 'update'])->name('inventory.update');
     Route::resource('inventory', InventoryItemController::class);
-    Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])
-        ->name('inventory.tabs.dashboard');
-    
+    Route::get('/inventory/dashboard', [InventoryItemController::class, 'dashboard'])->name('inventory.tabs.dashboard');
+
     // Inventory Category Tabs
     Route::get('/inventory/tabs/moto-vehicle', function() {
         $motorVehicles = \App\Models\MotorVehicle::latest()->get();
-
         return view('inventory.tabs.moto-vehicle', compact('motorVehicles'));
     })->name('inventory.tabs.moto-vehicle');
     Route::get('/inventory/tabs/cip', function() {
         $cips = \App\Models\Cip::latest()->get();
-
         return view('inventory.tabs.cip', compact('cips'));
     })->name('inventory.tabs.cip');
     Route::get('/inventory/tabs/machine-equipment', function() {
         $machineEquipments = \App\Models\MachineEquipment::latest()->get();
-
         return view('inventory.tabs.machine-equipment', compact('machineEquipments'));
     })->name('inventory.tabs.machine-equipment');
     Route::get('/inventory/tabs/office-equipment', function() {
         $officeEquipments = \App\Models\OfficeEquipment::latest()->get();
-
         return view('inventory.tabs.office-equipment', compact('officeEquipments'));
     })->name('inventory.tabs.office-equipment');
     Route::get('/inventory/tabs/technical-scientific-equipment', function() {
         $technicalScientificEquipments = \App\Models\TechnicalScientificEquipment::latest()->get();
-
         return view('inventory.tabs.technical-scientific-equipment', compact('technicalScientificEquipments'));
     })->name('inventory.tabs.technical-scientific-equipment');
     Route::get('/inventory/tabs/other-ppe', function() {
         $otherPpes = \App\Models\OtherPpe::latest()->get();
-
         return view('inventory.tabs.other-ppe', compact('otherPpes'));
     })->name('inventory.tabs.other-ppe');
-
     Route::get('/inventory/tabs/furniture-fixtures', function() {
         $furnitureFixtures = \App\Models\FurnitureFixture::latest()->get();
-
         return view('inventory.tabs.furniturez-fixtures', compact('furnitureFixtures'));
     })->name('inventory.tabs.furniture-fixtures');
 
@@ -94,10 +85,10 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
         $militaryPoliceSecurityEquipments = \App\Models\MilitaryPoliceSecurityEquipment::latest()->get();
         return view('inventory.tabs.military-police-security', compact('militaryPoliceSecurityEquipments'));
     })->name('inventory.tabs.military-police-security');
-
     Route::post('/military-police-security/store', [InventoryItemController::class, 'storeMilitaryPoliceSecurityEquipment'])->name('military-police-security.store');
     Route::put('/military-police-security/{militaryPoliceSecurityEquipment}', [InventoryItemController::class, 'updateMilitaryPoliceSecurityEquipment'])->name('military-police-security.update');
     Route::delete('/military-police-security/{militaryPoliceSecurityEquipment}', [InventoryItemController::class, 'destroyMilitaryPoliceSecurityEquipment'])->name('military-police-security.destroy');
+
     Route::put('/machine-equipment/{machineEquipment}', [InventoryItemController::class, 'updateMachineEquipment'])->name('machine-equipment.update');
     Route::delete('/machine-equipment/{machineEquipment}', [InventoryItemController::class, 'destroyMachineEquipment'])->name('machine-equipment.destroy');
     Route::post('/office-equipment/store', [InventoryItemController::class, 'storeOfficeEquipment'])->name('office-equipment.store');
@@ -109,117 +100,58 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::post('/other-ppe/store', [InventoryItemController::class, 'storeOtherPpe'])->name('other-ppe.store');
     Route::put('/other-ppe/{otherPpe}', [InventoryItemController::class, 'updateOtherPpe'])->name('other-ppe.update');
     Route::delete('/other-ppe/{otherPpe}', [InventoryItemController::class, 'destroyOtherPpe'])->name('other-ppe.destroy');
-    
+
     Route::get('/ipm', [InventoryItemController::class, 'ipm'])->name('inventory.ipm');
     Route::get('/icm', [InventoryItemController::class, 'icm'])->name('inventory.icm');
     Route::get('/inventory/export/{type}', [InventoryItemController::class, 'export'])->name('inventory.export');
     Route::get('/inventory/category-export/{category}/pdf', [InventoryItemController::class, 'exportCategoryPdf'])->name('inventory.category.export.pdf');
 
-    // API Routes (Calendar/CTO/ICM)
-    // CTO search employees (expects route name: api.employees.search)
+    // API Routes
     Route::get('/api/employees/search', [InventoryItemController::class, 'searchEmployees'])->name('api.employees.search');
-
-    // Existing ICM-related APIs
     Route::get('/api/search-employees', [InventoryItemController::class, 'searchEmployees'])->name('api.search-employees');
     Route::get('/api/items-by-personnel', [InventoryItemController::class, 'getItemsByPersonnel'])->name('api.items-by-personnel');
     Route::get('/api/item-details/{itemId}', [InventoryItemController::class, 'getItemDetails'])->name('api.item-details');
 
-
     // Profile Routes
-    Route::get('/profile', function () {
-        $user = auth()->user();
-        $empNo = $user->emp_no;
-        
-        // Try to get emp_no from the employee relationship if not directly available
-        if (!$empNo && method_exists($user, 'employee')) {
-            $employee = $user->employee()->first();
-            if ($employee) {
-                $empNo = $employee->emp_no;
-            }
-        }
-        
-        // If we have emp_no, redirect to employee show page
-        if ($empNo) {
-            return redirect('/employees/' . $empNo);
-        }
-        
-        // Last resort: try to find employee by user id or email or name
-        if ($user->email) {
-            $employee = \App\Models\Employee::where('email', $user->email)->first();
-            if ($employee) {
-                return redirect('/employees/' . $employee->emp_no);
-            }
-        }
-        
-        // Try by matching name
-        if ($user->name) {
-            $employee = \App\Models\Employee::whereRaw("CONCAT(first_name, ' ', last_name) = ?", [$user->name])->first();
-            if ($employee) {
-                return redirect('/employees/' . $employee->emp_no);
-            }
-        }
-        
-        // If no employee found, redirect to employees list with error
-        return redirect()->route('employees.index')->with('error', 'No employee record linked to your account. Please contact HR.');
-    })->name('profile');
+    Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
+
+    // Notifications
     Route::get('/notifications/{notification}/read', function (string $notification) {
         $user = auth()->user();
         $record = $user?->notifications()->findOrFail($notification);
-
         $record->markAsRead();
-
         return redirect()->to(data_get($record->data, 'url', route('leave-applications.index')));
     })->name('notifications.read');
     Route::post('/notifications/read-all', function () {
         auth()->user()?->unreadNotifications->markAsRead();
-
         return back();
     })->name('notifications.read-all');
 
-    Route::get('/user/confirm-password', [ConfirmablePasswordController::class, 'show'])
-        ->name('password.confirm');
-    Route::post('/user/confirm-password', [ConfirmablePasswordController::class, 'store'])
-        ->name('password.confirm.store');
-    Route::get('/user/confirmed-password-status', [ConfirmedPasswordStatusController::class, 'show'])
-        ->name('password.confirmation');
+    Route::get('/user/confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
+    Route::post('/user/confirm-password', [ConfirmablePasswordController::class, 'store'])->name('password.confirm.store');
+    Route::get('/user/confirmed-password-status', [ConfirmedPasswordStatusController::class, 'show'])->name('password.confirmation');
 
     Route::get('/roles', [SidebarAccessController::class, 'index'])->name('roles.index');
     Route::put('/roles/{user}', [SidebarAccessController::class, 'update'])->name('roles.update');
-
     Route::redirect('/sidebar-access', '/roles');
 
-    // PDF - Controller
+    // Calendar Routes
+    Route::get('/calendar', [EventController::class, 'index'])->name('calendar.index');
+    Route::post('/calendar', [EventController::class, 'store'])->name('calendar.store');
+    Route::get('/api/events/types', [EventController::class, 'getTypes'])->name('calendar.api.events.types');
 
-    // Credits routes
-    Route::middleware('hr.access')->group(function () {
-        Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');
-        Route::get('/credits/cto', [CreditsController::class, 'cto'])->name('credits.cto');
-        Route::post('/credits', [CreditsController::class, 'store'])->name('credits.store');
-        Route::put('/credits/{credit}', [CreditsController::class, 'update'])->name('credits.update');
-        Route::delete('/credits/{credit}', [CreditsController::class, 'destroy'])->name('credits.destroy');
-    });
-
-    // Leave application routes
+    // Leave Applications Routes
     Route::get('/leave-applications', [LeaveApplicationController::class, 'index'])->name('leave-applications.index');
     Route::post('/leave-applications', [LeaveApplicationController::class, 'store'])->name('leave-applications.store');
 
-
-    // Calendar page
-    Route::get('/calendar', function () {
-        return view('calendar.index');
-    })->name('calendar.index');
-
-    Route::get('/calendar/create', function () {
-        return view('calendar.create');
-    })->name('calendar.create');
-
-    // Calendar create (fix: POST /calendar)
-    Route::post('/calendar', [EventController::class, 'store'])->name('calendar.store');
-
-    // Calendar API endpoints for FullCalendar
-    Route::get('/api/events', [EventController::class, 'index'])->name('calendar.api.events');
-    Route::get('/api/events/types', [EventController::class, 'getTypes'])->name('calendar.api.events.types');
-
+    // Credits Routes
+    Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');
+    Route::get('/credits/cto', [CreditsController::class, 'cto'])->name('credits.cto');
+    Route::post('/credits', [CreditsController::class, 'store'])->name('credits.store');
+    Route::get('/credits/search', [CreditsController::class, 'search'])->name('credits.search');
+    Route::get('/credits/{credit}/edit', [CreditsController::class, 'edit'])->name('credits.edit');
+    Route::put('/credits/{credit}', [CreditsController::class, 'update'])->name('credits.update');
+    Route::delete('/credits/{credit}', [CreditsController::class, 'destroy'])->name('credits.destroy');
 });

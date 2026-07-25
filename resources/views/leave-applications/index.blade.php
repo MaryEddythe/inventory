@@ -149,13 +149,13 @@
     </div>
 
     <div class="col-12 col-xl-8">
-        @if(auth()->user()?->isSuperAdmin() || auth()->user()?->role?->slug === 'hr')
+        @if($pendingApplications->isNotEmpty())
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body">
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                         <div>
-                            <h5 class="fw-bold mb-0">Pending Leave Applications</h5>
-                            <small class="text-muted">Leave requests waiting for HR signature.</small>
+                            <h5 class="fw-bold mb-0">{{ $pendingApplicationsTitle ?? 'Pending Leave Applications' }}</h5>
+                            <small class="text-muted">{{ $pendingApplicationsSubtitle ?? 'Leave requests waiting for approval.' }}</small>
                         </div>
                         <span class="badge bg-warning text-dark">{{ $pendingApplications->count() }} pending</span>
                     </div>
@@ -197,6 +197,12 @@
                                                     data-date-from="{{ $application->date_from?->format('M d, Y') ?? 'N/A' }}"
                                                     data-date-to="{{ $application->date_to?->format('M d, Y') ?? 'Open ended' }}"
                                                     data-date-applied="{{ $application->created_at?->format('M d, Y h:i A') }}"
+                                                    data-sign-url="{{ match ((string) $application->status) {
+                                                        'pending_hr' => route('leave-applications.sign-hr', $application),
+                                                        'pending_division_chief' => route('leave-applications.sign-division-chief', $application),
+                                                        'pending_regional_director' => route('leave-applications.sign-regional-director', $application),
+                                                        default => '#',
+                                                    } }}"
                                                     onclick="openHrSignModal(this)"
                                                 >
                                                     Sign
@@ -288,7 +294,7 @@
         <div class="leave-sign-modal-header">
             <div>
                 <h5 class="mb-1 fw-bold">Sign Leave Application</h5>
-                <p class="text-muted mb-0" style="font-size: 0.9rem;">Confirm the employee details, then sign using your saved HR signature.</p>
+                <p class="text-muted mb-0" style="font-size: 0.9rem;">Confirm the employee details, then sign using your saved profile signature.</p>
             </div>
             <button type="button" class="leave-sign-modal-close" onclick="closeHrSignModal()" aria-label="Close">Ã—</button>
         </div>
@@ -299,7 +305,7 @@
 
             <div class="leave-sign-modal-body">
                 <div class="alert alert-info mb-3">
-                    This action will move the application to the next process flow: <strong>Pending Division Chief</strong>.
+                    This action will move the application to the next process flow.
                 </div>
 
                 <div class="row g-3 mb-3">
@@ -466,10 +472,8 @@
         const dateRange = document.getElementById('hrLeaveDateRange');
         const dateApplied = document.getElementById('hrLeaveDateApplied');
 
-        const hrSignUrlTemplate = @json(url('/leave-applications/__ID__/sign/hr'));
-
         if (form) {
-            form.action = hrSignUrlTemplate.replace('__ID__', button.dataset.leaveId);
+            form.action = button.dataset.signUrl || '';
         }
 
         if (leaveIdInput) leaveIdInput.value = button.dataset.leaveId || '';
@@ -517,14 +521,20 @@
         radios.forEach(radio => radio.addEventListener('change', syncSignatureMode));
         syncSignatureMode();
 
-        @if(session('hr_sign_leave_id'))
-            const hrButton = document.querySelector('[data-leave-id="{{ session('hr_sign_leave_id') }}"]');
-            if (hrButton) {
-                openHrSignModal(hrButton);
-            }
-        @endif
+        const pendingSignIds = [
+            @json(session('hr_sign_leave_id')),
+            @json(session('division_chief_sign_leave_id')),
+            @json(session('regional_director_sign_leave_id')),
+        ].filter(Boolean);
 
-        @if(session('hr_sign_leave_id') && ($errors->has('current_password') || $errors->has('signature_path')))
+        pendingSignIds.forEach(signLeaveId => {
+            const signButton = document.querySelector(`[data-leave-id="${signLeaveId}"]`);
+            if (signButton) {
+                openHrSignModal(signButton);
+            }
+        });
+
+        @if(session('hr_sign_leave_id') || session('division_chief_sign_leave_id') || session('regional_director_sign_leave_id'))
             hrModal?.classList.add('active');
         @endif
 

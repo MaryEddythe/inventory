@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Override mail driver to log to avoid Docker dependency on mailpit
+        $this->app->make('config')->set('mail.default', 'log');
+
         EmployeeLeaveApplication::observe(EmployeeLeaveApplicationObserver::class);
 
         // Share notification data so it's available when layout.app is rendered

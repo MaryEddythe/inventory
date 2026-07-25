@@ -141,6 +141,8 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/leave-applications', [LeaveApplicationController::class, 'index'])->name('leave-applications.index');
     Route::post('/leave-applications', [LeaveApplicationController::class, 'store'])->name('leave-applications.store');
     Route::post('/leave-applications/{leaveApplication}/sign/hr', [LeaveApplicationController::class, 'signHr'])->name('leave-applications.sign-hr');
+    Route::post('/leave-applications/{leaveApplication}/sign/division-chief', [LeaveApplicationController::class, 'signDivisionChief'])->name('leave-applications.sign-division-chief');
+    Route::post('/leave-applications/{leaveApplication}/sign/regional-director', [LeaveApplicationController::class, 'signRegionalDirector'])->name('leave-applications.sign-regional-director');
 
     // Credits Routes
     Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');

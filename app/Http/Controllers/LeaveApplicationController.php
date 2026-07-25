@@ -6,9 +6,13 @@ use App\Models\Employee;
 use App\Models\EmployeeLeaveApplication;
 use App\Models\User;
 use App\Notifications\LeaveApplicationSubmittedNotification;
+use App\Notifications\LeaveApplicationPendingReviewNotification;
+use App\States\LeaveApplication\Approved;
 use App\States\LeaveApplication\PendingDivisionChief;
 use App\States\LeaveApplication\PendingHr;
+use App\States\LeaveApplication\PendingRegionalDirector;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -21,7 +25,11 @@ class LeaveApplicationController extends Controller
 
         abort_unless($user && $employee, 403, 'No linked employee record found for this account.');
 
-        $isHrOrAdmin = $user->isSuperAdmin() || $user->role?->slug === 'hr';
+        $roleSlug = (string) ($user->role?->slug ?? '');
+        $isApprover = $user->isSuperAdmin() || in_array($roleSlug, ['hr', 'division-chief', 'rd'], true);
+        $pendingStatuses = $this->pendingStatusesForUser($user);
+        $pendingApplicationsTitle = $this->pendingApplicationsTitleForUser($user);
+        $pendingApplicationsSubtitle = $this->pendingApplicationsSubtitleForUser($user);
 
         $applications = EmployeeLeaveApplication::query()
             ->with([
@@ -30,13 +38,13 @@ class LeaveApplicationController extends Controller
                 'divisionChiefSigner',
                 'regionalDirectorSigner',
             ])
-            ->when(! $isHrOrAdmin, function ($query) use ($employee) {
+            ->when(! $isApprover, function ($query) use ($employee) {
                 $query->where('employee_id', $employee->emp_no);
             })
             ->latest()
             ->get();
 
-        $pendingApplications = $isHrOrAdmin
+        $pendingApplications = ! empty($pendingStatuses)
             ? EmployeeLeaveApplication::query()
                 ->with([
                     'employee.division',
@@ -44,7 +52,7 @@ class LeaveApplicationController extends Controller
                     'divisionChiefSigner',
                     'regionalDirectorSigner',
                 ])
-                ->whereIn('status', [PendingHr::class, 'pending_hr'])
+                ->whereIn('status', $pendingStatuses)
                 ->latest()
                 ->get()
             : collect();
@@ -53,6 +61,8 @@ class LeaveApplicationController extends Controller
             'employee' => $employee,
             'applications' => $applications,
             'pendingApplications' => $pendingApplications,
+            'pendingApplicationsTitle' => $pendingApplicationsTitle,
+            'pendingApplicationsSubtitle' => $pendingApplicationsSubtitle,
             'leaveTypes' => [
                 'Vacation Leave',
                 'Sick Leave',
@@ -224,6 +234,214 @@ class LeaveApplicationController extends Controller
             ])
             ->log('hr signed leave application');
 
+        $this->notifyRoleUsers(
+            roleIds: [3],
+            roleSlug: 'division-chief',
+            application: $leaveApplication,
+            stepLabel: 'Division Chief',
+            headline: 'New leave application awaiting Division Chief review',
+            message: $leaveApplication->employee?->full_name . ' signed a leave application. It is now pending Division Chief approval.'
+        );
+
         return back()->with('success', 'Leave application signed by HR.');
+    }
+
+    public function signDivisionChief(Request $request, EmployeeLeaveApplication $leaveApplication)
+    {
+        $user = $request->user();
+
+        abort_unless($user && ($user->isSuperAdmin() || $user->role?->slug === 'division-chief'), 403, 'Only the Division Chief can sign this leave application.');
+
+        $request->validate([
+            'current_password' => 'required|string',
+        ]);
+
+        if ((string) $leaveApplication->status !== 'pending_division_chief') {
+            return back()->withErrors([
+                'current_password' => 'This leave application is no longer waiting for Division Chief signature.',
+            ])->with('division_chief_sign_leave_id', $leaveApplication->id);
+        }
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()
+                ->withErrors([
+                    'current_password' => 'The password you entered does not match your login password.',
+                ])
+                ->withInput()
+                ->with('division_chief_sign_leave_id', $leaveApplication->id);
+        }
+
+        if (! $user->signature_path) {
+            return back()
+                ->withErrors([
+                    'signature_path' => 'Please upload your signature in your profile before signing leave applications.',
+                ])
+                ->withInput()
+                ->with('division_chief_sign_leave_id', $leaveApplication->id);
+        }
+
+        $leaveApplication->forceFill([
+            'division_chief_signed_by' => $user->id,
+            'division_chief_signed_at' => now(),
+            'division_chief_signature_path' => $user->signature_path,
+            'current_step' => 'regional_director',
+            'status' => PendingRegionalDirector::class,
+        ])->save();
+
+        activity('leave-applications')
+            ->causedBy($user)
+            ->performedOn($leaveApplication)
+            ->withProperties([
+                'employee_id' => $leaveApplication->employee_id,
+                'signed_by' => $user->id,
+                'step' => 'division_chief',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ])
+            ->log('division chief signed leave application');
+
+        $this->notifyRoleUsers(
+            roleIds: [1],
+            roleSlug: 'rd',
+            application: $leaveApplication,
+            stepLabel: 'Regional Director',
+            headline: 'New leave application awaiting Regional Director review',
+            message: $leaveApplication->employee?->full_name . ' signed a leave application. It is now pending Regional Director approval.'
+        );
+
+        return back()->with('success', 'Leave application signed by the Division Chief.');
+    }
+
+    public function signRegionalDirector(Request $request, EmployeeLeaveApplication $leaveApplication)
+    {
+        $user = $request->user();
+
+        abort_unless($user && ($user->isSuperAdmin() || $user->role?->slug === 'rd'), 403, 'Only the Regional Director can sign this leave application.');
+
+        $request->validate([
+            'current_password' => 'required|string',
+        ]);
+
+        if ((string) $leaveApplication->status !== 'pending_regional_director') {
+            return back()->withErrors([
+                'current_password' => 'This leave application is no longer waiting for Regional Director signature.',
+            ])->with('regional_director_sign_leave_id', $leaveApplication->id);
+        }
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()
+                ->withErrors([
+                    'current_password' => 'The password you entered does not match your login password.',
+                ])
+                ->withInput()
+                ->with('regional_director_sign_leave_id', $leaveApplication->id);
+        }
+
+        if (! $user->signature_path) {
+            return back()
+                ->withErrors([
+                    'signature_path' => 'Please upload your signature in your profile before signing leave applications.',
+                ])
+                ->withInput()
+                ->with('regional_director_sign_leave_id', $leaveApplication->id);
+        }
+
+        $leaveApplication->forceFill([
+            'regional_director_signed_by' => $user->id,
+            'regional_director_signed_at' => now(),
+            'regional_director_signature_path' => $user->signature_path,
+            'current_step' => 'approved',
+            'status' => Approved::class,
+        ])->save();
+
+        activity('leave-applications')
+            ->causedBy($user)
+            ->performedOn($leaveApplication)
+            ->withProperties([
+                'employee_id' => $leaveApplication->employee_id,
+                'signed_by' => $user->id,
+                'step' => 'regional_director',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ])
+            ->log('regional director signed leave application');
+
+        return back()->with('success', 'Leave application approved by the Regional Director.');
+    }
+
+    protected function pendingStatusesForUser(?User $user): array
+    {
+        if (! $user) {
+            return [];
+        }
+
+        if ($user->isSuperAdmin()) {
+            return [
+                PendingHr::class,
+                'pending_hr',
+                PendingDivisionChief::class,
+                'pending_division_chief',
+                PendingRegionalDirector::class,
+                'pending_regional_director',
+            ];
+        }
+
+        return match ($user->role?->slug) {
+            'hr' => [PendingHr::class, 'pending_hr'],
+            'division-chief' => [PendingDivisionChief::class, 'pending_division_chief'],
+            'rd' => [PendingRegionalDirector::class, 'pending_regional_director'],
+            default => [],
+        };
+    }
+
+    protected function pendingApplicationsTitleForUser(?User $user): string
+    {
+        if (! $user || $user->isSuperAdmin()) {
+            return 'Pending Leave Applications';
+        }
+
+        return match ($user->role?->slug) {
+            'hr' => 'Pending Leave Applications for HR',
+            'division-chief' => 'Pending Leave Applications for Division Chief',
+            'rd' => 'Pending Leave Applications for Regional Director',
+            default => 'Pending Leave Applications',
+        };
+    }
+
+    protected function pendingApplicationsSubtitleForUser(?User $user): string
+    {
+        if (! $user) {
+            return 'Leave requests waiting for approval.';
+        }
+
+        if ($user->isSuperAdmin()) {
+            return 'All leave requests waiting for any approval stage.';
+        }
+
+        return match ($user->role?->slug) {
+            'hr' => 'Leave requests waiting for HR signature.',
+            'division-chief' => 'Leave requests waiting for Division Chief signature.',
+            'rd' => 'Leave requests waiting for Regional Director signature.',
+            default => 'Leave requests waiting for approval.',
+        };
+    }
+
+    protected function notifyRoleUsers(array $roleIds, string $roleSlug, EmployeeLeaveApplication $application, string $stepLabel, string $headline, string $message): void
+    {
+        User::query()
+            ->whereIn('role_id', $roleIds)
+            ->orWhereHas('role', function ($query) use ($roleSlug) {
+                $query->where('slug', $roleSlug);
+            })
+            ->distinct()
+            ->get()
+            ->each(function (User $user) use ($application, $stepLabel, $headline, $message) {
+                $user->notify(new LeaveApplicationPendingReviewNotification(
+                    application: $application,
+                    stepLabel: $stepLabel,
+                    headline: $headline,
+                    message: $message,
+                ));
+            });
     }
 }

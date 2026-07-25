@@ -74,6 +74,14 @@
             </nav>
 
             @auth
+            @php
+                $_empNo = Auth::user()->emp_no;
+                $_employee = $_empNo ? \App\Models\Employee::find($_empNo) : null;
+                if (!$_employee && method_exists(Auth::user(), 'employee')) {
+                    $_employee = Auth::user()->employee()->first();
+                }
+                $_employeeProfileRoute = $_employee ? route('employees.show', $_employee) : route('profile');
+            @endphp
             <div class="sidebar-account dropdown">
                 <a href="#" class="sidebar-account-toggle dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->username ?: Auth::user()->name) . '&background=0D8ABC&color=fff' }}" alt="user" width="40" height="40" class="rounded-circle">
@@ -83,7 +91,7 @@
                     </span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="{{ route('profile') }}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="{{ $_employeeProfileRoute }}"><i class="bi bi-person me-2"></i>Profile</a></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

@@ -119,7 +119,16 @@ class EmployeeController extends Controller
     {
         $employee->load(['division', 'leaveBenefits']);
 
-        return view('employees.show', compact('employee'));
+        $leaveApplications = $employee->leaveApplications()
+            ->with([
+                'hrSigner',
+                'divisionChiefSigner',
+                'regionalDirectorSigner',
+            ])
+            ->latest()
+            ->get();
+
+        return view('employees.show', compact('employee', 'leaveApplications'));
     }
 
     public function edit(Employee $employee)

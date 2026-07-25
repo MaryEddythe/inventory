@@ -14,7 +14,7 @@ return [
             'slug' => 'employee',
             'name' => 'Employee',
             'is_superadmin' => false,
-            'sidebar_item_keys' => ['profile', 'employees', 'calendar', 'leave-applications'],
+            'sidebar_item_keys' => ['profile', 'employees', 'calendar'],
         ],
         [
             'slug' => 'division-chief',

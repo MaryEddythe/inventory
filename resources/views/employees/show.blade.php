@@ -273,25 +273,67 @@
                         <table class="table table-sm table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>credit_type</th>
-                                    <th>start date</th>
-                                    <th>end date</th>
-                                    <th>credit_hours</th>
-                                    <th>remarks</th>
+                                    <th>Leave Type</th>
+                                    <th>Date From</th>
+                                    <th>Date To</th>
+                                    <th>Status</th>
+                                    <th>HR Sign</th>
+                                    <th>Div Chief Sign</th>
+                                    <th>RD Sign</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($benefits as $benefit)
+                                @forelse($leaveApplications as $application)
                                     <tr>
-                                        <td>{{ $benefit->credit_type }}</td>
-                                        <td>{{ $benefit->start_date?->format('M d, Y') }}</td>
-                                        <td>{{ $benefit->end_date ? $benefit->end_date->format('M d, Y') : '-' }}</td>
-                                        <td>{{ $benefit->credit_hours }}</td>
-                                        <td>{{ $benefit->remarks ?? '-' }}</td>
+                                        <td>{{ $application->leave_type }}</td>
+                                        <td>{{ $application->date_from?->format('M d, Y') }}</td>
+                                        <td>{{ $application->date_to ? $application->date_to->format('M d, Y') : '-' }}</td>
+                                        <td>
+                                            @php
+                                                $statusClass = match ($application->status) {
+                                                    'pending_hr', 'App\States\LeaveApplication\PendingHr' => 'warning',
+                                                    'pending_division_chief', 'App\States\LeaveApplication\PendingDivisionChief' => 'info',
+                                                    'pending_regional_director', 'App\States\LeaveApplication\PendingRegionalDirector' => 'primary',
+                                                    'approved', 'App\States\LeaveApplication\Approved' => 'success',
+                                                    'denied', 'App\States\LeaveApplication\Denied' => 'danger',
+                                                    default => 'secondary',
+                                                };
+                                                $statusLabel = match (true) {
+                                                    str_contains($application->status, 'pending_hr') || str_contains($application->status, 'PendingHr') => 'Pending HR',
+                                                    str_contains($application->status, 'pending_division') || str_contains($application->status, 'PendingDivision') => 'Pending Div Chief',
+                                                    str_contains($application->status, 'pending_regional') || str_contains($application->status, 'PendingRegional') => 'Pending RD',
+                                                    str_contains($application->status, 'Approved') => 'Approved',
+                                                    str_contains($application->status, 'Denied') => 'Denied',
+                                                    default => $application->status,
+                                                };
+                                            @endphp
+                                            <span class="badge bg-{{ $statusClass }}">{{ $statusLabel }}</span>
+                                        </td>
+                                        <td>
+                                            @if($application->hr_signature_path)
+                                                <span class="text-success" title="Signed by {{ $application->hrSigner?->name ?? 'HR' }} on {{ $application->hr_signed_at?->format('M d, Y') }}">✓</span>
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($application->division_chief_signature_path)
+                                                <span class="text-success" title="Signed by {{ $application->divisionChiefSigner?->name ?? 'Div Chief' }} on {{ $application->division_chief_signed_at?->format('M d, Y') }}">✓</span>
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($application->regional_director_signature_path)
+                                                <span class="text-success" title="Signed by {{ $application->regionalDirectorSigner?->name ?? 'RD' }} on {{ $application->regional_director_signed_at?->format('M d, Y') }}">✓</span>
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center">No leave history found</td>
+                                        <td colspan="7" class="text-center">No leave applications found</td>
                                     </tr>
                                 @endforelse
                             </tbody>

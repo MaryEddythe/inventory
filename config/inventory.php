@@ -199,7 +199,7 @@ return [
             'key' => 'profile',
             'label' => 'Profile',
             'route_name' => 'profile',
-            'route_pattern' => 'profile',
+            'route_pattern' => 'profile*',
             'icon' => 'bi bi-person-circle',
             'parent_key' => null,
             'sort_order' => 5,

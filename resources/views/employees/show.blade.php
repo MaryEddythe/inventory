@@ -116,6 +116,12 @@
                         <button type="button" onclick="openLeaveModal()" class="btn btn-outline-primary btn-sm ms-2">
                             Apply Leave
                         </button>
+
+                        @auth
+                            <button type="button" onclick="openSignatureModal()" class="btn btn-outline-secondary btn-sm ms-2">
+                                {{ auth()->user()->signature_path ? 'Update My Signature' : 'Save My Signature' }}
+                            </button>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -404,6 +410,31 @@
         color: #94a3b8;
         cursor: not-allowed;
     }
+    .leave-sign-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding: 0.95rem 1rem;
+        border: 1px solid #dbe4ee;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fff;
+    }
+    .leave-sign-option:hover,
+    .leave-sign-option.active {
+        border-color: #0d6efd;
+        background: #f7fbff;
+        box-shadow: 0 4px 16px rgba(13, 110, 253, 0.08);
+    }
+    .leave-sign-option input[type="radio"] {
+        margin-top: 0.2rem;
+        accent-color: #0d6efd;
+        flex-shrink: 0;
+    }
+    .leave-sign-section .fw-bold {
+        color: #0f172a;
+    }
 </style>
 
 <div class="leave-modal-overlay" id="leaveModal">
@@ -412,9 +443,8 @@
             <h2 class="leave-modal-title">Apply Leave</h2>
             <button class="leave-modal-close" onclick="closeLeaveModal()">×</button>
         </div>
-        <form method="POST" action="{{ route('credits.store') }}">
+        <form method="POST" action="{{ route('leave-applications.store') }}" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="cto_action" id="leaveCtoAction" value="deduct">
             <div class="leave-modal-body">
                 <div class="leave-form-grid full">
                     <div>
@@ -444,44 +474,89 @@
 
                 <div class="leave-form-grid">
                     <div>
-                        <label class="leave-form-label">Start Date *</label>
-                        <input type="date" name="start_date" class="leave-form-control" required>
+                        <label class="leave-form-label">Date From *</label>
+                        <input type="date" name="date_from" class="leave-form-control" required>
                     </div>
                     <div>
-                        <label class="leave-form-label">End Date</label>
-                        <input type="date" name="end_date" class="leave-form-control">
+                        <label class="leave-form-label">Date To</label>
+                        <input type="date" name="date_to" class="leave-form-control">
                     </div>
                 </div>
 
                 <div class="leave-form-grid full">
                     <div>
                         <label class="leave-form-label">Leave Type *</label>
-                        <select name="credit_type" id="leaveCreditType" class="leave-form-control" required>
+                        <select name="leave_type" id="leaveType" class="leave-form-control" required>
                             <option value="">-- Select Leave Type --</option>
                         </select>
                     </div>
                 </div>
 
-                <div id="leaveCreditHoursWrapper" style="display:none;">
-                    <div class="leave-form-grid full">
-                        <div>
-                            <label class="leave-form-label">Credit Hours *</label>
-                            <input type="number" name="credit_hours" id="leaveCreditHours" class="leave-form-control" min="0" step="1" placeholder="Enter hours" />
-                        </div>
+                <div class="leave-form-grid full">
+                    <div>
+                        <label class="leave-form-label">Date Applied</label>
+                        <input type="date" class="leave-form-control" value="{{ now()->toDateString() }}" readonly>
                     </div>
                 </div>
 
-                <div class="leave-form-grid">
-                    <div>
-                        <label class="leave-form-label">Date Applied *</label>
-                        <input type="date" name="date_applied" class="leave-form-control" required>
+                <div class="mt-3 p-3 border rounded-3 bg-light">
+                    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                        <div>
+                            <div class="fw-bold" style="color:#0f172a;">Sign Leave Application</div>
+                            <div class="text-muted" style="font-size:0.88rem;">Use your saved signature or upload a new one, then confirm with your password.</div>
+                        </div>
+                        <button type="button" onclick="toggleLeaveSignSection()" class="btn btn-outline-primary btn-sm">Sign</button>
+                    </div>
+
+                    <div id="leaveSignPanel" class="mt-3" style="display: none;">
+                        <div class="mb-3">
+                            <label class="leave-form-label">Signature Option</label>
+                            <div class="d-grid gap-2">
+                                <label class="leave-sign-option {{ auth()->user()?->signature_path ? 'active' : '' }}">
+                                    <input type="radio" name="signature_mode" value="saved" {{ auth()->user()?->signature_path ? 'checked' : '' }} {{ auth()->user()?->signature_path ? '' : 'disabled' }}>
+                                    <div>
+                                        <div class="fw-bold">Use my saved signature</div>
+                                        <small class="text-muted">Stored in your profile and reused for leave documents.</small>
+                                    </div>
+                                </label>
+
+                                <label class="leave-sign-option">
+                                    <input type="radio" name="signature_mode" value="upload" {{ auth()->user()?->signature_path ? '' : 'checked' }}>
+                                    <div>
+                                        <div class="fw-bold">Upload a new signature</div>
+                                        <small class="text-muted">This updates your saved signature for future use.</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="leaveSignatureUploadWrapper" style="display: {{ auth()->user()?->signature_path ? 'none' : 'block' }};">
+                            <label class="leave-form-label">Signature Image</label>
+                            <input type="file" name="signature_path" id="leaveSignatureInput" class="leave-form-control" accept="image/png,image/jpeg">
+                            <small class="text-muted">Upload a PNG or JPG if you want to replace your saved signature.</small>
+                        </div>
+
+                        @if(auth()->user()?->signature_path)
+                            <div class="mb-3">
+                                <label class="leave-form-label">Current Signature Preview</label>
+                                <div class="border rounded-3 bg-white p-2 d-inline-block">
+                                    <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Saved Signature" style="max-width: 240px; max-height: 120px; object-fit: contain;">
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="mb-0">
+                            <label class="leave-form-label">Login Password</label>
+                            <input type="password" name="current_password" class="leave-form-control" autocomplete="current-password" placeholder="Enter your login password" required>
+                            <small class="text-muted">This must match the password you use to log in.</small>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="leave-modal-footer">
                 <button type="button" onclick="closeLeaveModal()" class="btn btn-outline">Cancel</button>
-                <button type="submit" class="btn btn-primary">Submit Leave</button>
+                <button type="submit" class="btn btn-primary">Sign &amp; Submit Leave</button>
             </div>
         </form>
     </div>
@@ -560,6 +635,43 @@
     </div>
 </div>
 
+{{-- Signature Upload Modal --}}
+<div class="leave-modal-overlay" id="signatureModal">
+    <div class="leave-modal-content">
+        <div class="leave-modal-header">
+            <h2 class="leave-modal-title">Save My Signature</h2>
+            <button class="leave-modal-close" onclick="closeSignatureModal()">&times;</button>
+        </div>
+        <form method="POST" action="{{ route('profile.signature.store') }}" enctype="multipart/form-data">
+            @csrf
+            <div class="leave-modal-body">
+                <p class="text-muted mb-3">
+                    Upload your signature once here. The system will reuse it for leave approvals and signed documents.
+                </p>
+
+                <div class="leave-form-grid full">
+                    <div>
+                        <label class="leave-form-label">Signature Image</label>
+                        <input type="file" name="signature_path" class="leave-form-control" accept="image/png,image/jpeg" required>
+                    </div>
+                </div>
+
+                @if(auth()->user()?->signature_path)
+                    <div class="mt-3">
+                        <label class="leave-form-label">Current Signature</label>
+                        <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Current Signature" class="img-fluid border rounded bg-white p-2" style="max-width: 220px; max-height: 110px; object-fit: contain;">
+                    </div>
+                @endif
+            </div>
+
+            <div class="leave-modal-footer">
+                <button type="button" onclick="closeSignatureModal()" class="btn btn-outline">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Signature</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @php
     $leaveTypesForModal = [
         'PERMANENT' => [
@@ -590,6 +702,14 @@
         document.getElementById('profileEditModal').classList.remove('active');
     }
 
+    function openSignatureModal() {
+        document.getElementById('signatureModal').classList.add('active');
+    }
+
+    function closeSignatureModal() {
+        document.getElementById('signatureModal').classList.remove('active');
+    }
+
     const leaveTypesByEmploymentType = @json($leaveTypesForModal);
 
     const currentEmployee = {
@@ -609,7 +729,8 @@
         document.getElementById('leavePosition').value = emp.position;
         document.getElementById('leaveEmploymentType').value = emp.employment_type;
 
-        updateLeaveCreditTypeOptions(emp.employment_type);
+        updateLeaveTypeOptions(emp.employment_type);
+        closeLeaveSignSection();
         document.getElementById('leaveModal').classList.add('active');
     }
 
@@ -622,14 +743,16 @@
         document.getElementById('leaveDivision').value = '';
         document.getElementById('leavePosition').value = '';
         document.getElementById('leaveEmploymentType').value = '';
-        document.getElementById('leaveCreditHoursWrapper').style.display = 'none';
+        document.getElementById('leaveType').innerHTML = '<option value="">-- Select Leave Type --</option>';
+        closeLeaveSignSection();
+        syncLeaveSignatureMode();
     }
 
-    function updateLeaveCreditTypeOptions(employmentType) {
+    function updateLeaveTypeOptions(employmentType) {
         const upper = (employmentType || '').toString().trim().toUpperCase();
         const key = upper.includes('PER') ? 'PERMANENT' : 'COS';
         const allowed = leaveTypesByEmploymentType[key] || [];
-        const select = document.getElementById('leaveCreditType');
+        const select = document.getElementById('leaveType');
 
         select.innerHTML = '<option value="">-- Select Leave Type --</option>';
         allowed.forEach(type => {
@@ -638,30 +761,63 @@
             opt.textContent = type;
             select.appendChild(opt);
         });
-
-        updateLeaveCreditHoursVisibility();
     }
 
-    document.getElementById('leaveCreditType')?.addEventListener('change', updateLeaveCreditHoursVisibility);
+    function toggleLeaveSignSection() {
+        const panel = document.getElementById('leaveSignPanel');
+        if (!panel) return;
 
-    function updateLeaveCreditHoursVisibility() {
-        const wrapper = document.getElementById('leaveCreditHoursWrapper');
-        const input = document.getElementById('leaveCreditHours');
-        const creditType = (document.getElementById('leaveCreditType')?.value || '').toString().toLowerCase();
-        const isCto = creditType.includes('cto') || creditType.includes('credited time-off') || creditType.includes('credited time off') || creditType.includes('credited');
+        const isVisible = panel.style.display === 'block';
+        panel.style.display = isVisible ? 'none' : 'block';
 
-        const ctoActionHidden = document.getElementById('leaveCtoAction');
-        if (ctoActionHidden) {
-            ctoActionHidden.value = isCto ? 'deduct' : '';
-        }
-
-        wrapper.style.display = isCto ? 'block' : 'none';
-        if (isCto) {
-            input.setAttribute('required', 'required');
-        } else {
-            input.removeAttribute('required');
-            input.value = '';
+        if (!isVisible) {
+            syncLeaveSignatureMode();
         }
     }
+
+    function closeLeaveSignSection() {
+        const panel = document.getElementById('leaveSignPanel');
+        if (panel) {
+            panel.style.display = 'none';
+        }
+    }
+
+    function syncLeaveSignatureMode() {
+        const selected = document.querySelector('input[name="signature_mode"]:checked')?.value;
+        const uploadWrapper = document.getElementById('leaveSignatureUploadWrapper');
+        const uploadInput = document.getElementById('leaveSignatureInput');
+        const panel = document.getElementById('leaveSignPanel');
+
+        if (!panel || panel.style.display === 'none') {
+            return;
+        }
+
+        if (uploadWrapper) {
+            uploadWrapper.style.display = selected === 'upload' ? 'block' : 'none';
+        }
+
+        if (uploadInput) {
+            uploadInput.required = selected === 'upload';
+        }
+
+        document.querySelectorAll('.leave-sign-option').forEach(option => {
+            const radio = option.querySelector('input[type="radio"]');
+            option.classList.toggle('active', !!radio && radio.checked);
+        });
+    }
+
+    document.addEventListener('change', function (event) {
+        if (event.target && event.target.name === 'signature_mode') {
+            syncLeaveSignatureMode();
+        }
+    });
+
+    @if($errors->hasAny(['leave_type', 'date_from', 'date_to', 'signature_mode', 'signature_path', 'current_password']))
+    document.addEventListener('DOMContentLoaded', function () {
+        openLeaveModal();
+        toggleLeaveSignSection();
+        syncLeaveSignatureMode();
+    });
+    @endif
 </script>
 @endsection

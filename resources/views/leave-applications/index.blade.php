@@ -10,6 +10,7 @@
         'approved' => ['label' => 'Approved', 'class' => 'bg-success'],
         'rejected' => ['label' => 'Rejected', 'class' => 'bg-danger'],
     ];
+    $savedSignatureUrl = auth()->user()?->signature_path ? asset('storage/' . auth()->user()->signature_path) : null;
 @endphp
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
@@ -25,11 +26,12 @@
             <div class="card-body">
                 <h5 class="fw-bold mb-3">Apply Leave</h5>
                 <p class="text-muted mb-4">
-                    Submit a leave request here. HR can later route it to the Division Chief and Regional Director for signing.
+                    Submit a leave request here. You will sign it first, then confirm with your login password.
                 </p>
 
-                <form method="POST" action="{{ route('leave-applications.store') }}">
+                <form method="POST" action="{{ route('leave-applications.store') }}" enctype="multipart/form-data" id="leaveApplicationForm">
                     @csrf
+                    <input type="hidden" name="employee_id" value="{{ $employee->emp_no }}">
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Leave Type</label>
@@ -61,23 +63,157 @@
                         </div>
                     </div>
 
-                    <div class="mt-3 mb-4">
-                        <label class="form-label fw-semibold">Reason</label>
-                        <textarea name="reason" rows="4" class="form-control @error('reason') is-invalid @enderror" placeholder="Brief reason for leave">{{ old('reason') }}</textarea>
-                        @error('reason')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="row g-3 mt-1 mb-4">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Date Applied</label>
+                            <input type="date" class="form-control" value="{{ now()->toDateString() }}" readonly>
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">
-                        Submit Leave Application
+                    <button type="button" class="btn btn-primary w-100" onclick="openLeaveSignModal()">
+                        Sign &amp; Submit Leave Application
                     </button>
+
+                    <div class="leave-sign-modal-overlay" id="leaveSignModal" aria-hidden="true">
+                        <div class="leave-sign-modal-content">
+                            <div class="leave-sign-modal-header">
+                                <div>
+                                    <h5 class="mb-1 fw-bold">Sign Leave Application</h5>
+                                    <p class="text-muted mb-0" style="font-size: 0.9rem;">Choose a signature, confirm your password, then submit.</p>
+                                </div>
+                                <button type="button" class="leave-sign-modal-close" onclick="closeLeaveSignModal()" aria-label="Close">×</button>
+                            </div>
+
+                            <div class="leave-sign-modal-body">
+                                <div class="alert alert-info mb-3">
+                                    Your leave application will be signed using the selected signature and verified with your login password.
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Signature Option</label>
+                                    <div class="d-grid gap-2">
+                                        <label class="leave-sign-option {{ $savedSignatureUrl ? 'active' : '' }}">
+                                            <input type="radio" name="signature_mode" value="saved" {{ old('signature_mode', $savedSignatureUrl ? 'saved' : 'upload') === 'saved' ? 'checked' : '' }} {{ $savedSignatureUrl ? '' : 'disabled' }}>
+                                            <div>
+                                                <div class="fw-bold">Use my saved signature</div>
+                                                <small class="text-muted">Stored in your profile and reused for leave documents.</small>
+                                            </div>
+                                        </label>
+
+                                        <label class="leave-sign-option {{ old('signature_mode', $savedSignatureUrl ? 'saved' : 'upload') === 'upload' ? 'active' : '' }}">
+                                            <input type="radio" name="signature_mode" value="upload" {{ old('signature_mode', $savedSignatureUrl ? 'saved' : 'upload') === 'upload' ? 'checked' : '' }}>
+                                            <div>
+                                                <div class="fw-bold">Upload a new signature</div>
+                                                <small class="text-muted">This updates your saved signature for future use.</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3" id="leaveSignatureUploadWrapper" style="display: {{ old('signature_mode', $savedSignatureUrl ? 'saved' : 'upload') === 'upload' ? 'block' : 'none' }};">
+                                    <label class="form-label fw-semibold">Signature Image</label>
+                                    <input type="file" name="signature_path" class="form-control @error('signature_path') is-invalid @enderror" accept="image/png,image/jpeg">
+                                    @error('signature_path')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+
+                                    @if($savedSignatureUrl)
+                                        <div class="mt-3">
+                                            <label class="form-label fw-semibold">Current Signature Preview</label>
+                                            <div class="border rounded-3 bg-white p-2 d-inline-block">
+                                                <img src="{{ $savedSignatureUrl }}" alt="Saved Signature" style="max-width: 240px; max-height: 120px; object-fit: contain;">
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Login Password</label>
+                                    <input type="password" name="current_password" class="form-control @error('current_password') is-invalid @enderror" autocomplete="current-password" placeholder="Enter your login password" required>
+                                    <small class="text-muted">This must match the password you use to log in.</small>
+                                    @error('current_password')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="leave-sign-modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" onclick="closeLeaveSignModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Confirm &amp; Submit</button>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 
     <div class="col-12 col-xl-8">
+        @if(auth()->user()?->isSuperAdmin() || auth()->user()?->role?->slug === 'hr')
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-0">Pending Leave Applications</h5>
+                            <small class="text-muted">Leave requests waiting for HR signature.</small>
+                        </div>
+                        <span class="badge bg-warning text-dark">{{ $pendingApplications->count() }} pending</span>
+                    </div>
+
+                    @if($pendingApplications->isNotEmpty())
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Leave Application</th>
+                                        <th>Type of Leave</th>
+                                        <th>Start and End Date</th>
+                                        <th>Date Applied</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($pendingApplications as $application)
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">{{ $application->employee?->full_name ?? 'N/A' }}</div>
+                                                <small class="text-muted">{{ $application->employee?->employee_id ?? 'N/A' }}</small>
+                                            </td>
+                                            <td>{{ $application->leave_type }}</td>
+                                            <td>
+                                                <div>{{ $application->date_from?->format('M d, Y') ?? 'N/A' }}</div>
+                                                <small class="text-muted">to {{ $application->date_to?->format('M d, Y') ?? 'Open ended' }}</small>
+                                            </td>
+                                            <td>{{ $application->created_at?->format('M d, Y h:i A') }}</td>
+                                            <td class="text-end">
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-primary"
+                                                    @if(! $savedSignatureUrl) disabled title="Upload your signature in your profile first" @endif
+                                                    data-leave-id="{{ $application->id }}"
+                                                    data-employee-name="{{ $application->employee?->full_name ?? 'N/A' }}"
+                                                    data-employee-id="{{ $application->employee?->employee_id ?? 'N/A' }}"
+                                                    data-leave-type="{{ $application->leave_type }}"
+                                                    data-date-from="{{ $application->date_from?->format('M d, Y') ?? 'N/A' }}"
+                                                    data-date-to="{{ $application->date_to?->format('M d, Y') ?? 'Open ended' }}"
+                                                    data-date-applied="{{ $application->created_at?->format('M d, Y h:i A') }}"
+                                                    onclick="openHrSignModal(this)"
+                                                >
+                                                    Sign
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="alert alert-info mb-0">No pending applications found.</div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         <div class="card shadow-sm border-0">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
@@ -146,4 +282,255 @@
         </div>
     </div>
 </div>
+
+<div class="leave-sign-modal-overlay" id="hrSignModal" aria-hidden="true">
+    <div class="leave-sign-modal-content">
+        <div class="leave-sign-modal-header">
+            <div>
+                <h5 class="mb-1 fw-bold">Sign Leave Application</h5>
+                <p class="text-muted mb-0" style="font-size: 0.9rem;">Confirm the employee details, then sign using your saved HR signature.</p>
+            </div>
+            <button type="button" class="leave-sign-modal-close" onclick="closeHrSignModal()" aria-label="Close">Ã—</button>
+        </div>
+
+        <form method="POST" id="hrSignForm">
+            @csrf
+            <input type="hidden" name="leave_application_id" id="hrLeaveApplicationId">
+
+            <div class="leave-sign-modal-body">
+                <div class="alert alert-info mb-3">
+                    This action will move the application to the next process flow: <strong>Pending Division Chief</strong>.
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-semibold">Employee</label>
+                        <input type="text" class="form-control" id="hrLeaveEmployeeName" disabled>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-semibold">Employee ID</label>
+                        <input type="text" class="form-control" id="hrLeaveEmployeeId" disabled>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Leave Type</label>
+                        <input type="text" class="form-control" id="hrLeaveType" disabled>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-semibold">Date Range</label>
+                        <input type="text" class="form-control" id="hrLeaveDateRange" disabled>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-semibold">Date Applied</label>
+                        <input type="text" class="form-control" id="hrLeaveDateApplied" disabled>
+                    </div>
+                </div>
+
+                @if($savedSignatureUrl)
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Your Signature Preview</label>
+                        <div class="border rounded-3 bg-white p-2 d-inline-block">
+                            <img src="{{ $savedSignatureUrl }}" alt="Saved Signature" style="max-width: 240px; max-height: 120px; object-fit: contain;">
+                        </div>
+                    </div>
+                @else
+                    <div class="alert alert-warning">
+                        Please upload your signature in your profile before signing leave applications.
+                    </div>
+                @endif
+
+                <div class="mb-0">
+                    <label class="form-label fw-semibold">Login Password</label>
+                    <input type="password" name="current_password" class="form-control @error('current_password') is-invalid @enderror" placeholder="Enter your login password" required>
+                    @error('current_password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="leave-sign-modal-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="closeHrSignModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" {{ $savedSignatureUrl ? '' : 'disabled' }}>Confirm &amp; Sign</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .leave-sign-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        padding: 1rem;
+    }
+
+    .leave-sign-modal-overlay.active {
+        display: flex;
+    }
+
+    .leave-sign-modal-content {
+        width: 100%;
+        max-width: 540px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+        overflow: hidden;
+    }
+
+    .leave-sign-modal-header,
+    .leave-sign-modal-body,
+    .leave-sign-modal-footer {
+        padding: 1.25rem 1.4rem;
+    }
+
+    .leave-sign-modal-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+    }
+
+    .leave-sign-modal-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #475569;
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+
+    .leave-sign-modal-close:hover {
+        background: #f8fafc;
+        color: #0f172a;
+    }
+
+    .leave-sign-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        border-top: 1px solid #e2e8f0;
+        background: #fff;
+    }
+
+    .leave-sign-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding: 0.95rem 1rem;
+        border: 1px solid #dbe4ee;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fff;
+    }
+
+    .leave-sign-option:hover,
+    .leave-sign-option.active {
+        border-color: #0d6efd;
+        background: #f7fbff;
+        box-shadow: 0 4px 16px rgba(13, 110, 253, 0.08);
+    }
+
+    .leave-sign-option input[type="radio"] {
+        margin-top: 0.2rem;
+        accent-color: #0d6efd;
+        flex-shrink: 0;
+    }
+</style>
+
+<script>
+    function openLeaveSignModal() {
+        document.getElementById('leaveSignModal')?.classList.add('active');
+    }
+
+    function closeLeaveSignModal() {
+        document.getElementById('leaveSignModal')?.classList.remove('active');
+    }
+
+    function openHrSignModal(button) {
+        if (!button) return;
+
+        const modal = document.getElementById('hrSignModal');
+        const form = document.getElementById('hrSignForm');
+        const leaveIdInput = document.getElementById('hrLeaveApplicationId');
+        const employeeName = document.getElementById('hrLeaveEmployeeName');
+        const employeeId = document.getElementById('hrLeaveEmployeeId');
+        const leaveType = document.getElementById('hrLeaveType');
+        const dateRange = document.getElementById('hrLeaveDateRange');
+        const dateApplied = document.getElementById('hrLeaveDateApplied');
+
+        const hrSignUrlTemplate = @json(url('/leave-applications/__ID__/sign/hr'));
+
+        if (form) {
+            form.action = hrSignUrlTemplate.replace('__ID__', button.dataset.leaveId);
+        }
+
+        if (leaveIdInput) leaveIdInput.value = button.dataset.leaveId || '';
+        if (employeeName) employeeName.value = button.dataset.employeeName || '';
+        if (employeeId) employeeId.value = button.dataset.employeeId || '';
+        if (leaveType) leaveType.value = button.dataset.leaveType || '';
+        if (dateRange) {
+            const fromDate = button.dataset.dateFrom || '';
+            const toDate = button.dataset.dateTo || '';
+            dateRange.value = `${fromDate}${toDate ? ' - ' + toDate : ''}`;
+        }
+        if (dateApplied) dateApplied.value = button.dataset.dateApplied || '';
+
+        modal?.classList.add('active');
+    }
+
+    function closeHrSignModal() {
+        document.getElementById('hrSignModal')?.classList.remove('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('leaveSignModal');
+        const hrModal = document.getElementById('hrSignModal');
+        const uploadWrapper = document.getElementById('leaveSignatureUploadWrapper');
+        const radios = document.querySelectorAll('input[name="signature_mode"]');
+
+        function syncSignatureMode() {
+            const selected = document.querySelector('input[name="signature_mode"]:checked')?.value;
+            const fileInput = document.querySelector('input[name="signature_path"]');
+
+            if (uploadWrapper) {
+                uploadWrapper.style.display = selected === 'upload' ? 'block' : 'none';
+            }
+
+            if (fileInput) {
+                fileInput.required = selected === 'upload';
+            }
+
+            document.querySelectorAll('.leave-sign-option').forEach(option => {
+                const radio = option.querySelector('input[type="radio"]');
+                option.classList.toggle('active', !!radio && radio.checked);
+            });
+        }
+
+        radios.forEach(radio => radio.addEventListener('change', syncSignatureMode));
+        syncSignatureMode();
+
+        @if(session('hr_sign_leave_id'))
+            const hrButton = document.querySelector('[data-leave-id="{{ session('hr_sign_leave_id') }}"]');
+            if (hrButton) {
+                openHrSignModal(hrButton);
+            }
+        @endif
+
+        @if(session('hr_sign_leave_id') && ($errors->has('current_password') || $errors->has('signature_path')))
+            hrModal?.classList.add('active');
+        @endif
+
+        @if($errors->has('current_password') || $errors->has('signature_path') || $errors->has('signature_mode'))
+            modal?.classList.add('active');
+        @endif
+    });
+</script>
 @endsection

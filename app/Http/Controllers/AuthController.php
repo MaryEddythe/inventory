@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Role;
 
 class AuthController extends Controller
@@ -84,7 +85,15 @@ class AuthController extends Controller
         $user = Auth::user();
 
         $leaveApplications = $user?->employee
-            ? $user->employee->leaveApplications()->latest()->get()
+            ? $user->employee->leaveApplications()
+                ->with([
+                    'employee.division',
+                    'hrSigner',
+                    'divisionChiefSigner',
+                    'regionalDirectorSigner',
+                ])
+                ->latest()
+                ->get()
             : collect();
 
         return view('auth.profile', compact('user', 'leaveApplications'));
@@ -152,5 +161,28 @@ class AuthController extends Controller
         ]);
 
         return redirect()->route('profile')->with('success', 'Password changed successfully!');
+    }
+
+    public function storeSignature(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'signature_path' => 'required|image|mimes:png,jpg,jpeg|max:2048',
+        ]);
+
+        if ($user->signature_path) {
+            Storage::disk('public')->delete($user->signature_path);
+        }
+
+        $signaturePath = $request->file('signature_path')->store('signatures', 'public');
+
+        $user->update([
+            'signature_path' => $signaturePath,
+        ]);
+
+        Auth::setUser($user->fresh());
+
+        return back()->with('success', 'Your signature was saved successfully.');
     }
 }

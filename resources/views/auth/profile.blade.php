@@ -147,6 +147,86 @@
                         </div>
                     </div>
 
+                    <style>
+                        .leave-stepper {
+                            display: grid;
+                            grid-template-columns: repeat(4, minmax(0, 1fr));
+                            gap: 0.75rem;
+                            margin-top: 0.75rem;
+                        }
+
+                        .leave-step {
+                            display: flex;
+                            align-items: flex-start;
+                            gap: 0.65rem;
+                            padding: 0.85rem;
+                            border-radius: 0.9rem;
+                            border: 1px solid #e2e8f0;
+                            background: #f8fafc;
+                            min-height: 100%;
+                        }
+
+                        .leave-step.is-done {
+                            background: #ecfdf5;
+                            border-color: #86efac;
+                        }
+
+                        .leave-step.is-current {
+                            background: #eff6ff;
+                            border-color: #93c5fd;
+                        }
+
+                        .leave-step.is-pending {
+                            opacity: 0.65;
+                        }
+
+                        .leave-step-icon {
+                            width: 1.85rem;
+                            height: 1.85rem;
+                            border-radius: 999px;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            flex: 0 0 auto;
+                            background: #cbd5e1;
+                            color: #fff;
+                            font-weight: 800;
+                            font-size: 0.92rem;
+                        }
+
+                        .leave-step.is-done .leave-step-icon {
+                            background: #16a34a;
+                        }
+
+                        .leave-step.is-current .leave-step-icon {
+                            background: #2563eb;
+                        }
+
+                        .leave-step-title {
+                            font-weight: 700;
+                            color: #0f172a;
+                            line-height: 1.15;
+                        }
+
+                        .leave-step-meta {
+                            font-size: 0.78rem;
+                            color: #64748b;
+                            margin-top: 0.2rem;
+                        }
+
+                        @media (max-width: 991.98px) {
+                            .leave-stepper {
+                                grid-template-columns: repeat(2, minmax(0, 1fr));
+                            }
+                        }
+
+                        @media (max-width: 575.98px) {
+                            .leave-stepper {
+                                grid-template-columns: 1fr;
+                            }
+                        }
+                    </style>
+
                     @php
                         $profileLeaveStatusLabels = [
                             'pending_hr' => ['label' => 'Pending HR', 'class' => 'bg-warning text-dark'],
@@ -191,6 +271,37 @@
                                                             'label' => strtoupper(str_replace('_', ' ', $statusKey)),
                                                             'class' => 'bg-secondary',
                                                         ];
+                                                        $steps = [
+                                                            [
+                                                                'key' => 'submitted',
+                                                                'label' => 'Submitted',
+                                                                'done' => true,
+                                                                'at' => $application->created_at,
+                                                                'by' => $application->employee?->full_name ?? $user?->name,
+                                                            ],
+                                                            [
+                                                                'key' => 'hr',
+                                                                'label' => 'HR',
+                                                                'done' => filled($application->hr_signed_at),
+                                                                'at' => $application->hr_signed_at,
+                                                                'by' => $application->hrSigner?->name,
+                                                            ],
+                                                            [
+                                                                'key' => 'division_chief',
+                                                                'label' => 'Division Chief',
+                                                                'done' => filled($application->division_chief_signed_at),
+                                                                'at' => $application->division_chief_signed_at,
+                                                                'by' => $application->divisionChiefSigner?->name,
+                                                            ],
+                                                            [
+                                                                'key' => 'regional_director',
+                                                                'label' => 'Regional Director',
+                                                                'done' => filled($application->regional_director_signed_at),
+                                                                'at' => $application->regional_director_signed_at,
+                                                                'by' => $application->regionalDirectorSigner?->name,
+                                                            ],
+                                                        ];
+                                                        $currentStepKey = (string) ($application->current_step ?? 'hr');
                                                     @endphp
                                                     <tr>
                                                         <td class="fw-semibold">{{ $application->leave_type }}</td>
@@ -201,6 +312,43 @@
                                                         <td><span class="badge {{ $status['class'] }}">{{ $status['label'] }}</span></td>
                                                         <td class="text-capitalize">{{ str_replace('_', ' ', $application->current_step ?? 'hr') }}</td>
                                                         <td>{{ $application->created_at?->format('M d, Y h:i A') }}</td>
+                                                    </tr>
+                                                    <tr class="table-light">
+                                                        <td colspan="5">
+                                                            <div class="leave-stepper">
+                                                                @foreach($steps as $step)
+                                                                    @php
+                                                                        $isCurrent = ! $step['done'] && $currentStepKey === $step['key'];
+                                                                    @endphp
+                                                                    <div class="leave-step {{ $step['done'] ? 'is-done' : ($isCurrent ? 'is-current' : 'is-pending') }}">
+                                                                        <div class="leave-step-icon">
+                                                                            @if($step['done'])
+                                                                                ✓
+                                                                            @elseif($isCurrent)
+                                                                                •
+                                                                            @else
+                                                                                •
+                                                                            @endif
+                                                                        </div>
+                                                                        <div>
+                                                                            <div class="leave-step-title">{{ $step['label'] }}</div>
+                                                                            @if($step['done'])
+                                                                                <div class="leave-step-meta">
+                                                                                    {{ $step['by'] ?? 'System' }}
+                                                                                    @if($step['at'])
+                                                                                        · {{ $step['at']->format('M d, Y h:i A') }}
+                                                                                    @endif
+                                                                                </div>
+                                                                            @elseif($isCurrent)
+                                                                                <div class="leave-step-meta">Currently awaiting this approval.</div>
+                                                                            @else
+                                                                                <div class="leave-step-meta">Pending next stage.</div>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                     @if($application->reason)
                                                         <tr class="table-light">

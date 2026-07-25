@@ -112,11 +112,6 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/api/items-by-personnel', [InventoryItemController::class, 'getItemsByPersonnel'])->name('api.items-by-personnel');
     Route::get('/api/item-details/{itemId}', [InventoryItemController::class, 'getItemDetails'])->name('api.item-details');
 
-    // Profile Routes
-    Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
-    Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
-    Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
-
     // Notifications
     Route::get('/notifications/{notification}/read', function (string $notification) {
         $user = auth()->user();
@@ -145,6 +140,7 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     // Leave Applications Routes
     Route::get('/leave-applications', [LeaveApplicationController::class, 'index'])->name('leave-applications.index');
     Route::post('/leave-applications', [LeaveApplicationController::class, 'store'])->name('leave-applications.store');
+    Route::post('/leave-applications/{leaveApplication}/sign/hr', [LeaveApplicationController::class, 'signHr'])->name('leave-applications.sign-hr');
 
     // Credits Routes
     Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');
@@ -154,4 +150,12 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/credits/{credit}/edit', [CreditsController::class, 'edit'])->name('credits.edit');
     Route::put('/credits/{credit}', [CreditsController::class, 'update'])->name('credits.update');
     Route::delete('/credits/{credit}', [CreditsController::class, 'destroy'])->name('credits.destroy');
+});
+
+// Profile Routes — outside sidebar.access middleware but still authenticated
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [AuthController::class, 'showProfile'])->name('profile');
+    Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
+    Route::post('/profile/signature', [AuthController::class, 'storeSignature'])->name('profile.signature.store');
 });

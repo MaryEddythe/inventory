@@ -22,6 +22,8 @@ class EmployeeLeaveApplication extends Model
         'date_from',
         'date_to',
         'reason',
+        'applicant_signature_path',
+        'applicant_signed_at',
         'status',
         'current_step',
         'hr_signed_by',
@@ -41,6 +43,7 @@ class EmployeeLeaveApplication extends Model
     protected $casts = [
         'date_from' => 'date',
         'date_to' => 'date',
+        'applicant_signed_at' => 'datetime',
         'hr_signed_at' => 'datetime',
         'division_chief_signed_at' => 'datetime',
         'regional_director_signed_at' => 'datetime',
@@ -50,6 +53,21 @@ class EmployeeLeaveApplication extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'employee_id', 'emp_no');
+    }
+
+    public function hrSigner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'hr_signed_by');
+    }
+
+    public function divisionChiefSigner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'division_chief_signed_by');
+    }
+
+    public function regionalDirectorSigner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'regional_director_signed_by');
     }
 
     public function getActivitylogOptions(): LogOptions

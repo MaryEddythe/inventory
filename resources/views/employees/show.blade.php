@@ -305,6 +305,7 @@
                                     <th>HR</th>
                                     <th>Div Chief</th>
                                     <th>RD</th>
+                                    <th class="text-end">View</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -337,9 +338,20 @@
                                         <td>@if($application->hr_signature_path)<span class="text-success" title="{{ optional($application->hrSigner)->name ?? 'HR' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
                                         <td>@if($application->division_chief_signature_path)<span class="text-success" title="{{ optional($application->divisionChiefSigner)->name ?? 'Div Chief' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
                                         <td>@if($application->regional_director_signature_path)<span class="text-success" title="{{ optional($application->regionalDirectorSigner)->name ?? 'RD' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
+                                        <td class="text-end">
+                                            <a
+                                                href="{{ route('leave-applications.view', $application) }}"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title="Open filled leave form"
+                                            >
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="7" class="text-center">No leave applications</td></tr>
+                                    <tr><td colspan="8" class="text-center">No leave applications</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

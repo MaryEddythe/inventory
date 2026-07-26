@@ -104,17 +104,18 @@
 
                 <div class="table-responsive">
                     <table class="table align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Employee</th>
-                                <th>Leave Type</th>
-                                <th>Date Range</th>
-                                <th>Status</th>
-                                <th>Submitted</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($applications as $application)
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Leave Type</th>
+                                        <th>Date Range</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                        <th class="text-end">View</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($applications as $application)
                                 @php
                                     $statusKey = (string) $application->status;
                                     $status = $statusLabels[$statusKey] ?? [
@@ -138,10 +139,21 @@
                                         <span class="badge {{ $status['class'] }}">{{ $status['label'] }}</span>
                                     </td>
                                     <td>{{ $application->created_at?->format('M d, Y h:i A') }}</td>
+                                    <td class="text-end">
+                                        <a
+                                            href="{{ route('leave-applications.view', $application) }}"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="Open filled leave form"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 @if($application->reason)
                                     <tr class="table-light">
-                                        <td colspan="5">
+                                        <td colspan="6">
                                             <div class="small text-muted fw-semibold mb-1">Reason</div>
                                             <div>{{ $application->reason }}</div>
                                         </td>
@@ -149,7 +161,7 @@
                                 @endif
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-5">
+                                    <td colspan="6" class="text-center text-muted py-5">
                                         No leave applications yet.
                                     </td>
                                 </tr>

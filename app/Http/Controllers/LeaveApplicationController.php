@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
 use App\Models\EmployeeLeaveApplication;
+use App\Models\Employee;
 use App\Models\User;
 use App\Notifications\LeaveApplicationSubmittedNotification;
 use App\Notifications\LeaveApplicationPendingReviewNotification;
@@ -11,10 +11,12 @@ use App\States\LeaveApplication\Approved;
 use App\States\LeaveApplication\PendingDivisionChief;
 use App\States\LeaveApplication\PendingHr;
 use App\States\LeaveApplication\PendingRegionalDirector;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LeaveApplicationController extends Controller
 {
@@ -76,6 +78,37 @@ class LeaveApplicationController extends Controller
                 'Credited Time-Off',
             ],
         ]);
+    }
+
+    public function view(EmployeeLeaveApplication $leaveApplication)
+    {
+        $user = auth()->user();
+        $employee = $user?->employee;
+
+        abort_unless($user, 403, 'You must be logged in to view this leave application.');
+
+        $isOwner = $employee && (string) $employee->emp_no === (string) $leaveApplication->employee_id;
+        $isApprover = $user->isSuperAdmin() || in_array((string) ($user->role?->slug ?? ''), ['hr', 'division-chief', 'rd'], true);
+
+        abort_unless($isOwner || $isApprover, 403, 'You are not allowed to view this leave application.');
+
+        $leaveApplication->load([
+            'employee.division',
+            'hrSigner',
+            'divisionChiefSigner',
+            'regionalDirectorSigner',
+        ]);
+
+        $pdf = Pdf::loadView('leaves.print', [
+            'leaveApplication' => $leaveApplication,
+            'employee' => $leaveApplication->employee,
+            'applicantSignaturePath' => $this->publicDiskPath($leaveApplication->applicant_signature_path),
+            'hrSignaturePath' => $this->publicDiskPath($leaveApplication->hr_signature_path),
+            'divisionChiefSignaturePath' => $this->publicDiskPath($leaveApplication->division_chief_signature_path),
+            'regionalDirectorSignaturePath' => $this->publicDiskPath($leaveApplication->regional_director_signature_path),
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream($this->leaveApplicationFilename($leaveApplication));
     }
 
     public function store(Request $request)
@@ -443,5 +476,24 @@ class LeaveApplicationController extends Controller
                     message: $message,
                 ));
             });
+    }
+
+    protected function publicDiskPath(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        return Storage::disk('public')->exists($path)
+            ? Storage::disk('public')->path($path)
+            : null;
+    }
+
+    protected function leaveApplicationFilename(EmployeeLeaveApplication $leaveApplication): string
+    {
+        $employeeName = $leaveApplication->employee?->full_name ?: 'leave-application';
+        $date = $leaveApplication->created_at?->format('Y-m-d') ?? now()->format('Y-m-d');
+
+        return Str::slug($employeeName . '-' . $date) . '.pdf';
     }
 }

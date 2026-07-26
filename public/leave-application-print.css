@@ -12,105 +12,104 @@ body {
 body {
     font-family: DejaVu Sans, Arial, sans-serif;
     color: #111827;
-    font-size: 9.5px;
-    line-height: 1.35;
+    font-size: 7.5px;
+    line-height: 1.15;
 }
 
 .sheet {
     width: 100%;
-    min-height: 10.5in;
+    min-height: 10.4in;
     display: flex;
     flex-direction: column;
 }
 
 .page-spacer {
     flex: 1 1 auto;
-    min-height: 0.35in;
+    min-height: 0.1in;
 }
 
 /* ===== HEADER ===== */
 .header {
     text-align: center;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
     position: relative;
 }
 
 .header-logo {
     position: absolute;
     left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 60px;
+    top: 0;
+    width: 48px;
     height: auto;
 }
 
 .header-republic {
-    font-size: 8.5px;
+    font-size: 7px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .header-denr {
-    font-size: 8px;
+    font-size: 6.5px;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .header-mgb {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .header-region {
-    font-size: 8px;
+    font-size: 6.5px;
     font-weight: 600;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .header-form-title {
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 800;
-    margin-top: 6px;
+    margin-top: 3px;
     border-top: 1.5px solid #111827;
     border-bottom: 1.5px solid #111827;
-    padding: 4px 0;
+    padding: 2px 0;
     letter-spacing: 0.05em;
 }
 
 .header-cs-form {
-    font-size: 7px;
+    font-size: 6px;
     font-weight: 700;
     position: absolute;
     right: 0;
     top: 0;
     border: 1px solid #111827;
-    padding: 3px 5px;
+    padding: 2px 4px;
 }
 
 /* ===== SECTIONS ===== */
 .section {
     border: 1.5px solid #111827;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
 }
 
 .section-title {
     background: #e5e7eb;
     font-weight: 700;
-    padding: 5px 8px;
+    padding: 2px 5px;
     border-bottom: 1.5px solid #111827;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    font-size: 8.5px;
+    font-size: 7px;
 }
 
 .section-body {
-    padding: 6px 8px;
+    padding: 3px 5px;
 }
 
 /* ===== TABLES ===== */
@@ -122,14 +121,14 @@ table.form-table {
 table.form-table td,
 table.form-table th {
     border: 1.5px solid #111827;
-    padding: 3px 5px;
+    padding: 1.5px 3px;
     vertical-align: top;
     text-align: left;
 }
 
 table.form-table th {
     background: #f3f4f6;
-    font-size: 8px;
+    font-size: 6.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -137,7 +136,7 @@ table.form-table th {
 }
 
 table.form-table td {
-    font-size: 9.5px;
+    font-size: 7.5px;
     font-weight: 600;
 }
 
@@ -149,21 +148,21 @@ table.form-table td {
 
 .checkbox-grid td {
     width: 50%;
-    padding: 2px 4px 2px 0;
+    padding: 0.5px 2px 0.5px 0;
     vertical-align: top;
-    font-size: 8.5px;
-    line-height: 1.4;
+    font-size: 6.5px;
+    line-height: 1.25;
 }
 
 .box {
     display: inline-block;
-    width: 11px;
-    height: 11px;
+    width: 8px;
+    height: 8px;
     border: 1.5px solid #111827;
-    margin-right: 4px;
+    margin-right: 2px;
     text-align: center;
-    line-height: 9px;
-    font-size: 8px;
+    line-height: 6px;
+    font-size: 6px;
     font-weight: 700;
     flex-shrink: 0;
 }
@@ -171,12 +170,20 @@ table.form-table td {
 .checkbox-item {
     display: flex;
     align-items: flex-start;
-    gap: 3px;
+    gap: 2px;
+}
+
+/* ===== SIGNATURES ===== */
+.signature-img {
+    max-width: 140px;
+    max-height: 44px;
+    object-fit: contain;
+    margin-bottom: 1px;
 }
 
 /* ===== MISC ===== */
 .label-sm {
-    font-size: 7px;
+    font-size: 5.5px;
     font-weight: 700;
     color: #374151;
     text-transform: uppercase;
@@ -185,15 +192,15 @@ table.form-table td {
 
 .blank-line {
     border-bottom: 1.5px solid #111827;
-    min-height: 16px;
-    margin-top: 2px;
+    min-height: 10px;
+    margin-top: 1px;
 }
 
 .field-value {
-    font-size: 9.5px;
+    font-size: 7.5px;
     font-weight: 600;
     border-bottom: 1.5px solid #111827;
-    padding: 2px 0 3px 0;
-    min-height: 14px;
+    padding: 1px 0 2px 0;
+    min-height: 10px;
 }
 

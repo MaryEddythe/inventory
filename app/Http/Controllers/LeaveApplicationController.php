@@ -14,6 +14,7 @@ use App\States\LeaveApplication\PendingRegionalDirector;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -28,7 +29,7 @@ class LeaveApplicationController extends Controller
         abort_unless($user && $employee, 403, 'No linked employee record found for this account.');
 
         $roleSlug = (string) ($user->role?->slug ?? '');
-        $isApprover = $user->isSuperAdmin() || in_array($roleSlug, ['hr', 'division-chief', 'rd'], true);
+        $isApprover = $user->isSuperAdmin() || in_array($roleSlug, ['hr', 'rd', ...$this->divisionChiefRoleSlugs()], true);
         $pendingStatuses = $this->pendingStatusesForUser($user);
         $pendingApplicationsTitle = $this->pendingApplicationsTitleForUser($user);
         $pendingApplicationsSubtitle = $this->pendingApplicationsSubtitleForUser($user);
@@ -40,6 +41,15 @@ class LeaveApplicationController extends Controller
                 'divisionChiefSigner',
                 'regionalDirectorSigner',
             ])
+            ->when($this->isDivisionChiefRoleSlug($roleSlug), function ($query) use ($user) {
+                $deptNo = $this->divisionChiefDepartmentNoForUser($user);
+
+                if ($deptNo !== null) {
+                    $query->whereHas('employee', function ($employeeQuery) use ($deptNo) {
+                        $employeeQuery->where('department', $deptNo);
+                    });
+                }
+            })
             ->when(! $isApprover, function ($query) use ($employee) {
                 $query->where('employee_id', $employee->emp_no);
             })
@@ -50,10 +60,19 @@ class LeaveApplicationController extends Controller
             ? EmployeeLeaveApplication::query()
                 ->with([
                     'employee.division',
-                    'hrSigner',
-                    'divisionChiefSigner',
-                    'regionalDirectorSigner',
-                ])
+                'hrSigner',
+                'divisionChiefSigner',
+                'regionalDirectorSigner',
+            ])
+                ->when($this->isDivisionChiefRoleSlug($roleSlug), function ($query) use ($user) {
+                    $deptNo = $this->divisionChiefDepartmentNoForUser($user);
+
+                    if ($deptNo !== null) {
+                        $query->whereHas('employee', function ($employeeQuery) use ($deptNo) {
+                            $employeeQuery->where('department', $deptNo);
+                        });
+                    }
+                })
                 ->whereIn('status', $pendingStatuses)
                 ->latest()
                 ->get()
@@ -88,9 +107,18 @@ class LeaveApplicationController extends Controller
         abort_unless($user, 403, 'You must be logged in to view this leave application.');
 
         $isOwner = $employee && (string) $employee->emp_no === (string) $leaveApplication->employee_id;
-        $isApprover = $user->isSuperAdmin() || in_array((string) ($user->role?->slug ?? ''), ['hr', 'division-chief', 'rd'], true);
+        $roleSlug = (string) ($user->role?->slug ?? '');
+        $isGlobalApprover = $user->isSuperAdmin() || in_array($roleSlug, ['hr', 'rd'], true);
+        $isAssignedDivisionChief = $this->isDivisionChiefRoleSlug($roleSlug)
+            && $this->canViewLeaveApplicationAsApprover($user, $leaveApplication);
 
-        abort_unless($isOwner || $isApprover, 403, 'You are not allowed to view this leave application.');
+        abort_unless(
+            $isOwner
+            || $isGlobalApprover
+            || $isAssignedDivisionChief,
+            403,
+            'You are not allowed to view this leave application.'
+        );
 
         $leaveApplication->load([
             'employee.division',
@@ -102,6 +130,9 @@ class LeaveApplicationController extends Controller
         $pdf = Pdf::loadView('leaves.print', [
             'leaveApplication' => $leaveApplication,
             'employee' => $leaveApplication->employee,
+            'leavePrintCss' => File::exists(public_path('leave-application-print.css'))
+                ? File::get(public_path('leave-application-print.css'))
+                : '',
             'applicantSignaturePath' => $this->publicDiskPath($leaveApplication->applicant_signature_path),
             'hrSignaturePath' => $this->publicDiskPath($leaveApplication->hr_signature_path),
             'divisionChiefSignaturePath' => $this->publicDiskPath($leaveApplication->division_chief_signature_path),
@@ -268,8 +299,7 @@ class LeaveApplicationController extends Controller
             ->log('hr signed leave application');
 
         $this->notifyRoleUsers(
-            roleIds: [3],
-            roleSlug: 'division-chief',
+            roleSlugs: [$this->divisionChiefRoleSlugForEmployee($leaveApplication)],
             application: $leaveApplication,
             stepLabel: 'Division Chief',
             headline: 'New leave application awaiting Division Chief review',
@@ -283,7 +313,7 @@ class LeaveApplicationController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user && ($user->isSuperAdmin() || $user->role?->slug === 'division-chief'), 403, 'Only the Division Chief can sign this leave application.');
+        abort_unless($user && ($user->isSuperAdmin() || $this->isDivisionChiefRoleSlug((string) ($user->role?->slug ?? ''))), 403, 'Only the Division Chief can sign this leave application.');
 
         $request->validate([
             'current_password' => 'required|string',
@@ -293,6 +323,12 @@ class LeaveApplicationController extends Controller
             return back()->withErrors([
                 'current_password' => 'This leave application is no longer waiting for Division Chief signature.',
             ])->with('division_chief_sign_leave_id', $leaveApplication->id);
+        }
+
+        $targetDivisionChiefSlug = $this->divisionChiefRoleSlugForEmployee($leaveApplication);
+
+        if (! $user->isSuperAdmin() && (string) ($user->role?->slug ?? '') !== $targetDivisionChiefSlug) {
+            abort(403, 'This leave application is assigned to a different division chief.');
         }
 
         if (! Hash::check($request->current_password, $user->password)) {
@@ -334,8 +370,7 @@ class LeaveApplicationController extends Controller
             ->log('division chief signed leave application');
 
         $this->notifyRoleUsers(
-            roleIds: [1],
-            roleSlug: 'rd',
+            roleSlugs: ['rd'],
             application: $leaveApplication,
             stepLabel: 'Regional Director',
             headline: 'New leave application awaiting Regional Director review',
@@ -421,7 +456,10 @@ class LeaveApplicationController extends Controller
 
         return match ($user->role?->slug) {
             'hr' => [PendingHr::class, 'pending_hr'],
-            'division-chief' => [PendingDivisionChief::class, 'pending_division_chief'],
+            'division-chief',
+            'division-chief-ord',
+            'division-chief-msesdd',
+            'division-chief-mmd' => [PendingDivisionChief::class, 'pending_division_chief'],
             'rd' => [PendingRegionalDirector::class, 'pending_regional_director'],
             default => [],
         };
@@ -435,7 +473,10 @@ class LeaveApplicationController extends Controller
 
         return match ($user->role?->slug) {
             'hr' => 'Pending Leave Applications for HR',
-            'division-chief' => 'Pending Leave Applications for Division Chief',
+            'division-chief' => 'Pending Leave Applications for FAD Division Chief',
+            'division-chief-ord' => 'Pending Leave Applications for ORD Division Chief',
+            'division-chief-msesdd' => 'Pending Leave Applications for MSESDD Division Chief',
+            'division-chief-mmd' => 'Pending Leave Applications for MMD Division Chief',
             'rd' => 'Pending Leave Applications for Regional Director',
             default => 'Pending Leave Applications',
         };
@@ -453,18 +494,20 @@ class LeaveApplicationController extends Controller
 
         return match ($user->role?->slug) {
             'hr' => 'Leave requests waiting for HR signature.',
-            'division-chief' => 'Leave requests waiting for Division Chief signature.',
+            'division-chief' => 'Leave requests waiting for FAD Division Chief signature.',
+            'division-chief-ord' => 'Leave requests waiting for ORD Division Chief signature.',
+            'division-chief-msesdd' => 'Leave requests waiting for MSESDD Division Chief signature.',
+            'division-chief-mmd' => 'Leave requests waiting for MMD Division Chief signature.',
             'rd' => 'Leave requests waiting for Regional Director signature.',
             default => 'Leave requests waiting for approval.',
         };
     }
 
-    protected function notifyRoleUsers(array $roleIds, string $roleSlug, EmployeeLeaveApplication $application, string $stepLabel, string $headline, string $message): void
+    protected function notifyRoleUsers(array $roleSlugs, EmployeeLeaveApplication $application, string $stepLabel, string $headline, string $message): void
     {
         User::query()
-            ->whereIn('role_id', $roleIds)
-            ->orWhereHas('role', function ($query) use ($roleSlug) {
-                $query->where('slug', $roleSlug);
+            ->whereHas('role', function ($query) use ($roleSlugs) {
+                $query->whereIn('slug', $roleSlugs);
             })
             ->distinct()
             ->get()
@@ -487,6 +530,58 @@ class LeaveApplicationController extends Controller
         return Storage::disk('public')->exists($path)
             ? Storage::disk('public')->path($path)
             : null;
+    }
+
+    protected function canViewLeaveApplicationAsApprover(User $user, EmployeeLeaveApplication $leaveApplication): bool
+    {
+        if (! $this->isDivisionChiefRoleSlug((string) ($user->role?->slug ?? ''))) {
+            return false;
+        }
+
+        return $this->divisionChiefRoleSlugForEmployee($leaveApplication) === (string) ($user->role?->slug ?? '');
+    }
+
+    protected function divisionChiefRoleSlugs(): array
+    {
+        return collect($this->divisionChiefRoleMap())
+            ->pluck('slug')
+            ->values()
+            ->all();
+    }
+
+    protected function divisionChiefRoleMap(): array
+    {
+        return [
+            1 => ['slug' => 'division-chief', 'label' => 'FAD Division Chief'],
+            3 => ['slug' => 'division-chief-ord', 'label' => 'ORD Division Chief'],
+            4 => ['slug' => 'division-chief-msesdd', 'label' => 'MSESDD Division Chief'],
+            6 => ['slug' => 'division-chief-mmd', 'label' => 'MMD Division Chief'],
+        ];
+    }
+
+    protected function divisionChiefRoleSlugForEmployee(EmployeeLeaveApplication $leaveApplication): string
+    {
+        $deptNo = (int) ($leaveApplication->employee?->department ?? 1);
+
+        return $this->divisionChiefRoleMap()[$deptNo]['slug'] ?? 'division-chief';
+    }
+
+    protected function divisionChiefDepartmentNoForUser(?User $user): ?int
+    {
+        $slug = (string) ($user?->role?->slug ?? '');
+
+        foreach ($this->divisionChiefRoleMap() as $deptNo => $role) {
+            if ($role['slug'] === $slug) {
+                return (int) $deptNo;
+            }
+        }
+
+        return null;
+    }
+
+    protected function isDivisionChiefRoleSlug(?string $slug): bool
+    {
+        return in_array((string) $slug, $this->divisionChiefRoleSlugs(), true);
     }
 
     protected function leaveApplicationFilename(EmployeeLeaveApplication $leaveApplication): string

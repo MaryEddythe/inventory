@@ -49,351 +49,22 @@
 
     $certificationOfficerName = 'Laralournie Artajo';
     $certificationOfficerPosition = 'Administrative Officer V';
-    $recommendationOfficerName = 'Glenn L. Umipig';
-    $recommendationOfficerPosition = 'Chief Finance and Administrative Division';
+    $divisionChiefSignatoryMap = [
+        1 => ['name' => 'Laralournie Artajo', 'position' => 'Administrative Officer V'],
+        3 => ['name' => 'ORD Division Chief', 'position' => 'ORD Division Chief'],
+        4 => ['name' => 'MSESDD Division Chief', 'position' => 'MSESDD Division Chief'],
+        6 => ['name' => 'MMD Division Chief', 'position' => 'MMD Division Chief'],
+    ];
+    $employeeDeptNo = (int) ($employee?->department ?? 1);
+    $recommendationOfficerName = optional($leaveApplication->divisionChiefSigner)->name ?? ($divisionChiefSignatoryMap[$employeeDeptNo]['name'] ?? 'Division Chief');
+    $recommendationOfficerPosition = $divisionChiefSignatoryMap[$employeeDeptNo]['position'] ?? 'Division Chief';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>{{ $pageTitle }}</title>
-    <style>
-        @page {
-            margin: 12mm 10mm 14mm 10mm;
-        }
-
-        body {
-            font-family: DejaVu Sans, Arial, sans-serif;
-            color: #111827;
-            font-size: 9px;
-            line-height: 1.3;
-        }
-
-        .sheet {
-            width: 100%;
-        }
-
-        /* ===== HEADER ===== */
-        .header {
-            text-align: center;
-            margin-bottom: 8px;
-            position: relative;
-        }
-
-        .header-logo {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 55px;
-            height: auto;
-        }
-
-        .header-republic {
-            font-size: 8px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .header-denr {
-            font-size: 7.5px;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            margin-top: 1px;
-        }
-
-        .header-mgb {
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-top: 1px;
-        }
-
-        .header-region {
-            font-size: 7.5px;
-            font-weight: 600;
-            margin-top: 1px;
-        }
-
-        .header-form-title {
-            font-size: 13px;
-            font-weight: 800;
-            margin-top: 6px;
-            border-top: 2px solid #111827;
-            border-bottom: 2px solid #111827;
-            padding: 4px 0;
-            letter-spacing: 0.05em;
-        }
-
-        .header-form-sub {
-            font-size: 7.5px;
-            font-weight: 600;
-            margin-top: 2px;
-            color: #374151;
-        }
-
-        .header-cs-form {
-            font-size: 7px;
-            font-weight: 700;
-            position: absolute;
-            right: 0;
-            top: 0;
-            border: 1px solid #111827;
-            padding: 2px 5px;
-        }
-
-        /* ===== FIELDS ===== */
-        .field-row {
-            display: table;
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 2px;
-        }
-
-        .field-row > div {
-            display: table-cell;
-            vertical-align: top;
-            padding: 2px 3px;
-        }
-
-        .field-label {
-            font-size: 7.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: #374151;
-        }
-
-        .field-value {
-            font-size: 9px;
-            font-weight: 600;
-            border-bottom: 1px solid #111827;
-            padding: 1px 0 2px 0;
-            min-height: 14px;
-        }
-
-        .field-value-sm {
-            font-size: 8px;
-            font-weight: 600;
-            border-bottom: 1px solid #111827;
-            padding: 1px 0 2px 0;
-            min-height: 14px;
-        }
-
-        .field-inline {
-            display: inline-block;
-        }
-
-        /* ===== SECTIONS ===== */
-        .section {
-            border: 1.5px solid #111827;
-            margin-bottom: 6px;
-        }
-
-        .section-title {
-            background: #e5e7eb;
-            font-weight: 700;
-            padding: 4px 6px;
-            border-bottom: 1.5px solid #111827;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-size: 8px;
-        }
-
-        .section-body {
-            padding: 5px 6px;
-        }
-
-        /* ===== TABLES ===== */
-        table.form-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table.form-table td,
-        table.form-table th {
-            border: 1px solid #111827;
-            padding: 3px 5px;
-            vertical-align: top;
-            text-align: left;
-        }
-
-        table.form-table th {
-            background: #f3f4f6;
-            font-size: 7.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            width: 22%;
-        }
-
-        table.form-table td {
-            font-size: 9px;
-            font-weight: 600;
-        }
-
-        /* ===== CHECKBOX GRID ===== */
-        .checkbox-grid {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .checkbox-grid td {
-            width: 50%;
-            padding: 2px 4px 2px 0;
-            vertical-align: top;
-            font-size: 8px;
-            line-height: 1.4;
-        }
-
-        .box {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border: 1px solid #111827;
-            margin-right: 4px;
-            text-align: center;
-            line-height: 8px;
-            font-size: 8px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 3px;
-        }
-
-        /* ===== TWO COLUMN ===== */
-        .two-col {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .two-col td {
-            width: 50%;
-            vertical-align: top;
-            padding: 2px 4px 2px 0;
-        }
-
-        .two-col td:last-child {
-            padding-right: 0;
-        }
-
-        /* ===== THREE COLUMN ===== */
-        .three-col {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .three-col td {
-            width: 33.33%;
-            vertical-align: top;
-            padding: 2px 4px 2px 0;
-        }
-
-        .three-col td:last-child {
-            padding-right: 0;
-        }
-
-        /* ===== SIGNATURES ===== */
-        .signature-grid {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .signature-grid td {
-            width: 25%;
-            vertical-align: top;
-            padding: 4px 3px;
-        }
-
-        .signature-block {
-            min-height: 100px;
-            border: 1px solid #9ca3af;
-            padding: 6px;
-            position: relative;
-        }
-
-        .signature-title {
-            font-size: 7px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: #374151;
-            margin-bottom: 4px;
-        }
-
-        .signature-image {
-            max-width: 100%;
-            max-height: 40px;
-            object-fit: contain;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .signature-line {
-            border-top: 1px solid #111827;
-            margin-top: 16px;
-            padding-top: 3px;
-            font-size: 8px;
-            font-weight: 600;
-        }
-
-        .signature-meta {
-            font-size: 7px;
-            color: #4b5563;
-            margin-top: 1px;
-        }
-
-        /* ===== MISC ===== */
-        .label-sm {
-            font-size: 7px;
-            font-weight: 700;
-            color: #374151;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .value-sm {
-            font-size: 8.5px;
-            font-weight: 600;
-        }
-
-        .divider {
-            border-top: 1px solid #111827;
-            margin: 4px 0;
-        }
-
-        .inline-field {
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        .inline-field .field-value {
-            display: inline-block;
-            min-width: 80px;
-        }
-
-        .blank-line {
-            border-bottom: 1px solid #111827;
-            min-height: 14px;
-            margin-top: 2px;
-        }
-
-        .signature-line-blank {
-            border-top: 1px solid #111827;
-            margin-top: 24px;
-            padding-top: 3px;
-            font-size: 8px;
-            font-weight: 600;
-            text-align: center;
-        }
-    </style>
+    <style>{!! $leavePrintCss ?? '' !!}</style>
 </head>
 <body>
     <div class="sheet">
@@ -418,13 +89,13 @@
                         <td style="width:32%;">{{ $divisionName }}</td>
                         <th style="width:18%;">2. Name</th>
                         <td style="width:32%;">
-                            <span style="font-weight:400;font-size:7px;color:#6b7280;">(Last)</span>
+                            <span style="font-weight:400;font-size:5.5px;color:#6b7280;">(Last)</span>
                             <strong>{{ $employee?->last_name ?? 'â€”' }}</strong>
                             &nbsp;
-                            <span style="font-weight:400;font-size:7px;color:#6b7280;">(First)</span>
+                            <span style="font-weight:400;font-size:5.5px;color:#6b7280;">(First)</span>
                             <strong>{{ $employee?->first_name ?? 'â€”' }}</strong>
                             &nbsp;
-                            <span style="font-weight:400;font-size:7px;color:#6b7280;">(Middle)</span>
+                            <span style="font-weight:400;font-size:5.5px;color:#6b7280;">(Middle)</span>
                             <strong>{{ $employee?->middle_name ?? 'â€”' }}</strong>
                         </td>
                     </tr>
@@ -452,12 +123,12 @@
                         <th style="width:50%;">6.B Details of Leave</th>
                     </tr>
                     <tr>
-                        <td style="vertical-align:top;padding:4px 5px;">
+                        <td style="vertical-align:top;padding:2px 3px;">
                             <table class="checkbox-grid">
                                 @foreach(collect($checklist)->chunk(2) as $pair)
                                     <tr>
                                         @foreach($pair as $label => $needles)
-                                            <td style="width:50%;padding:1px 3px 1px 0;">
+                                            <td style="width:50%;padding:0.5px 2px 0.5px 0;">
                                                 <div class="checkbox-item">
                                                     <span class="box">{{ $isChecked($needles) ? 'X' : '' }}</span>
                                                     <span>{{ $label }}</span>
@@ -467,59 +138,56 @@
                                     </tr>
                                 @endforeach
                                 <tr>
-                                    <td style="padding:2px 3px 1px 0;">
+                                    <td style="padding:0.5px 2px 0.5px 0;">
                                         <div class="checkbox-item">
                                             <span class="box"></span>
                                             <span>Others: ________________________</span>
                                         </div>
                                     </td>
-                                    <td style="padding:2px 3px 1px 0;"></td>
+                                    <td style="padding:0.5px 2px 0.5px 0;"></td>
                                 </tr>
                             </table>
                         </td>
-                        <td style="vertical-align:top;padding:4px 5px;">
+                        <td style="vertical-align:top;padding:2px 3px;">
                             <div class="label-sm">In case of Vacation/Special Privilege Leave:</div>
-                            <div class="checkbox-item" style="margin:2px 0;">
+                            <div class="checkbox-item" style="margin:1px 0;">
                                 <span class="box"></span>
                                 <span>Within the Philippines _________________________</span>
                             </div>
-                            <div class="checkbox-item" style="margin:2px 0;">
+                            <div class="checkbox-item" style="margin:1px 0;">
                                 <span class="box"></span>
                                 <span>Abroad (Specify) ____________________________</span>
                             </div>
 
-                            <div class="label-sm" style="margin-top:6px;">In case of Sick Leave:</div>
-                            <div class="checkbox-item" style="margin:2px 0;">
+                            <div class="label-sm" style="margin-top:3px;">In case of Sick Leave:</div>
+                            <div class="checkbox-item" style="margin:1px 0;">
                                 <span class="box"></span>
                                 <span>In Hospital (Specify Illness) ____________________</span>
                             </div>
-                            <div class="checkbox-item" style="margin:2px 0;">
+                            <div class="checkbox-item" style="margin:1px 0;">
                                 <span class="box"></span>
                                 <span>Out Patient (Specify Illness) ___________________</span>
                             </div>
-                            <div class="blank-line" style="margin-bottom:2px;"></div>
 
-                            <div class="label-sm" style="margin-top:6px;">In case of Special Leave Benefits for Women:</div>
-                            <div class="blank-line" style="margin-bottom:2px;"></div>
+                            <div class="label-sm" style="margin-top:3px;">In case of Special Leave Benefits for Women:</div>
                             <div class="label-sm">(Specify Illness) ________________________________</div>
-                            <div class="blank-line" style="margin-bottom:2px;"></div>
 
-                            <div class="label-sm" style="margin-top:6px;">In case of Study Leave:</div>
-                            <div class="checkbox-item" style="margin:2px 0;">
+                            <div class="label-sm" style="margin-top:3px;">In case of Study Leave:</div>
+                            <div class="checkbox-item" style="margin:1px 0;">
                                 <span class="box"></span>
                                 <span>Completion of Master's Degree</span>
                             </div>
-                            <div class="checkbox-item" style="margin:2px 0;">
+                            <div class="checkbox-item" style="margin:1px 0;">
                                 <span class="box"></span>
                                 <span>BAR/Board Examination Review</span>
                             </div>
 
-                            <div class="label-sm" style="margin-top:6px;">Other purpose:</div>
-                            <div class="checkbox-item" style="margin:2px 0;">
+                            <div class="label-sm" style="margin-top:3px;">Other purpose:</div>
+                            <div class="checkbox-item" style="margin:1px 0;">
                                 <span class="box"></span>
                                 <span>Monetization of Leave Credits</span>
                             </div>
-                            <div class="checkbox-item" style="margin:2px 0;">
+                            <div class="checkbox-item" style="margin:1px 0;">
                                 <span class="box"></span>
                                 <span>Terminal Leave</span>
                             </div>
@@ -544,14 +212,14 @@
                                 <span class="box"></span>
                                 <span>Requested</span>
                             </div>
-                            <div class="blank-line" style="margin-top:4px;"></div>
-                            <div style="text-align:center;margin-top:6px;">
+                            <div class="blank-line" style="margin-top:2px;"></div>
+                            <div style="text-align:center;margin-top:3px;">
                                 @if($applicantSignaturePath)
-                                    <img src="{{ $applicantSignaturePath }}" alt="Applicant Signature" style="max-width:120px;max-height:32px;object-fit:contain;margin-bottom:2px;">
+                                    <img src="{{ $applicantSignaturePath }}" alt="Applicant Signature" style="max-width:80px;max-height:22px;object-fit:contain;margin-bottom:1px;">
                                 @endif
-                                <div style="font-size:8px;font-weight:600;">{{ $employeeName }}</div>
-                                <div style="border-top:1px solid #111827;margin-top:2px;padding-top:2px;"></div>
-                                <div class="label-sm" style="text-align:center;margin-top:2px;">(SIGNATURE OF APPLICANT)</div>
+                                <div style="font-size:6.5px;font-weight:600;">{{ $employeeName }}</div>
+                                <div style="border-top:1px solid #111827;margin-top:1px;padding-top:1px;"></div>
+                                <div class="label-sm" style="text-align:center;margin-top:1px;">(SIGNATURE OF APPLICANT)</div>
                             </div>
                         </td>
                     </tr>
@@ -594,11 +262,15 @@
                                     <td style="padding:1px 3px;border:1px solid #111827;text-align:center;">&nbsp;</td>
                                 </tr>
                             </table>
-                            <div style="margin-top:10px;text-align:center;">
-                                <div style="min-height:28px;"></div>
-                                <div style="font-size:8px;font-weight:700;">{{ $certificationOfficerName }}</div>
-                                <div style="font-size:7px;color:#374151;">{{ $certificationOfficerPosition }}</div>
-                                <div style="border-top:1px solid #111827;margin-top:2px;padding-top:2px;"></div>
+                            <div style="margin-top:6px;text-align:center;">
+                                @if($hrSignaturePath)
+                                    <img src="{{ $hrSignaturePath }}" alt="HR Signature" style="max-width:80px;max-height:22px;object-fit:contain;margin-bottom:1px;">
+                                @else
+                                    <div style="min-height:22px;"></div>
+                                @endif
+                                <div style="font-size:6.5px;font-weight:700;">{{ $certificationOfficerName }}</div>
+                                <div style="font-size:6px;color:#374151;">{{ $certificationOfficerPosition }}</div>
+                                <div style="border-top:1px solid #111827;margin-top:1px;padding-top:1px;"></div>
                                 <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                             </div>
                         </td>
@@ -614,11 +286,15 @@
                             <div class="blank-line" style="margin-bottom:3px;"></div>
                             <div class="blank-line" style="margin-bottom:3px;"></div>
                             <div class="blank-line" style="margin-bottom:3px;"></div>
-                            <div style="margin-top:10px;text-align:center;">
-                                <div style="min-height:28px;"></div>
-                                <div style="font-size:8px;font-weight:700;">{{ $recommendationOfficerName }}</div>
-                                <div style="font-size:7px;color:#374151;">{{ $recommendationOfficerPosition }}</div>
-                                <div style="border-top:1px solid #111827;margin-top:2px;padding-top:2px;"></div>
+                            <div style="margin-top:6px;text-align:center;">
+                                @if($divisionChiefSignaturePath)
+                                    <img src="{{ $divisionChiefSignaturePath }}" alt="Division Chief Signature" style="max-width:80px;max-height:22px;object-fit:contain;margin-bottom:1px;">
+                                @else
+                                    <div style="min-height:22px;"></div>
+                                @endif
+                                <div style="font-size:6.5px;font-weight:700;">{{ $recommendationOfficerName }}</div>
+                                <div style="font-size:6px;color:#374151;">{{ $recommendationOfficerPosition }}</div>
+                                <div style="border-top:1px solid #111827;margin-top:1px;padding-top:1px;"></div>
                                 <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                             </div>
                         </td>
@@ -650,76 +326,25 @@
                     </tr>
                 </table>
 
-                <div style="text-align:center;margin-top:8px;">
+                <div style="text-align:center;margin-top:4px;">
                     @if($regionalDirectorSignaturePath)
-                        <img src="{{ $regionalDirectorSignaturePath }}" alt="Regional Director Signature" style="max-width:120px;max-height:32px;object-fit:contain;margin-bottom:2px;">
+                        <img src="{{ $regionalDirectorSignaturePath }}" alt="Regional Director Signature" style="max-width:80px;max-height:22px;object-fit:contain;margin-bottom:1px;">
                     @else
-                        <div style="min-height:28px;"></div>
+                        <div style="min-height:22px;"></div>
                     @endif
-                    <div style="font-size:8px;font-weight:700;">{{ optional($leaveApplication->regionalDirectorSigner)->name ?? 'Regional Director' }}</div>
-                    <div style="font-size:7px;color:#374151;">Regional Director</div>
-                    <div style="border-top:1px solid #111827;margin-top:2px;padding-top:2px;"></div>
+                    <div style="font-size:6.5px;font-weight:700;">{{ optional($leaveApplication->regionalDirectorSigner)->name ?? 'Regional Director' }}</div>
+                    <div style="font-size:6px;color:#374151;">Regional Director</div>
+                    <div style="border-top:1px solid #111827;margin-top:1px;padding-top:1px;"></div>
                     <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                 </div>
             </div>
         </div>
 
-        <!-- ===== SIGNATURES SECTION ===== -->
-        <div class="section">
-            <div class="section-title">IV. Signatures (Workflow)</div>
-            <div class="section-body">
-                <table class="signature-grid">
-                    <tr>
-                        <td>
-                            <div class="signature-block">
-                                <div class="signature-title">Applicant</div>
-                                @if($applicantSignaturePath)
-                                    <img src="{{ $applicantSignaturePath }}" alt="Applicant Signature" class="signature-image">
-                                @endif
-                                <div class="signature-line">{{ $employeeName }}</div>
-                                <div class="signature-meta">{{ $position }}</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="signature-block">
-                                <div class="signature-title">HR</div>
-                                @if($hrSignaturePath)
-                                    <img src="{{ $hrSignaturePath }}" alt="HR Signature" class="signature-image">
-                                @endif
-                                <div class="signature-line">{{ optional($leaveApplication->hrSigner)->name ?? 'HR' }}</div>
-                                <div class="signature-meta">HR Officer</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="signature-block">
-                                <div class="signature-title">Division Chief</div>
-                                @if($divisionChiefSignaturePath)
-                                    <img src="{{ $divisionChiefSignaturePath }}" alt="Division Chief Signature" class="signature-image">
-                                @endif
-                                <div class="signature-line">{{ optional($leaveApplication->divisionChiefSigner)->name ?? 'Division Chief' }}</div>
-                                <div class="signature-meta">Division Chief</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="signature-block">
-                                <div class="signature-title">Regional Director</div>
-                                @if($regionalDirectorSignaturePath)
-                                    <img src="{{ $regionalDirectorSignaturePath }}" alt="Regional Director Signature" class="signature-image">
-                                @endif
-                                <div class="signature-line">{{ optional($leaveApplication->regionalDirectorSigner)->name ?? 'Regional Director' }}</div>
-                                <div class="signature-meta">Regional Director</div>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
         <!-- ===== STATUS ===== -->
-        <div style="text-align:center;margin-top:4px;font-size:8px;color:#4b5563;">
+        <div class="page-spacer"></div>
+        <div style="text-align:center;margin-top:2px;font-size:6.5px;color:#4b5563;">
             <strong>Status:</strong> {{ $statusLabel }}
         </div>
     </div>
 </body>
 </html>
-

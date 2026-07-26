@@ -2,10 +2,8 @@
 @section('title', $employee->full_name)
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center gap-3 mb-4 pb-3 border-bottom">
-    <div>
-        <a href="{{ route('employees.index') }}" class="btn btn-outline-primary btn-sm"><- Back to List</a>
-    </div>
+<div class="employee-page-toolbar">
+    <a href="{{ route('employees.index') }}" class="btn btn-outline-primary btn-sm employee-back-link">← Back to List</a>
 </div>
 
 <div class="container-fluid px-0">
@@ -28,26 +26,23 @@
                                 <img src="{{ asset('storage/' . $employee->profile_image) }}"
                                      alt="{{ $employee->full_name }}"
                                      id="profileAvatar"
-                                     class="rounded-circle"
-                                     style="width: 72px; height: 72px; object-fit: cover; border: 2px solid #dee2e6;">
+                                     class="rounded-circle employee-avatar-image">
                             @else
                                 <div id="profileAvatar"
-                                     class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white fw-bold"
-                                     style="width: 72px; height: 72px; font-size: 1.5rem; border: 2px solid #dee2e6;">
+                                     class="rounded-circle d-flex align-items-center justify-content-center bg-secondary text-white fw-bold employee-avatar-fallback">
                                     {{ $initials ?: '?' }}
                                 </div>
                             @endif
 
                             @if(auth()->user()?->isSuperAdmin() || auth()->user()?->isHr())
                                 <label for="profileImageUpload"
-                                       class="position-absolute rounded-circle d-flex align-items-center justify-content-center"
-                                       style="width: 28px; height: 28px; background: #0066cc; color: #fff; bottom: -4px; right: -4px; cursor: pointer; border: 2px solid #fff; font-size: 14px;">
+                                       class="position-absolute rounded-circle d-flex align-items-center justify-content-center employee-avatar-upload">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                                         <circle cx="12" cy="13" r="4"/>
                                     </svg>
                                 </label>
-                                <form id="profileImageForm" method="POST" action="{{ route('employees.upload-profile-image', $employee) }}" enctype="multipart/form-data" style="display:none;">
+                                <form id="profileImageForm" method="POST" action="{{ route('employees.upload-profile-image', $employee) }}" enctype="multipart/form-data" class="visually-hidden">
                                     @csrf
                                     <input type="file" id="profileImageUpload" name="profile_image" accept="image/*" onchange="this.form.submit()">
                                 </form>
@@ -70,42 +65,34 @@
                         </div>
                     </div>
 
-                    <div class="row g-0">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Employee ID</div>
-                                <span class="badge bg-primary">{{ $employee->employee_id }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Full Name</div>
-                                <div class="fw-semibold">{{ $employee->full_name }}</div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Division</div>
-                                <div class="fw-semibold">{{ optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A' }}</div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Employment Type</div>
-                                <div class="fw-semibold">
-                                    {{ $employee->employment_type === 'PERMANENT' ? 'Permanent' : (($employee->employment_type === 'COS') ? 'COS' : ($employee->employment_type ?? 'N/A')) }}
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Position</div>
-                                <div class="fw-semibold">{{ $employee->position }}</div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Date of Birth (DOB)</div>
-                                <div class="fw-semibold">{{ optional($employee->dob)->format('F d, Y') ?? '-' }}</div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                                <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">Added On</div>
-                                <div class="fw-semibold">{{ optional($employee->created_at)->format('M d, Y h:i A') ?? '-' }}</div>
-                            </div>
+                    <dl class="employee-details-grid mb-0">
+                        <div class="employee-detail-tile">
+                            <dt>Employee ID</dt>
+                            <dd><span class="badge bg-primary">{{ $employee->employee_id }}</span></dd>
                         </div>
-                    </div>
+                        <div class="employee-detail-tile">
+                            <dt>Division</dt>
+                            <dd>{{ optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A' }}</dd>
+                        </div>
+                        <div class="employee-detail-tile">
+                            <dt>Employment Type</dt>
+                            <dd>{{ $employee->employment_type === 'PERMANENT' ? 'Permanent' : (($employee->employment_type === 'COS') ? 'COS' : ($employee->employment_type ?? 'N/A')) }}</dd>
+                        </div>
+                        <div class="employee-detail-tile">
+                            <dt>Position</dt>
+                            <dd>{{ $employee->position }}</dd>
+                        </div>
+                        <div class="employee-detail-tile">
+                            <dt>Date of Birth</dt>
+                            <dd>{{ optional($employee->dob)->format('F d, Y') ?? '-' }}</dd>
+                        </div>
+                        <div class="employee-detail-tile">
+                            <dt>Added On</dt>
+                            <dd>{{ optional($employee->created_at)->format('M d, Y h:i A') ?? '-' }}</dd>
+                        </div>
+                    </dl>
 
-                    <div class="border-top mt-3 pt-3">
+                    <div class="employee-action-bar">
                         <form method="POST" action="{{ route('employees.destroy', $employee) }}" class="d-inline"
                               onsubmit="return confirm('Delete {{ $employee->full_name }}? This cannot be undone.')">
                             @csrf
@@ -113,12 +100,8 @@
                             <button class="btn btn-danger btn-sm">Delete Employee</button>
                         </form>
 
-                        <button type="button" onclick="openLeaveModal()" class="btn btn-outline-primary btn-sm ms-2">
-                            Apply Leave
-                        </button>
-
                         @auth
-                            <button type="button" onclick="openSignatureModal()" class="btn btn-outline-secondary btn-sm ms-2">
+                            <button type="button" onclick="openSignatureModal()" class="btn btn-outline-secondary btn-sm">
                                 {{ auth()->user()->signature_path ? 'Update My Signature' : 'Save My Signature' }}
                             </button>
                         @endauth
@@ -142,13 +125,13 @@
                     @else
                         <div class="alert alert-warning mb-3" role="alert">
                             Drive folder is being created. Refresh in a few seconds.
-                            <a href="{{ route('employees.show', $employee) }}" class="ms-2" style="text-decoration: underline; color: #92400e;">Refresh</a>
+                            <a href="{{ route('employees.show', $employee) }}" class="ms-2 drive-refresh-link">Refresh</a>
                         </div>
                     @endif
 
                     @if($employee->drive_folder_id)
                         <div class="border rounded-3 p-3 bg-light">
-                            <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .05em;">File Upload</div>
+                            <div class="text-uppercase fw-bold text-muted file-upload-label">File Upload</div>
 
                             <form method="POST" action="{{ route('employees.upload', $employee) }}" enctype="multipart/form-data" class="mt-3">
                                 @csrf
@@ -232,10 +215,17 @@
         $dayBasedCreditFactor = 10;
     @endphp
 
-<div class="card mt-4">
+<div class="card mt-4 leave-overview-card">
         <div class="card-body">
-            <h3 class="card-title h5 fw-bold mb-3">Leave Benefits</h3>
+            <div class="leave-overview-heading">
+                <div>
+                    <p class="leave-section-eyebrow">Time off</p>
+                    <h3 class="card-title h5 fw-bold mb-0">Leave Benefits</h3>
+                </div>
+                <button type="button" onclick="openLeaveModal()" class="btn btn-primary btn-sm">Apply Leave</button>
+            </div>
 
+            <div class="leave-credit-grid">
             @foreach($benefitRows as $row)
                 @php
                     $label = $row[0];
@@ -251,25 +241,27 @@
                     }
                 @endphp
 
-                <div class="d-flex justify-content-between align-items-center py-2 border-top">
-                    <div class="text-uppercase fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: .02em;">{{ $label }}</div>
-                    <div class="fw-semibold">
+                <div class="leave-credit-tile">
+                    <div class="leave-credit-label">{{ $label }}</div>
+                    <div class="leave-credit-value">
                         @if(is_int($remainingDays))
-                            {{ $remainingDays }} days annually
+                            <span class="leave-credit-number">{{ $remainingDays }}</span> <span class="leave-credit-unit">days annually</span>
                         @elseif($isCtoBenefit)
-                            {{ $ctoTotalHours }} hours
+                            <span class="leave-credit-number">{{ $ctoTotalHours }}</span> <span class="leave-credit-unit">hours</span>
                         @else
                             {{ $remainingDays ?? 'As per policy' }}
                         @endif
                     </div>
                 </div>
             @endforeach
+            </div>
 
-            <div class="mt-4 pt-3 border-top">
-                <div class="fw-bold" style="color: #0f172a;">Leave Credits History</div>
-
-                <div class="table-responsive mt-3">
-                    <table class="table table-sm table-hover align-middle mb-0">
+            <div class="leave-records-stack mt-4">
+                <details class="leave-record-panel" open>
+                    <summary><span>Leave Credits History</span><span class="leave-record-count">{{ $benefits->count() }} record{{ $benefits->count() === 1 ? '' : 's' }}</span></summary>
+                    <div class="leave-record-panel-content">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0 leave-records-table">
                         <thead class="table-light">
                             <tr>
                                 <th>Credit Type</th>
@@ -296,11 +288,14 @@
                         </tbody>
                     </table>
                 </div>
+                    </div>
+                </details>
 
-                @if($leaveApplications->isNotEmpty())
-                    <div class="fw-bold mt-4" style="color: #0f172a;">Leave Applications</div>
-                    <div class="table-responsive mt-3">
-                        <table class="table table-sm table-hover align-middle mb-0">
+                <details class="leave-record-panel">
+                    <summary><span>Leave Applications</span><span class="leave-record-count">{{ $leaveApplications->count() }} application{{ $leaveApplications->count() === 1 ? '' : 's' }}</span></summary>
+                    <div class="leave-record-panel-content">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0 leave-records-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>Leave Type</th>
@@ -349,7 +344,8 @@
                             </tbody>
                         </table>
                     </div>
-                @endif
+                    </div>
+                </details>
             </div>
         </div>
     </div>
@@ -357,6 +353,47 @@
 
 {{-- Leave Application Modal --}}
 <style>
+    .employee-page-toolbar { margin-bottom: 1.5rem; }
+    .employee-back-link { border-radius: 0.5rem; }
+    .employee-avatar-image, .employee-avatar-fallback { width: 72px; height: 72px; border: 2px solid #dee2e6; }
+    .employee-avatar-image { object-fit: cover; }
+    .employee-avatar-fallback { font-size: 1.5rem; }
+    .employee-avatar-upload { width: 28px; height: 28px; right: -4px; bottom: -4px; border: 2px solid #fff; background: #0066cc; color: #fff; cursor: pointer; font-size: 14px; }
+    .employee-details-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+    .employee-detail-tile, .leave-credit-tile { padding: 0.875rem 1rem; border: 1px solid #e2e8f0; border-radius: 0.625rem; background: #f8fafc; }
+    .employee-detail-tile dt, .leave-credit-label, .file-upload-label { margin-bottom: 0.35rem; color: #64748b; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .employee-detail-tile dd { margin: 0; color: #1e293b; font-weight: 600; }
+    .employee-action-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+    .employee-action-bar .ms-2 { margin-left: 0 !important; }
+    .drive-refresh-link { color: #92400e; text-decoration: underline; }
+    .leave-overview-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+    .leave-section-eyebrow { margin: 0 0 0.25rem; color: #64748b; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .leave-credit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.75rem; }
+    .leave-credit-value { color: #0f172a; font-size: 1.1rem; font-weight: 700; display: flex; align-items: baseline; gap: 0.25rem; }
+    .leave-credit-number { font-size: 1.5rem; font-weight: 800; color: #0f172a; line-height: 1; }
+    .leave-credit-unit { color: #64748b; font-size: 0.75rem; font-weight: 500; }
+    .leave-records-stack { display: grid; gap: 0.75rem; }
+    .leave-record-panel { overflow: hidden; border: 1px solid #e2e8f0; border-radius: 0.625rem; background: #fff; }
+    .leave-record-panel summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; color: #0f172a; cursor: pointer; font-weight: 700; list-style: none; }
+    .leave-record-panel summary::-webkit-details-marker { display: none; }
+    .leave-record-panel summary::after { content: '⌄'; margin-left: 0.25rem; color: #64748b; font-size: 1.25rem; line-height: 1; }
+    .leave-record-panel[open] summary::after { transform: rotate(180deg); }
+    .leave-record-count { margin-left: auto; color: #64748b; font-size: 0.8rem; font-weight: 600; }
+    .leave-record-panel-content { padding: 0 1rem 1rem; }
+    .leave-records-table { font-size: 0.875rem; }
+    .leave-records-table th { border-top: 0; color: #64748b; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .leave-sign-heading { color: #0f172a; }
+    .leave-sign-hint { font-size: 0.88rem; }
+    .leave-sign-panel { display: none; }
+    .leave-sign-panel.is-open { display: block; }
+    .leave-signature-upload.is-hidden { display: none; }
+    .signature-preview-wide { max-width: 240px; max-height: 120px; object-fit: contain; }
+    .signature-preview-medium { max-width: 180px; max-height: 80px; object-fit: contain; }
+    .signature-preview-large { max-width: 220px; max-height: 110px; object-fit: contain; }
+    @media (max-width: 575.98px) {
+        .employee-details-grid { grid-template-columns: 1fr; }
+        .leave-overview-heading { align-items: flex-start; flex-direction: column; }
+    }
     .leave-modal-overlay {
         display: none;
         position: fixed;
@@ -550,13 +587,13 @@
                 <div class="mt-3 p-3 border rounded-3 bg-light">
                     <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
                         <div>
-                            <div class="fw-bold" style="color:#0f172a;">Sign Leave Application</div>
-                            <div class="text-muted" style="font-size:0.88rem;">Use your saved signature or upload a new one, then confirm with your password.</div>
+                            <div class="fw-bold leave-sign-heading">Sign Leave Application</div>
+                            <div class="text-muted leave-sign-hint">Use your saved signature or upload a new one, then confirm with your password.</div>
                         </div>
                         <button type="button" onclick="toggleLeaveSignSection()" class="btn btn-outline-primary btn-sm">Sign</button>
                     </div>
 
-                    <div id="leaveSignPanel" class="mt-3" style="display: none;">
+                    <div id="leaveSignPanel" class="mt-3 leave-sign-panel">
                         <div class="mb-3">
                             <label class="leave-form-label">Signature Option</label>
                             <div class="d-grid gap-2">
@@ -578,7 +615,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-3" id="leaveSignatureUploadWrapper" style="display: {{ auth()->user()?->signature_path ? 'none' : 'block' }};">
+                        <div class="mb-3 leave-signature-upload {{ auth()->user()?->signature_path ? 'is-hidden' : '' }}" id="leaveSignatureUploadWrapper">
                             <label class="leave-form-label">Signature Image</label>
                             <input type="file" name="signature_path" id="leaveSignatureInput" class="leave-form-control" accept="image/png,image/jpeg">
                             <small class="text-muted">Upload a PNG or JPG if you want to replace your saved signature.</small>
@@ -588,7 +625,7 @@
                             <div class="mb-3">
                                 <label class="leave-form-label">Current Signature Preview</label>
                                 <div class="border rounded-3 bg-white p-2 d-inline-block">
-                                    <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Saved Signature" style="max-width: 240px; max-height: 120px; object-fit: contain;">
+                                    <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Saved Signature" class="signature-preview-wide">
                                 </div>
                             </div>
                         @endif
@@ -648,7 +685,7 @@
                         <input type="file" name="signature_path" class="leave-form-control" accept="image/png,image/jpeg">
                         @if(auth()->user()->signature_path)
                             <div class="mt-2">
-                                <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Signature" class="img-fluid border rounded bg-white p-1" style="max-width: 180px; max-height: 80px; object-fit: contain;">
+                                <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Signature" class="img-fluid border rounded bg-white p-1 signature-preview-medium">
                             </div>
                         @endif
                     </div>
@@ -707,7 +744,7 @@
                 @if(auth()->user()?->signature_path)
                     <div class="mt-3">
                         <label class="leave-form-label">Current Signature</label>
-                        <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Current Signature" class="img-fluid border rounded bg-white p-2" style="max-width: 220px; max-height: 110px; object-fit: contain;">
+                        <img src="{{ asset('storage/' . auth()->user()->signature_path) }}" alt="Current Signature" class="img-fluid border rounded bg-white p-2 signature-preview-large">
                     </div>
                 @endif
             </div>
@@ -815,8 +852,8 @@
         const panel = document.getElementById('leaveSignPanel');
         if (!panel) return;
 
-        const isVisible = panel.style.display === 'block';
-        panel.style.display = isVisible ? 'none' : 'block';
+        const isVisible = panel.classList.contains('is-open');
+        panel.classList.toggle('is-open', !isVisible);
 
         if (!isVisible) {
             syncLeaveSignatureMode();
@@ -826,7 +863,7 @@
     function closeLeaveSignSection() {
         const panel = document.getElementById('leaveSignPanel');
         if (panel) {
-            panel.style.display = 'none';
+            panel.classList.remove('is-open');
         }
     }
 
@@ -836,12 +873,12 @@
         const uploadInput = document.getElementById('leaveSignatureInput');
         const panel = document.getElementById('leaveSignPanel');
 
-        if (!panel || panel.style.display === 'none') {
+        if (!panel || !panel.classList.contains('is-open')) {
             return;
         }
 
         if (uploadWrapper) {
-            uploadWrapper.style.display = selected === 'upload' ? 'block' : 'none';
+            uploadWrapper.classList.toggle('is-hidden', selected !== 'upload');
         }
 
         if (uploadInput) {

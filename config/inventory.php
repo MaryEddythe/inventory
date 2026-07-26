@@ -14,7 +14,7 @@ return [
             'slug' => 'employee',
             'name' => 'Employee',
             'is_superadmin' => false,
-            'sidebar_item_keys' => ['profile', 'employees', 'calendar'],
+            'sidebar_item_keys' => ['employees', 'calendar'],
         ],
         [
             'slug' => 'division-chief',
@@ -196,15 +196,6 @@ return [
             'sort_order' => 60,
         ],
         [
-            'key' => 'profile',
-            'label' => 'Profile',
-            'route_name' => 'profile',
-            'route_pattern' => 'profile*',
-            'icon' => 'bi bi-person-circle',
-            'parent_key' => null,
-            'sort_order' => 5,
-        ],
-        [
             'key' => 'leave-applications',
             'label' => 'Leave Applications',
             'route_name' => 'leave-applications.index',
@@ -230,15 +221,6 @@ return [
             'icon' => null,
             'parent_key' => 'leave-credits',
             'sort_order' => 10,
-        ],
-        [
-            'key' => 'credits.index',
-            'label' => 'Leave Credits',
-            'route_name' => 'credits.index',
-            'route_pattern' => 'credits.index',
-            'icon' => null,
-            'parent_key' => 'leave-credits',
-            'sort_order' => 20,
         ],
     ],
 ];

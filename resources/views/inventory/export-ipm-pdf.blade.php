@@ -130,7 +130,7 @@
                         <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->description }}</td>
                         <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">
                             <span class="{{ $item->condition === 'Functional' ? 'pdf-status-new' : 'pdf-status-replace' }}">
-                                {{ $item->condition === 'Functional' ? 'OK' : 'BAD' }}
+                                {{ $item->condition === 'Functional' ? 'Functional' : 'Nonfunctional' }}
                             </span>
                         </td>
                         <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;"><span class="{{ $item->system_boot_up ? 'pdf-checkmark' : 'pdf-cross' }}"></span></td>
@@ -172,7 +172,7 @@
                 <td class="pdf-col-30 pdf-text-right" style="width: 30%; text-align: right; padding-left: 10px;">
                     <span class="pdf-signature-label" style="font-weight: bold; font-size: 11px;">Approved by:</span><br>
                     <span class="pdf-signature-name" style="font-weight: bold; margin-top: 30px; display: block;">CECILIA L. OCHAVO-SAYCON</span><br>
-                    <span class="pdf-signature-title" style="font-size: 10px;">ICT Focal Person</span>
+                    <span class="pdf-signature-title" style="font-size: 10px;">Regional Director</span>
                 </td>
             </tr>
         </table>

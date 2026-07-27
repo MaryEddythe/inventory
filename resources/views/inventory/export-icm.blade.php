@@ -289,7 +289,7 @@
                     <span style="font-size: 10px;">Computer Maintenance Technologist I</span>
                 </td>
 
-                <!-- Center cell for Regional Director -->
+                <!-- Center cell for ict focal -->
                 <td style="width: 40%; text-align: center;">
                     <span class="icm-signature-label">Reviewed by:</span><br>
                     <span class="icm-signature-name" style="margin-top: 30px; display: block;">MAY FLORENCE A. PABELONIO</span><br>

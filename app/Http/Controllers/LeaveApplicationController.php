@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmployeeLeaveApplication;
+use App\Models\Department;
 use App\Models\Employee;
+use App\Models\Role;
 use App\Models\User;
 use App\Notifications\LeaveApplicationSubmittedNotification;
 use App\Notifications\LeaveApplicationPendingReviewNotification;
@@ -16,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -454,15 +457,21 @@ class LeaveApplicationController extends Controller
             ];
         }
 
-        return match ($user->role?->slug) {
-            'hr' => [PendingHr::class, 'pending_hr'],
-            'division-chief',
-            'division-chief-ord',
-            'division-chief-msesdd',
-            'division-chief-mmd' => [PendingDivisionChief::class, 'pending_division_chief'],
-            'rd' => [PendingRegionalDirector::class, 'pending_regional_director'],
-            default => [],
-        };
+        $roleSlug = (string) ($user->role?->slug ?? '');
+
+        if ($roleSlug === 'hr') {
+            return [PendingHr::class, 'pending_hr'];
+        }
+
+        if ($this->isDivisionChiefRoleSlug($roleSlug)) {
+            return [PendingDivisionChief::class, 'pending_division_chief'];
+        }
+
+        if ($roleSlug === 'rd') {
+            return [PendingRegionalDirector::class, 'pending_regional_director'];
+        }
+
+        return [];
     }
 
     protected function pendingApplicationsTitleForUser(?User $user): string
@@ -471,15 +480,21 @@ class LeaveApplicationController extends Controller
             return 'Pending Leave Applications';
         }
 
-        return match ($user->role?->slug) {
-            'hr' => 'Pending Leave Applications for HR',
-            'division-chief' => 'Pending Leave Applications for FAD Division Chief',
-            'division-chief-ord' => 'Pending Leave Applications for ORD Division Chief',
-            'division-chief-msesdd' => 'Pending Leave Applications for MSESDD Division Chief',
-            'division-chief-mmd' => 'Pending Leave Applications for MMD Division Chief',
-            'rd' => 'Pending Leave Applications for Regional Director',
-            default => 'Pending Leave Applications',
-        };
+        $roleSlug = (string) ($user->role?->slug ?? '');
+
+        if ($roleSlug === 'hr') {
+            return 'Pending Leave Applications for HR';
+        }
+
+        if ($this->isDivisionChiefRoleSlug($roleSlug)) {
+            return 'Pending Leave Applications for ' . $this->divisionChiefRoleLabelForSlug($roleSlug);
+        }
+
+        if ($roleSlug === 'rd') {
+            return 'Pending Leave Applications for Regional Director';
+        }
+
+        return 'Pending Leave Applications';
     }
 
     protected function pendingApplicationsSubtitleForUser(?User $user): string
@@ -492,15 +507,21 @@ class LeaveApplicationController extends Controller
             return 'All leave requests waiting for any approval stage.';
         }
 
-        return match ($user->role?->slug) {
-            'hr' => 'Leave requests waiting for HR signature.',
-            'division-chief' => 'Leave requests waiting for FAD Division Chief signature.',
-            'division-chief-ord' => 'Leave requests waiting for ORD Division Chief signature.',
-            'division-chief-msesdd' => 'Leave requests waiting for MSESDD Division Chief signature.',
-            'division-chief-mmd' => 'Leave requests waiting for MMD Division Chief signature.',
-            'rd' => 'Leave requests waiting for Regional Director signature.',
-            default => 'Leave requests waiting for approval.',
-        };
+        $roleSlug = (string) ($user->role?->slug ?? '');
+
+        if ($roleSlug === 'hr') {
+            return 'Leave requests waiting for HR signature.';
+        }
+
+        if ($this->isDivisionChiefRoleSlug($roleSlug)) {
+            return 'Leave requests waiting for ' . $this->divisionChiefRoleLabelForSlug($roleSlug) . ' signature.';
+        }
+
+        if ($roleSlug === 'rd') {
+            return 'Leave requests waiting for Regional Director signature.';
+        }
+
+        return 'Leave requests waiting for approval.';
     }
 
     protected function notifyRoleUsers(array $roleSlugs, EmployeeLeaveApplication $application, string $stepLabel, string $headline, string $message): void
@@ -551,12 +572,42 @@ class LeaveApplicationController extends Controller
 
     protected function divisionChiefRoleMap(): array
     {
-        return [
-            1 => ['slug' => 'division-chief', 'label' => 'FAD Division Chief'],
+        $fallback = [
+            1 => ['slug' => 'division-chief-fad', 'label' => 'FAD Division Chief'],
             3 => ['slug' => 'division-chief-ord', 'label' => 'ORD Division Chief'],
             4 => ['slug' => 'division-chief-msesdd', 'label' => 'MSESDD Division Chief'],
+            5 => ['slug' => 'division-chief-gd', 'label' => 'GD Division Chief'],
             6 => ['slug' => 'division-chief-mmd', 'label' => 'MMD Division Chief'],
         ];
+
+        if (
+            ! Schema::connection('inventory')->hasTable('departments')
+            || ! Schema::connection('inventory')->hasColumn('departments', 'division_chief_role_id')
+        ) {
+            return $fallback;
+        }
+
+        $departments = Department::query()
+            ->whereNotNull('division_chief_role_id')
+            ->get(['dept_no', 'division_chief_role_id']);
+
+        $roles = Role::query()
+            ->whereIn('id', $departments->pluck('division_chief_role_id')->filter()->unique()->values())
+            ->get(['id', 'name', 'slug'])
+            ->keyBy('id');
+
+        foreach ($departments as $department) {
+            $role = $roles->get($department->division_chief_role_id);
+
+            if ($role) {
+                $fallback[(int) $department->dept_no] = [
+                    'slug' => $role->slug,
+                    'label' => $role->name,
+                ];
+            }
+        }
+
+        return $fallback;
     }
 
     protected function divisionChiefRoleSlugForEmployee(EmployeeLeaveApplication $leaveApplication): string
@@ -577,6 +628,17 @@ class LeaveApplicationController extends Controller
         }
 
         return null;
+    }
+
+    protected function divisionChiefRoleLabelForSlug(string $slug): string
+    {
+        foreach ($this->divisionChiefRoleMap() as $role) {
+            if ($role['slug'] === $slug) {
+                return $role['label'];
+            }
+        }
+
+        return 'Division Chief';
     }
 
     protected function isDivisionChiefRoleSlug(?string $slug): bool

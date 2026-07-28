@@ -7,14 +7,14 @@
         :root { --total-records: "{{ $items->count() }}"; }
         
         @page {
-            size: 14in 8.5in landscape;
-            margin: 0.25in 0.25in 0.25in 0.25in;
+            size: 13in 8.5in;
+            margin: 0.5in 0.5in 0.5in 0.5in;
         }
 
         @media print {
             @page {
-                size: 14in 8.5in landscape;
-                margin: 0.25in 0.25in 0.25in 0.25in;
+                size: 13in 8.5in;
+                margin: 0.5in 0.5in 0.5in 0.5in;
             }
 
             * {
@@ -24,7 +24,7 @@
 
             body {
                 margin: 0 !important;
-                padding: 0.25in 0.25in !important;
+                padding: 0.5in 0.5in !important;
             }
             
             html {
@@ -40,7 +40,7 @@
         
         body {
             margin: 0;
-            padding: 0.25in 0.25in;
+            padding: 0.5in 0.5in;
             font-size: 11px;
             font-family: Arial, sans-serif;
         }
@@ -80,19 +80,19 @@
                     <th colspan="13" class="pdf-bg-dark" style="padding: 4px; background-color: #333; color: white;">DETAILED INVENTORY LISTING</th>
                 </tr>
                 <tr style="background-color: #f0f0f0;">
-                    <th class="pdf-col-2 pdf-text-center" style="width: 3%; padding: 4px; border: 1px solid #ccc;">No</th>
-                    <th class="pdf-col-10" style="width: 7%; padding: 4px; border: 1px solid #ccc;">Department</th>
-                    <th class="pdf-col-10" style="width: 7%; padding: 4px; border: 1px solid #ccc;">End User</th>
-                    <th class="pdf-col-9" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Classification</th>
-                    <th class="pdf-col-15" style="width: 13%; padding: 4px; border: 1px solid #ccc;">Description</th>
-                    <th class="pdf-col-8" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Serial No</th>
-                    <th class="pdf-col-8" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Property No</th>
-                    <th class="pdf-col-8 pdf-text-right" style="width: 9%; padding: 4px; border: 1px solid #ccc;">Unit Price</th>
-                    <th class="pdf-col-5" style="width: 6%; padding: 4px; border: 1px solid #ccc;">CO/MOOE</th>
-                    <th class="pdf-col-6 pdf-text-center" style="width: 7%; padding: 4px; border: 1px solid #ccc;">Date Acquired</th>
-                    <th class="pdf-col-12" style="width: 9%; padding: 4px; border: 1px solid #ccc;">Remarks</th>
-                    <th class="pdf-col-5 pdf-text-center" style="width: 5%; padding: 4px; border: 1px solid #ccc;">Status</th>
-                    <th class="pdf-col-8 pdf-text-center" style="width: 10%; padding: 4px; border: 1px solid #ccc;">Serviceability</th>
+                    <th class="pdf-text-center" style="width: 3%; padding: 4px; border: 1px solid #ccc;">No</th>
+                    <th style="width: 7%; padding: 4px; border: 1px solid #ccc;">Department</th>
+                    <th style="width: 7%; padding: 4px; border: 1px solid #ccc;">End User</th>
+                    <th style="width: 7%; padding: 4px; border: 1px solid #ccc;">Classification</th>
+                    <th style="width: 18%; padding: 4px; border: 1px solid #ccc;">Description</th>
+                    <th style="width: 7%; padding: 4px; border: 1px solid #ccc;">Serial No</th>
+                    <th style="width: 7%; padding: 4px; border: 1px solid #ccc;">Property No</th>
+                    <th class="pdf-text-right" style="width: 8%; padding: 4px; border: 1px solid #ccc;">Unit Price</th>
+                    <th style="width: 5%; padding: 4px; border: 1px solid #ccc;">CO/MOOE</th>
+                    <th class="pdf-text-center" style="width: 7%; padding: 4px; border: 1px solid #ccc;">Date Acquired</th>
+                    <th style="width: 10%; padding: 4px; border: 1px solid #ccc;">Remarks</th>
+                    <th class="pdf-text-center" style="width: 5%; padding: 4px; border: 1px solid #ccc;">Status</th>
+                    <th class="pdf-text-center" style="width: 9%; padding: 4px; border: 1px solid #ccc;">Serviceability</th>
                 </tr>
             </thead>
             <tbody>

@@ -8,14 +8,14 @@
         :root { --total-records: "{{ $items->count() }}"; }
         
         @page {
-            size: 14in 8.5in landscape;
-            margin: 0.25in 0.25in 0.25in 0.25in;
+            size: 13in 8.5in;
+            margin: 0.5in 0.5in 0.5in 0.5in;
         }
 
         @media print {
             @page {
-                size: 14in 8.5in landscape;
-                margin: 0.25in 0.25in 0.25in 0.25in;
+                size: 13in 8.5in;
+                margin: 0.5in 0.5in 0.5in 0.5in;
             }
 
             * {
@@ -25,7 +25,7 @@
 
             body {
                 margin: 0 !important;
-                padding: 0.25in 0.25in !important;
+                padding: 0.5in 0.5in !important;
             }
             
             html {
@@ -41,7 +41,7 @@
         
         body {
             margin: 0;
-            padding: 0.25in 0.25in;
+            padding: 0.5in 0.5in;
             font-size: 11px;
             font-family: Arial, sans-serif;
         }
@@ -84,27 +84,44 @@
 
     <!-- Detailed IPM -->
     <div class="pdf-mt-3" style="margin: 8px 0;">
-        <table class="pdf-table pdf-table-striped" style="font-size: 9px;">
+        <table class="pdf-table pdf-table-striped" style="font-size: 9px; width: 100%; table-layout: fixed;">
+            <colgroup>
+                <col style="width: 32px">
+                <col style="width: 48px">
+                <col style="width: 70px">
+                <col style="width: 70px">
+                <col style="width: 380px">
+                <col style="width: 80px">
+                <col style="width: 30px">
+                <col style="width: 30px">
+                <col style="width: 30px">
+                <col style="width: 30px">
+                <col style="width: 30px">
+                <col style="width: 65px">
+                <col style="width: 75px">
+                <col style="width: 50px">
+                <col style="width: 50px">
+            </colgroup>
             <thead>
                 <tr>
                     <th colspan="15" class="pdf-bg-dark" style="padding: 4px; background-color: #333; color: white;">DETAILED INVENTORY LISTING</th>
                 </tr>
                 <tr style="background-color: #f0f0f0;">
-                    <th class="pdf-col-5 pdf-text-center" style="width: 2%; padding: 3px; border: 1px solid #ccc;">No</th>
-                    <th class="pdf-col-8" style="width: 5%; padding: 3px; border: 1px solid #ccc;">Div.</th>
-                    <th class="pdf-col-10" style="width: 7%; padding: 3px; border: 1px solid #ccc;">User</th>
-                    <th class="pdf-col-6" style="width: 8%; padding: 3px; border: 1px solid #ccc;">Type</th>
-                    <th class="pdf-col-12" style="width: 10%; padding: 3px; border: 1px solid #ccc;">Desc</th>
-                    <th class="pdf-col-6" style="width: 7%; padding: 3px; border: 1px solid #ccc; text-align: center;">Condition</th>
-                    <th class="pdf-col-5" style="width: 5%; padding: 3px; border: 1px solid #ccc; text-align: center;">Boot</th>
-                    <th class="pdf-col-5" style="width: 5%; padding: 3px; border: 1px solid #ccc; text-align: center;">HW</th>
-                    <th class="pdf-col-5" style="width: 5%; padding: 3px; border: 1px solid #ccc; text-align: center;">Perf</th>
-                    <th class="pdf-col-5" style="width: 5%; padding: 3px; border: 1px solid #ccc; text-align: center;">Cables</th>
-                    <th class="pdf-col-5" style="width: 5%; padding: 3px; border: 1px solid #ccc; text-align: center;">Per</th>
-                    <th class="pdf-col-8" style="width: 10%; padding: 3px; border: 1px solid #ccc;">Rec.</th>
-                    <th class="pdf-col-6" style="width: 6%; padding: 3px; border: 1px solid #ccc; text-align: center;">Date</th>
-                    <th class="pdf-col-6" style="width: 5%; padding: 3px; border: 1px solid #ccc; text-align: center;">Start</th>
-                    <th class="pdf-col-6" style="width: 5%; padding: 3px; border: 1px solid #ccc; text-align: center;">End</th>
+                    <th style="width: 32px; padding: 3px; border: 1px solid #ccc; text-align: center;">No</th>
+                    <th style="width: 48px; padding: 3px; border: 1px solid #ccc;">Div.</th>
+                    <th style="width: 70px; padding: 3px; border: 1px solid #ccc;">User</th>
+                    <th style="width: 70px; padding: 3px; border: 1px solid #ccc;">Type</th>
+                    <th style="width: 380px; padding: 3px; border: 1px solid #ccc;">Desc</th>
+                    <th style="width: 80px; padding: 3px; border: 1px solid #ccc; text-align: center;">Condition</th>
+                    <th style="width: 30px; padding: 3px; border: 1px solid #ccc; text-align: center;">Boot</th>
+                    <th style="width: 30px; padding: 3px; border: 1px solid #ccc; text-align: center;">HW</th>
+                    <th style="width: 30px; padding: 3px; border: 1px solid #ccc; text-align: center;">Perf</th>
+                    <th style="width: 30px; padding: 3px; border: 1px solid #ccc; text-align: center;">Cables</th>
+                    <th style="width: 30px; padding: 3px; border: 1px solid #ccc; text-align: center;">Per</th>
+                    <th style="width: 65px; padding: 3px; border: 1px solid #ccc;">Rec.</th>
+                    <th style="width: 75px; padding: 3px; border: 1px solid #ccc; text-align: center;">Date</th>
+                    <th style="width: 50px; padding: 3px; border: 1px solid #ccc; text-align: center;">Start</th>
+                    <th style="width: 50px; padding: 3px; border: 1px solid #ccc; text-align: center;">End</th>
                 </tr>
             </thead>
             <tbody>

@@ -104,7 +104,7 @@ return [
             'slug' => 'hr',
             'name' => 'HR',
             'is_superadmin' => false,
-            'sidebar_item_keys' => ['employees', 'calendar', 'leave-applications'],
+            'sidebar_item_keys' => ['employees', 'calendar', 'leave-applications', 'leave-ledgers'],
         ],
         [
             'slug' => 'rd',
@@ -266,6 +266,15 @@ return [
             'icon' => 'bi bi-file-earmark-text',
             'parent_key' => null,
             'sort_order' => 65,
+        ],
+        [
+            'key' => 'leave-ledgers',
+            'label' => 'Leave Ledgers',
+            'route_name' => 'leave-ledgers.index',
+            'route_pattern' => 'leave-ledgers.*',
+            'icon' => 'bi bi-journal-text',
+            'parent_key' => null,
+            'sort_order' => 66,
         ],
         [
             'key' => 'leave-credits',

@@ -144,6 +144,10 @@ class User extends Authenticatable
 
     protected function mapSidebarItem(SidebarItem $item, array $allowedIds): ?array
     {
+        if ($item->key === 'leave-ledgers' && (int) $this->role_id !== 4) {
+            return null;
+        }
+
         $children = $item->children
             ->map(fn (SidebarItem $child) => $this->mapSidebarItem($child, $allowedIds))
             ->filter()

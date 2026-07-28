@@ -5,6 +5,7 @@ use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\LeaveApplicationController;
+use App\Http\Controllers\LeaveLedgerController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\SidebarAccessController;
 use Laravel\Fortify\Http\Controllers\ConfirmablePasswordController;
@@ -144,6 +145,12 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::post('/leave-applications/{leaveApplication}/sign/hr', [LeaveApplicationController::class, 'signHr'])->name('leave-applications.sign-hr');
     Route::post('/leave-applications/{leaveApplication}/sign/division-chief', [LeaveApplicationController::class, 'signDivisionChief'])->name('leave-applications.sign-division-chief');
     Route::post('/leave-applications/{leaveApplication}/sign/regional-director', [LeaveApplicationController::class, 'signRegionalDirector'])->name('leave-applications.sign-regional-director');
+
+    // HR Leave Ledgers
+    Route::get('/leave-ledgers', [LeaveLedgerController::class, 'index'])->name('leave-ledgers.index');
+    Route::get('/leave-ledgers/{employee}', [LeaveLedgerController::class, 'show'])->name('leave-ledgers.show');
+    Route::get('/leave-ledgers/{employee}/edit', [LeaveLedgerController::class, 'edit'])->name('leave-ledgers.edit');
+    Route::put('/leave-ledgers/{employee}', [LeaveLedgerController::class, 'update'])->name('leave-ledgers.update');
 
     // Credits Routes
     Route::get('/credits', [CreditsController::class, 'index'])->name('credits.index');

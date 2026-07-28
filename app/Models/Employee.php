@@ -97,6 +97,11 @@ class Employee extends Model
         return $this->belongsTo(Division::class, 'division_id');
     }
 
+    public function departmentRecord()
+    {
+        return $this->belongsTo(Department::class, 'department', 'dept_no');
+    }
+
 
     public function files()
     {

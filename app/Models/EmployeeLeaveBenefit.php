@@ -16,6 +16,8 @@ class EmployeeLeaveBenefit extends Model
         'credit_type',
         'start_date',
         'end_date',
+        'date_applied',
+        'date_approved',
         'credit_hours',
         'hours_used',
         'hours_remaining',
@@ -26,6 +28,8 @@ class EmployeeLeaveBenefit extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'date_applied' => 'date',
+        'date_approved' => 'date',
         'credit_hours' => 'integer',
         'hours_used' => 'integer',
         'hours_remaining' => 'integer',

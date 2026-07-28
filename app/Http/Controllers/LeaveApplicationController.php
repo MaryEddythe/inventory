@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\EmployeeLeaveApplication;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\EmployeeLeaveBenefit;
+use App\Models\EmployeeLeaveHistory;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\LeaveApplicationSubmittedNotification;
@@ -14,8 +16,10 @@ use App\States\LeaveApplication\PendingDivisionChief;
 use App\States\LeaveApplication\PendingHr;
 use App\States\LeaveApplication\PendingRegionalDirector;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -417,13 +421,17 @@ class LeaveApplicationController extends Controller
                 ->with('regional_director_sign_leave_id', $leaveApplication->id);
         }
 
-        $leaveApplication->forceFill([
-            'regional_director_signed_by' => $user->id,
-            'regional_director_signed_at' => now(),
-            'regional_director_signature_path' => $user->signature_path,
-            'current_step' => 'approved',
-            'status' => Approved::class,
-        ])->save();
+        DB::transaction(function () use ($leaveApplication, $user) {
+            $leaveApplication->forceFill([
+                'regional_director_signed_by' => $user->id,
+                'regional_director_signed_at' => now(),
+                'regional_director_signature_path' => $user->signature_path,
+                'current_step' => 'approved',
+                'status' => Approved::class,
+            ])->save();
+
+            $this->deductLeaveBenefitForApplication($leaveApplication);
+        });
 
         activity('leave-applications')
             ->causedBy($user)
@@ -540,6 +548,107 @@ class LeaveApplicationController extends Controller
                     message: $message,
                 ));
             });
+    }
+
+    protected function deductLeaveBenefitForApplication(EmployeeLeaveApplication $application): void
+    {
+        $application->loadMissing('employee.division');
+
+        $employee = $application->employee;
+
+        if (! $employee) {
+            return;
+        }
+
+        $leaveType = $this->canonicalLeaveType((string) $application->leave_type);
+        $hoursUsed = $this->leaveApplicationHours($application);
+
+        if ($hoursUsed <= 0) {
+            return;
+        }
+
+        $isCto = $leaveType === 'Credited Time-Off';
+        $currentBalance = (int) EmployeeLeaveBenefit::query()
+            ->where('emp_no', $employee->emp_no)
+            ->whereRaw('LOWER(TRIM(credit_type)) = ?', [strtolower($leaveType)])
+            ->sum('credit_hours');
+
+        $creditHours = $isCto ? -$hoursUsed : $hoursUsed;
+        $hoursRemaining = $isCto
+            ? max(0, $currentBalance - $hoursUsed)
+            : max(0, $this->annualLeaveHours($leaveType) - ($currentBalance + $hoursUsed));
+
+        $benefit = EmployeeLeaveBenefit::create([
+            'emp_no' => $employee->emp_no,
+            'name' => $employee->full_name,
+            'departments' => optional($employee->division)->code ?? optional($employee->division)->department ?? 'N/A',
+            'role' => $employee->position ?? 'N/A',
+            'employment_type' => $employee->employment_type ?? 'N/A',
+            'credit_type' => $leaveType,
+            'start_date' => $application->date_from,
+            'end_date' => $application->date_to,
+            'date_applied' => $application->created_at?->toDateString() ?? now()->toDateString(),
+            'date_approved' => now()->toDateString(),
+            'credit_hours' => $creditHours,
+            'hours_used' => $hoursUsed,
+            'hours_remaining' => $hoursRemaining,
+            'status' => 'ACTIVE',
+            'remarks' => 'Deducted from approved leave application #' . $application->id,
+        ]);
+
+        EmployeeLeaveHistory::create([
+            'emp_no' => $employee->emp_no,
+            'leave_benefit_id' => $benefit->id,
+            'credit_type' => $leaveType,
+            'credits_added' => 0,
+            'hours_used' => $hoursUsed,
+            'hours_remaining' => $hoursRemaining,
+            'remarks' => 'Approved leave application #' . $application->id,
+        ]);
+    }
+
+    protected function leaveApplicationHours(EmployeeLeaveApplication $application): int
+    {
+        $start = Carbon::parse($application->date_from);
+        $end = $application->date_to ? Carbon::parse($application->date_to) : $start;
+
+        return ((int) $start->diffInDays($end) + 1) * 10;
+    }
+
+    protected function canonicalLeaveType(string $leaveType): string
+    {
+        $type = strtolower(trim($leaveType));
+
+        return match (true) {
+            $type === 'credited time-off',
+            $type === 'credited time off',
+            str_contains($type, 'cto') => 'Credited Time-Off',
+            $type === 'vacation leave' => 'Vacation Leave',
+            $type === 'sick leave' => 'Sick Leave',
+            $type === 'wellness leave' => 'Wellness Leave',
+            $type === 'special privilege leave' => 'Special Privilege Leave',
+            $type === 'maternity leave' => 'Maternity Leave',
+            $type === 'paternity leave' => 'Paternity Leave',
+            $type === 'solo parent leave' => 'Solo Parent Leave',
+            $type === 'rehabilitation leave' => 'Rehabilitation Leave',
+            $type === 'special emergency leave' => 'Special Emergency Leave',
+            default => trim($leaveType),
+        };
+    }
+
+    protected function annualLeaveHours(string $leaveType): int
+    {
+        return match ($leaveType) {
+            'Vacation Leave',
+            'Sick Leave' => 150,
+            'Wellness Leave',
+            'Special Emergency Leave' => 50,
+            'Special Privilege Leave' => 30,
+            'Maternity Leave' => 1050,
+            'Paternity Leave',
+            'Solo Parent Leave' => 70,
+            default => 0,
+        };
     }
 
     protected function publicDiskPath(?string $path): ?string

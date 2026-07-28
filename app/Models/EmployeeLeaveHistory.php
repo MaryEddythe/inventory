@@ -10,6 +10,7 @@ class EmployeeLeaveHistory extends Model
     protected $table = 'employee_leave_history';
 
     protected $fillable = [
+        'emp_no',
         'employee_id',
         'leave_benefit_id',
         'credit_type',
@@ -27,7 +28,7 @@ class EmployeeLeaveHistory extends Model
 
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Employee::class, 'employee_id', 'emp_no');
+        return $this->belongsTo(Employee::class, 'emp_no', 'emp_no');
     }
 
     public function leaveBenefit(): BelongsTo

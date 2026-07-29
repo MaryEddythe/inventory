@@ -15,14 +15,14 @@
             <tr>
                 <th rowspan="2">Period</th>
                 <th rowspan="2">Particulars</th>
-                <th colspan="3" class="text-center">VACATION LEAVE</th>
+                <th colspan="3" class="text-center vl-divider">VACATION LEAVE</th>
                 <th colspan="3" class="text-center">SICK LEAVE</th>
                 <th rowspan="2">Date and Action Taken on Application for Leave</th>
             </tr>
             <tr>
                 <th>Earned</th>
                 <th>Absence</th>
-                <th>Balance</th>
+                <th class="vl-divider">Balance</th>
                 <th>Earned</th>
                 <th>Absence</th>
                 <th>Balance</th>
@@ -36,7 +36,7 @@
                     <td>{{ $row['particulars'] }}</td>
                     <td class="text-end">{{ is_null($row['vacation_earned']) ? '' : number_format($row['vacation_earned'], 3) }}</td>
                     <td class="text-end">{{ is_null($row['vacation_absence']) ? '' : number_format($row['vacation_absence'], 3) }}</td>
-                    <td class="text-end fw-semibold">{{ number_format($row['vacation_balance'], 3) }}</td>
+                    <td class="text-end fw-semibold vl-divider">{{ number_format($row['vacation_balance'], 3) }}</td>
                     <td class="text-end">{{ is_null($row['sick_earned']) ? '' : number_format($row['sick_earned'], 3) }}</td>
                     <td class="text-end">{{ is_null($row['sick_absence']) ? '' : number_format($row['sick_absence'], 3) }}</td>
                     <td class="text-end fw-semibold">{{ number_format($row['sick_balance'], 3) }}</td>

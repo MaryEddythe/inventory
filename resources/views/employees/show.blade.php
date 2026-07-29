@@ -232,20 +232,32 @@
                     $annualDays = $row[1];
                     $isCtoBenefit = in_array(strtolower($label), ['credited time-off', 'credited time off'], true);
 
-                    if (is_int($annualDays)) {
+                    // Override Vacation Leave and Sick Leave with ledger-based accumulated days
+                    if (in_array($label, ['Vacation Leave', 'Sick Leave'])) {
+                        $ledgerDaysData = $ledgerDays ?? [];
+                        if ($label === 'Vacation Leave') {
+                            $remainingDays = $ledgerDaysData['vacation_days'] ?? $annualDays;
+                            $displayUnit = 'days accumulated';
+                        } else {
+                            $remainingDays = $ledgerDaysData['sick_days'] ?? $annualDays;
+                            $displayUnit = 'days accumulated';
+                        }
+                    } elseif (is_int($annualDays)) {
                         $usedHours = (int) ($benefitsByType->get($label)?->sum('credit_hours') ?? 0);
                         $usedDays = intdiv($usedHours, $dayBasedCreditFactor);
                         $remainingDays = max(0, (int) $annualDays - $usedDays);
+                        $displayUnit = 'days annually';
                     } else {
                         $remainingDays = $annualDays;
+                        $displayUnit = 'As per policy';
                     }
                 @endphp
 
                 <div class="leave-credit-tile">
                     <div class="leave-credit-label">{{ $label }}</div>
                     <div class="leave-credit-value">
-                        @if(is_int($remainingDays))
-                            <span class="leave-credit-number">{{ $remainingDays }}</span> <span class="leave-credit-unit">days annually</span>
+                        @if(is_int($remainingDays) || is_float($remainingDays))
+                            <span class="leave-credit-number">{{ $remainingDays }}</span> <span class="leave-credit-unit">{{ $displayUnit ?? 'days annually' }}</span>
                         @elseif($isCtoBenefit)
                             <span class="leave-credit-number">{{ $ctoTotalHours }}</span> <span class="leave-credit-unit">hours</span>
                         @else

@@ -128,7 +128,78 @@ class EmployeeController extends Controller
             ->latest()
             ->get();
 
-        return view('employees.show', compact('employee', 'leaveApplications'));
+        // Compute ledger-based accumulated days for Vacation Leave and Sick Leave
+        $ledgerDays = $this->computeLedgerAccumulatedDays($employee);
+
+        return view('employees.show', compact('employee', 'leaveApplications', 'ledgerDays'));
+    }
+
+    /**
+     * Compute accumulated Vacation Leave and Sick Leave days from the ledger.
+     * Each 1.25 leave credit = 1 accrued day.
+     */
+    protected function computeLedgerAccumulatedDays(Employee $employee): array
+    {
+        $setting = \App\Models\EmployeeLeaveLedgerSetting::firstOrCreate(['emp_no' => $employee->emp_no]);
+
+        $year = (int) now()->year;
+        $today = now()->startOfDay();
+        $vacationBalance = (float) $setting->opening_vacation_balance;
+        $sickBalance = (float) $setting->opening_sick_balance;
+
+        // Get approved leave usage grouped by month
+        $usageByMonth = $this->approvedVacationAndSickUsageByMonth($employee, $year);
+
+        for ($month = 1; $month <= 12; $month++) {
+            $monthEnd = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->startOfDay();
+            $isClosed = $monthEnd->lte($today);
+            $vacationUsed = (float) ($usageByMonth[$month]['Vacation Leave'] ?? 0);
+            $sickUsed = (float) ($usageByMonth[$month]['Sick Leave'] ?? 0);
+            $vacationEarned = $isClosed ? 1.25 : 0;
+            $sickEarned = $isClosed ? 1.25 : 0;
+
+            $vacationBalance = $vacationBalance - $vacationUsed + $vacationEarned;
+            $sickBalance = $sickBalance - $sickUsed + $sickEarned;
+        }
+
+        return [
+            'vacation_days' => round($vacationBalance / 1.25, 3),
+            'sick_days' => round($sickBalance / 1.25, 3),
+            'vacation_balance' => $vacationBalance,
+            'sick_balance' => $sickBalance,
+        ];
+    }
+
+    /**
+     * Get approved Vacation Leave and Sick Leave usage by month.
+     */
+    protected function approvedVacationAndSickUsageByMonth(Employee $employee, int $year): array
+    {
+        $applications = \App\Models\EmployeeLeaveApplication::query()
+            ->where('employee_id', $employee->emp_no)
+            ->whereIn('leave_type', ['Vacation Leave', 'Sick Leave'])
+            ->whereNotNull('regional_director_signed_at')
+            ->whereYear('date_from', $year)
+            ->orderBy('date_from')
+            ->get();
+
+        $usage = [];
+
+        foreach ($applications as $application) {
+            $start = \Carbon\Carbon::parse($application->date_from);
+            $end = \Carbon\Carbon::parse($application->date_to ?: $application->date_from);
+            $cursor = $start->copy();
+
+            while ($cursor->lte($end)) {
+                if ((int) $cursor->year === $year) {
+                    $month = (int) $cursor->month;
+                    $usage[$month][$application->leave_type] = ($usage[$month][$application->leave_type] ?? 0) + 1.25;
+                }
+                $cursor->addDay();
+            }
+        }
+
+        return $usage;
     }
 
     public function edit(Employee $employee)

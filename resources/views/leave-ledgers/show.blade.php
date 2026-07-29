@@ -81,6 +81,11 @@
         vertical-align: middle;
     }
 
+    .ledger-table th.vl-divider,
+    .ledger-table td.vl-divider {
+        border-right: 3px solid #64748b;
+    }
+
     .ledger-table tr.current-month td {
         background: #fff8e1;
     }

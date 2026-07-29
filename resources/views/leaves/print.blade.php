@@ -1,43 +1,65 @@
 ﻿@php
+    use App\Models\EmployeeLeaveBenefit;
+    use App\Models\User;
+    use App\Models\Role;
+    use App\Models\Department;
+    use Illuminate\Support\Facades\Schema;
     use Illuminate\Support\Str;
 
     $employeeName = $employee?->full_name ?? 'N/A';
     $employeeId = $employee?->employee_id ?? 'N/A';
-    $divisionName = $employee?->division?->name ?? $employee?->division?->code ?? 'N/A';
+    $divisionName = optional($employee->departmentRecord)->department ?? optional($employee->departmentRecord)->description ?? optional($employee->division)->name ?? optional($employee->division)->code ?? 'N/A';
     $position = $employee?->position ?? 'N/A';
-    $salary = $employee?->salary ?? 'â€”';
+    $salary = '—';
 
     $leaveType = $leaveApplication->leave_type ?? 'N/A';
     $dateFrom = $leaveApplication->date_from?->format('F d, Y') ?? 'N/A';
     $dateTo = $leaveApplication->date_to?->format('F d, Y') ?? 'Open ended';
     $dateApplied = $leaveApplication->created_at?->format('F d, Y') ?? 'N/A';
     $timeApplied = $leaveApplication->created_at?->format('h:i A') ?? 'N/A';
-    $reason = $leaveApplication->reason ?: 'â€”';
-
-    $statusKey = (string) $leaveApplication->status;
-    $statusLabel = Str::headline(str_replace(['pending_', '_'], ['pending ', ' '], strtolower($statusKey)));
-    $statusLabel = $statusLabel ?: 'N/A';
+    $reason = $leaveApplication->reason ?: '—';
 
     $pageTitle = 'CS Form 6 - Application for Leave';
 
     $selected = strtolower($leaveType);
-    $checklist = [
-        'Vacation Leave (Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['vacation leave', 'vacation'],
-        'Mandatory/Forced Leave (Sec. 25, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['mandatory', 'forced leave'],
-        'Sick Leave (Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['sick leave', 'sick'],
-        'Maternity Leave (R.A. No. 11210 / IRR issued by CSC, DOLE and SSS)' => ['maternity leave', 'maternity'],
-        'Paternity Leave (R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended)' => ['paternity leave', 'paternity'],
-        'Special Privilege Leave (Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['special privilege leave'],
-        'Solo Parent Leave (RA No. 8972 / CSC MC No. 8, s. 2004)' => ['solo parent leave'],
-        'Study Leave (Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['study leave'],
-        '10-Day VAWC Leave (RA No. 9262 / CSC MC No. 15, s. 2005)' => ['vawc leave'],
-        'Rehabilitation Privilege (Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['rehabilitation leave', 'rehabilitation'],
-        'Special Leave Benefits for Women (RA No. 9710 / CSC MC No. 25, s. 2010)' => ['special leave benefits for women'],
-        'Special Emergency (Calamity) Leave (CSC MC No. 2, s. 2012, as amended)' => ['special emergency leave', 'calamity leave'],
-        'Adoption Leave (R.A. No. 8552)' => ['adoption leave'],
-        'Wellness Leave' => ['wellness leave'],
-        'Credited Time-Off' => ['credited time-off', 'credited time off', 'cto'],
+
+    // ── Build checklist dynamically from employee_leave_benefits.credit_type ──
+    $creditTypes = EmployeeLeaveBenefit::distinct()
+        ->pluck('credit_type')
+        ->filter()
+        ->values()
+        ->all();
+
+    $checklistLabels = [
+        'Vacation Leave' => 'Vacation Leave (Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
+        'Sick Leave' => 'Sick Leave (Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
+        'Maternity Leave' => 'Maternity Leave (R.A. No. 11210 / IRR issued by CSC, DOLE and SSS)',
+        'Paternity Leave' => 'Paternity Leave (R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended)',
+        'Special Privilege Leave' => 'Special Privilege Leave (Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
+        'Solo Parent Leave' => 'Solo Parent Leave (RA No. 8972 / CSC MC No. 8, s. 2004)',
+        'Study Leave' => 'Study Leave (Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
+        'Rehabilitation Leave' => 'Rehabilitation Privilege (Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
+        'Special Emergency Leave' => 'Special Emergency (Calamity) Leave (CSC MC No. 2, s. 2012, as amended)',
+        'Wellness Leave' => 'Wellness Leave',
+        'Credited Time-Off' => 'Credited Time-Off',
     ];
+
+    $checklist = [];
+    foreach ($creditTypes as $ct) {
+        $label = $checklistLabels[$ct] ?? $ct;
+        $needles = [strtolower($ct)];
+        if (str_contains(strtolower($ct), 'vacation')) $needles[] = 'vacation';
+        if (str_contains(strtolower($ct), 'sick')) $needles[] = 'sick';
+        if (str_contains(strtolower($ct), 'maternity')) $needles[] = 'maternity';
+        if (str_contains(strtolower($ct), 'paternity')) $needles[] = 'paternity';
+        if (str_contains(strtolower($ct), 'privilege')) $needles[] = 'special privilege';
+        if (str_contains(strtolower($ct), 'solo')) $needles[] = 'solo parent';
+        if (str_contains(strtolower($ct), 'rehabilitation')) $needles[] = 'rehabilitation';
+        if (str_contains(strtolower($ct), 'emergency')) $needles[] = 'calamity';
+        if (str_contains(strtolower($ct), 'wellness')) $needles[] = 'wellness';
+        if (str_contains(strtolower($ct), 'credited')) { $needles[] = 'credited time-off'; $needles[] = 'cto'; }
+        $checklist[$label] = $needles;
+    }
 
     $isChecked = function ($needles) use ($selected) {
         return collect($needles)->contains(fn ($n) => str_contains($selected, $n));
@@ -47,17 +69,49 @@
         ? $leaveApplication->date_from->diffInDays($leaveApplication->date_to) + 1
         : '—';
 
-    $certificationOfficerName = 'Laralournie Artajo';
-    $certificationOfficerPosition = 'Administrative Officer V';
-    $divisionChiefSignatoryMap = [
-        1 => ['name' => 'Laralournie Artajo', 'position' => 'Administrative Officer V'],
-        3 => ['name' => 'ORD Division Chief', 'position' => 'ORD Division Chief'],
-        4 => ['name' => 'MSESDD Division Chief', 'position' => 'MSESDD Division Chief'],
-        6 => ['name' => 'MMD Division Chief', 'position' => 'MMD Division Chief'],
-    ];
+    // ── Signatories from users/roles ──
+    $hrUser = User::query()
+        ->where('role_id', 4)
+        ->orWhereHas('role', fn ($q) => $q->where('slug', 'hr'))
+        ->orderBy('id')
+        ->first();
+
+    $certificationOfficerName = $hrUser?->name ?? 'HR Officer';
+    $certificationOfficerPosition = optional($hrUser?->role)->name ?? 'Administrative Officer V';
+
     $employeeDeptNo = (int) ($employee?->department ?? 1);
-    $recommendationOfficerName = optional($leaveApplication->divisionChiefSigner)->name ?? ($divisionChiefSignatoryMap[$employeeDeptNo]['name'] ?? 'Division Chief');
-    $recommendationOfficerPosition = $divisionChiefSignatoryMap[$employeeDeptNo]['position'] ?? 'Division Chief';
+
+    $divisionChiefRoleMap = [];
+    if (Schema::connection('inventory')->hasTable('departments') && Schema::connection('inventory')->hasColumn('departments', 'division_chief_role_id')) {
+        $departments = Department::query()
+            ->whereNotNull('division_chief_role_id')
+            ->get(['dept_no', 'division_chief_role_id']);
+        $roles = Role::query()
+            ->whereIn('id', $departments->pluck('division_chief_role_id')->filter()->unique()->values())
+            ->get(['id', 'name', 'slug'])
+            ->keyBy('id');
+        foreach ($departments as $dept) {
+            $role = $roles->get($dept->division_chief_role_id);
+            if ($role) {
+                $divisionChiefRoleMap[(int) $dept->dept_no] = $role;
+            }
+        }
+    }
+
+    $divisionChiefRole = $divisionChiefRoleMap[$employeeDeptNo] ?? null;
+    $divisionChiefUser = $divisionChiefRole
+        ? User::query()->where('role_id', $divisionChiefRole->id)->orderBy('id')->first()
+        : null;
+
+    $recommendationOfficerName = optional($leaveApplication->divisionChiefSigner)->name
+        ?? $divisionChiefUser?->name
+        ?? 'Division Chief';
+    $recommendationOfficerPosition = optional($leaveApplication->divisionChiefSigner?->role)->name
+        ?? $divisionChiefRole?->name
+        ?? 'Division Chief';
+
+    $rdRole = Role::query()->where('slug', 'rd')->first();
+    $rdUser = $rdRole ? User::query()->where('role_id', $rdRole->id)->orderBy('id')->first() : null;
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -75,7 +129,7 @@
             <div class="header-republic">Republic of the Philippines</div>
             <div class="header-denr">Department of Environment and Natural Resources</div>
             <div class="header-mgb">MINES AND GEOSCIENCES BUREAU</div>
-            <div class="header-region">Regional Office VI</div>
+            <div class="header-region">Regional Office VI, Iloilo City</div>
             <div class="header-form-title">APPLICATION FOR LEAVE</div>
         </div>
 
@@ -85,18 +139,18 @@
             <div class="section-body">
                 <table class="form-table">
                     <tr>
-                        <th style="width:18%;">1. Office/Department</th>
-                        <td style="width:32%;">{{ $divisionName }}</td>
-                        <th style="width:18%;">2. Name</th>
-                        <td style="width:32%;">
-                            <span style="font-weight:400;font-size:5.5px;color:#6b7280;">(Last)</span>
-                            <strong>{{ $employee?->last_name ?? 'â€”' }}</strong>
+                        <th style="width:15%;">1. Office/Department</th>
+                        <td style="width:35%;">{{ $divisionName }}</td>
+                        <th style="width:10%;">2. Name</th>
+                        <td style="width:40%;">
+                            <span style="font-weight:400;font-size:7px;color:#6b7280;">(Last)</span>
+                            <strong>{{ $employee?->last_name ?? '—' }}</strong>
                             &nbsp;
-                            <span style="font-weight:400;font-size:5.5px;color:#6b7280;">(First)</span>
-                            <strong>{{ $employee?->first_name ?? 'â€”' }}</strong>
+                            <span style="font-weight:400;font-size:7px;color:#6b7280;">(First)</span>
+                            <strong>{{ $employee?->first_name ?? '—' }}</strong>
                             &nbsp;
-                            <span style="font-weight:400;font-size:5.5px;color:#6b7280;">(Middle)</span>
-                            <strong>{{ $employee?->middle_name ?? 'â€”' }}</strong>
+                            <span style="font-weight:400;font-size:7px;color:#6b7280;">(Middle)</span>
+                            <strong>{{ $employee?->middle_name ?? ($employee?->middlename ?? '—') }}</strong>
                         </td>
                     </tr>
                     <tr>
@@ -123,12 +177,12 @@
                         <th style="width:50%;">6.B Details of Leave</th>
                     </tr>
                     <tr>
-                        <td style="vertical-align:top;padding:2px 3px;">
+                        <td style="vertical-align:top;padding:3px 5px;">
                             <table class="checkbox-grid">
                                 @foreach(collect($checklist)->chunk(2) as $pair)
                                     <tr>
                                         @foreach($pair as $label => $needles)
-                                            <td style="width:50%;padding:0.5px 2px 0.5px 0;">
+                                            <td style="width:50%;padding:1.5px 3px 1.5px 0;">
                                                 <div class="checkbox-item">
                                                     <span class="box">{{ $isChecked($needles) ? 'X' : '' }}</span>
                                                     <span>{{ $label }}</span>
@@ -138,56 +192,56 @@
                                     </tr>
                                 @endforeach
                                 <tr>
-                                    <td style="padding:0.5px 2px 0.5px 0;">
+                                    <td style="padding:1.5px 3px 1.5px 0;">
                                         <div class="checkbox-item">
                                             <span class="box"></span>
                                             <span>Others: ________________________</span>
                                         </div>
                                     </td>
-                                    <td style="padding:0.5px 2px 0.5px 0;"></td>
+                                    <td style="padding:1.5px 3px 1.5px 0;"></td>
                                 </tr>
                             </table>
                         </td>
-                        <td style="vertical-align:top;padding:2px 3px;">
+                        <td style="vertical-align:top;padding:3px 5px;">
                             <div class="label-sm">In case of Vacation/Special Privilege Leave:</div>
-                            <div class="checkbox-item" style="margin:1px 0;">
+                            <div class="checkbox-item" style="margin:2px 0;">
                                 <span class="box"></span>
                                 <span>Within the Philippines _________________________</span>
                             </div>
-                            <div class="checkbox-item" style="margin:1px 0;">
+                            <div class="checkbox-item" style="margin:2px 0;">
                                 <span class="box"></span>
                                 <span>Abroad (Specify) ____________________________</span>
                             </div>
 
-                            <div class="label-sm" style="margin-top:3px;">In case of Sick Leave:</div>
-                            <div class="checkbox-item" style="margin:1px 0;">
+                            <div class="label-sm" style="margin-top:4px;">In case of Sick Leave:</div>
+                            <div class="checkbox-item" style="margin:2px 0;">
                                 <span class="box"></span>
                                 <span>In Hospital (Specify Illness) ____________________</span>
                             </div>
-                            <div class="checkbox-item" style="margin:1px 0;">
+                            <div class="checkbox-item" style="margin:2px 0;">
                                 <span class="box"></span>
                                 <span>Out Patient (Specify Illness) ___________________</span>
                             </div>
 
-                            <div class="label-sm" style="margin-top:3px;">In case of Special Leave Benefits for Women:</div>
+                            <div class="label-sm" style="margin-top:4px;">In case of Special Leave Benefits for Women:</div>
                             <div class="label-sm">(Specify Illness) ________________________________</div>
 
-                            <div class="label-sm" style="margin-top:3px;">In case of Study Leave:</div>
-                            <div class="checkbox-item" style="margin:1px 0;">
+                            <div class="label-sm" style="margin-top:4px;">In case of Study Leave:</div>
+                            <div class="checkbox-item" style="margin:2px 0;">
                                 <span class="box"></span>
                                 <span>Completion of Master's Degree</span>
                             </div>
-                            <div class="checkbox-item" style="margin:1px 0;">
+                            <div class="checkbox-item" style="margin:2px 0;">
                                 <span class="box"></span>
                                 <span>BAR/Board Examination Review</span>
                             </div>
 
-                            <div class="label-sm" style="margin-top:3px;">Other purpose:</div>
-                            <div class="checkbox-item" style="margin:1px 0;">
+                            <div class="label-sm" style="margin-top:4px;">Other purpose:</div>
+                            <div class="checkbox-item" style="margin:2px 0;">
                                 <span class="box"></span>
                                 <span>Monetization of Leave Credits</span>
                             </div>
-                            <div class="checkbox-item" style="margin:1px 0;">
+                            <div class="checkbox-item" style="margin:2px 0;">
                                 <span class="box"></span>
                                 <span>Terminal Leave</span>
                             </div>
@@ -198,33 +252,32 @@
                         <th>6.D Commutation</th>
                     </tr>
                     <tr>
-                        <td>
-                            <div class="field-value">{{ $numberOfDays }} working day(s)</div>
-                            <div class="label-sm" style="margin-top:2px;">Inclusive Dates:</div>
-                            <div class="field-value">{{ $dateFrom }} to {{ $dateTo }}</div>
+                        <td style="padding:3px 5px;">
+                            <div class="field-value" style="font-size:11px;text-align:center;min-height:18px;">{{ $numberOfDays }} working day(s)</div>
+                            <div class="label-sm" style="margin-top:3px;">Inclusive Dates:</div>
+                            <div class="field-value" style="text-align:center;">{{ $dateFrom }} to {{ $dateTo }}</div>
                         </td>
-                        <td>
-                            <div class="checkbox-item" style="margin-bottom:2px;">
+                        <td style="padding:3px 5px;vertical-align:top;">
+                            <div class="checkbox-item" style="margin-bottom:3px;">
                                 <span class="box">X</span>
                                 <span>Not Requested</span>
                             </div>
-                            <div class="checkbox-item" style="margin-bottom:2px;">
+                            <div class="checkbox-item" style="margin-bottom:3px;">
                                 <span class="box"></span>
                                 <span>Requested</span>
                             </div>
-                            <div class="blank-line" style="margin-top:2px;"></div>
-                            <div style="text-align:center;margin-top:3px;">
+                            <div class="blank-line" style="margin-top:2px;min-height:14px;"></div>
+                            <div style="text-align:center;margin-top:5px;">
                                 @if($applicantSignaturePath)
-                                    <img src="{{ $applicantSignaturePath }}" alt="Applicant Signature" style="max-width:80px;max-height:22px;object-fit:contain;margin-bottom:1px;">
+                                    <img src="{{ $applicantSignaturePath }}" alt="Applicant Signature" style="max-width:100px;max-height:28px;object-fit:contain;margin-bottom:2px;">
                                 @endif
-                                <div style="font-size:6.5px;font-weight:600;">{{ $employeeName }}</div>
-                                <div style="border-top:1px solid #111827;margin-top:1px;padding-top:1px;"></div>
+                                <div style="font-size:8px;font-weight:600;">{{ $employeeName }}</div>
+                                <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
                                 <div class="label-sm" style="text-align:center;margin-top:1px;">(SIGNATURE OF APPLICANT)</div>
                             </div>
                         </td>
                     </tr>
                 </table>
-
             </div>
         </div>
 
@@ -238,43 +291,43 @@
                         <th style="width:50%;">7.B Recommendation</th>
                     </tr>
                     <tr>
-                        <td style="vertical-align:top;">
+                        <td style="vertical-align:top;padding:3px 5px;">
                             <div class="label-sm">As of _______________________</div>
-                            <table style="width:100%;border-collapse:collapse;margin-top:3px;">
+                            <table style="width:100%;border-collapse:collapse;margin-top:4px;">
                                 <tr>
-                                    <td style="padding:1px 3px;border:1px solid #111827;font-size:7px;font-weight:700;background:#f3f4f6;">&nbsp;</td>
-                                    <td style="padding:1px 3px;border:1px solid #111827;font-size:7px;font-weight:700;background:#f3f4f6;text-align:center;">Vacation Leave</td>
-                                    <td style="padding:1px 3px;border:1px solid #111827;font-size:7px;font-weight:700;background:#f3f4f6;text-align:center;">Sick Leave</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;font-size:7.5px;font-weight:700;background:#f3f4f6;">&nbsp;</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;font-size:7.5px;font-weight:700;background:#f3f4f6;text-align:center;">Vacation Leave</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;font-size:7.5px;font-weight:700;background:#f3f4f6;text-align:center;">Sick Leave</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:1px 3px;border:1px solid #111827;font-size:7px;font-weight:600;">Total Earned</td>
-                                    <td style="padding:1px 3px;border:1px solid #111827;text-align:center;">&nbsp;</td>
-                                    <td style="padding:1px 3px;border:1px solid #111827;text-align:center;">&nbsp;</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;font-size:8px;font-weight:600;">Total Earned</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;text-align:center;">&nbsp;</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;text-align:center;">&nbsp;</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:1px 3px;border:1px solid #111827;font-size:7px;font-weight:600;">Less this application</td>
-                                    <td style="padding:1px 3px;border:1px solid #111827;text-align:center;">&nbsp;</td>
-                                    <td style="padding:1px 3px;border:1px solid #111827;text-align:center;">&nbsp;</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;font-size:8px;font-weight:600;">Less this application</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;text-align:center;">&nbsp;</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;text-align:center;">&nbsp;</td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:1px 3px;border:1px solid #111827;font-size:7px;font-weight:600;">Balance</td>
-                                    <td style="padding:1px 3px;border:1px solid #111827;text-align:center;">&nbsp;</td>
-                                    <td style="padding:1px 3px;border:1px solid #111827;text-align:center;">&nbsp;</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;font-size:8px;font-weight:600;">Balance</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;text-align:center;">&nbsp;</td>
+                                    <td style="padding:2px 4px;border:1.5px solid #111827;text-align:center;">&nbsp;</td>
                                 </tr>
                             </table>
-                            <div style="margin-top:6px;text-align:center;">
+                            <div style="margin-top:8px;text-align:center;">
                                 @if($hrSignaturePath)
-                                    <img src="{{ $hrSignaturePath }}" alt="HR Signature" style="max-width:80px;max-height:22px;object-fit:contain;margin-bottom:1px;">
+                                    <img src="{{ $hrSignaturePath }}" alt="HR Signature" style="max-width:100px;max-height:28px;object-fit:contain;margin-bottom:2px;">
                                 @else
-                                    <div style="min-height:22px;"></div>
+                                    <div style="min-height:28px;"></div>
                                 @endif
-                                <div style="font-size:6.5px;font-weight:700;">{{ $certificationOfficerName }}</div>
-                                <div style="font-size:6px;color:#374151;">{{ $certificationOfficerPosition }}</div>
-                                <div style="border-top:1px solid #111827;margin-top:1px;padding-top:1px;"></div>
+                                <div style="font-size:8px;font-weight:700;">{{ $certificationOfficerName }}</div>
+                                <div style="font-size:7px;color:#374151;">{{ $certificationOfficerPosition }}</div>
+                                <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
                                 <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                             </div>
                         </td>
-                        <td style="vertical-align:top;">
+                        <td style="vertical-align:top;padding:3px 5px;">
                             <div class="checkbox-item" style="margin-bottom:3px;">
                                 <span class="box">X</span>
                                 <span>For approval</span>
@@ -283,18 +336,18 @@
                                 <span class="box"></span>
                                 <span>For disapproval due to:</span>
                             </div>
-                            <div class="blank-line" style="margin-bottom:3px;"></div>
-                            <div class="blank-line" style="margin-bottom:3px;"></div>
-                            <div class="blank-line" style="margin-bottom:3px;"></div>
-                            <div style="margin-top:6px;text-align:center;">
+                            <div class="blank-line" style="margin-bottom:3px;min-height:12px;"></div>
+                            <div class="blank-line" style="margin-bottom:3px;min-height:12px;"></div>
+                            <div class="blank-line" style="margin-bottom:6px;min-height:12px;"></div>
+                            <div style="margin-top:8px;text-align:center;">
                                 @if($divisionChiefSignaturePath)
-                                    <img src="{{ $divisionChiefSignaturePath }}" alt="Division Chief Signature" style="max-width:80px;max-height:22px;object-fit:contain;margin-bottom:1px;">
+                                    <img src="{{ $divisionChiefSignaturePath }}" alt="Division Chief Signature" style="max-width:100px;max-height:28px;object-fit:contain;margin-bottom:2px;">
                                 @else
-                                    <div style="min-height:22px;"></div>
+                                    <div style="min-height:28px;"></div>
                                 @endif
-                                <div style="font-size:6.5px;font-weight:700;">{{ $recommendationOfficerName }}</div>
-                                <div style="font-size:6px;color:#374151;">{{ $recommendationOfficerPosition }}</div>
-                                <div style="border-top:1px solid #111827;margin-top:1px;padding-top:1px;"></div>
+                                <div style="font-size:8px;font-weight:700;">{{ $recommendationOfficerName }}</div>
+                                <div style="font-size:7px;color:#374151;">{{ $recommendationOfficerPosition }}</div>
+                                <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
                                 <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                             </div>
                         </td>
@@ -304,12 +357,12 @@
                         <th>7.D Disapproved Due To:</th>
                     </tr>
                     <tr>
-                        <td>
-                            <div class="checkbox-item" style="margin-bottom:2px;">
+                        <td style="padding:3px 5px;">
+                            <div class="checkbox-item" style="margin-bottom:3px;">
                                 <span class="box"></span>
                                 <span>_______ days with pay</span>
                             </div>
-                            <div class="checkbox-item" style="margin-bottom:2px;">
+                            <div class="checkbox-item" style="margin-bottom:3px;">
                                 <span class="box"></span>
                                 <span>_______ days without pay</span>
                             </div>
@@ -318,33 +371,28 @@
                                 <span>_______ others (Specify): ________________</span>
                             </div>
                         </td>
-                        <td>
-                            <div class="blank-line" style="margin-bottom:3px;"></div>
-                            <div class="blank-line" style="margin-bottom:3px;"></div>
-                            <div class="blank-line" style="margin-bottom:3px;"></div>
+                        <td style="padding:3px 5px;">
+                            <div class="blank-line" style="margin-bottom:4px;min-height:14px;"></div>
+                            <div class="blank-line" style="margin-bottom:4px;min-height:14px;"></div>
+                            <div class="blank-line" style="margin-bottom:4px;min-height:14px;"></div>
                         </td>
                     </tr>
                 </table>
 
-                <div style="text-align:center;margin-top:4px;">
+                <div style="text-align:center;margin-top:8px;">
                     @if($regionalDirectorSignaturePath)
-                        <img src="{{ $regionalDirectorSignaturePath }}" alt="Regional Director Signature" style="max-width:80px;max-height:22px;object-fit:contain;margin-bottom:1px;">
+                        <img src="{{ $regionalDirectorSignaturePath }}" alt="Regional Director Signature" style="max-width:100px;max-height:28px;object-fit:contain;margin-bottom:2px;">
                     @else
-                        <div style="min-height:22px;"></div>
+                        <div style="min-height:28px;"></div>
                     @endif
-                    <div style="font-size:6.5px;font-weight:700;">{{ optional($leaveApplication->regionalDirectorSigner)->name ?? 'Regional Director' }}</div>
-                    <div style="font-size:6px;color:#374151;">Regional Director</div>
-                    <div style="border-top:1px solid #111827;margin-top:1px;padding-top:1px;"></div>
+                    <div style="font-size:8px;font-weight:700;">{{ optional($leaveApplication->regionalDirectorSigner)->name ?? 'Regional Director' }}</div>
+                    <div style="font-size:7px;color:#374151;">Regional Director</div>
+                    <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
                     <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                 </div>
             </div>
         </div>
-
-        <!-- ===== STATUS ===== -->
-        <div class="page-spacer"></div>
-        <div style="text-align:center;margin-top:2px;font-size:6.5px;color:#4b5563;">
-            <strong>Status:</strong> {{ $statusLabel }}
-        </div>
     </div>
 </body>
 </html>
+

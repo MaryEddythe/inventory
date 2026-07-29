@@ -109,9 +109,12 @@ class LeaveApplicationController extends Controller
     public function view(EmployeeLeaveApplication $leaveApplication)
     {
         $user = auth()->user();
-        $employee = $user?->employee;
 
         abort_unless($user, 403, 'You must be logged in to view this leave application.');
+
+        // NOTE: $user->employee is the raw DB column value (string).
+        // Use ->employee() relationship explicitly to get the Employee model.
+        $employee = $user->employee()->first();
 
         $isOwner = $employee && (string) $employee->emp_no === (string) $leaveApplication->employee_id;
         $roleSlug = (string) ($user->role?->slug ?? '');
@@ -129,24 +132,29 @@ class LeaveApplicationController extends Controller
 
         $leaveApplication->load([
             'employee.division',
+            'employee.departmentRecord',
             'hrSigner',
             'divisionChiefSigner',
             'regionalDirectorSigner',
         ]);
 
-        $pdf = Pdf::loadView('leaves.print', [
-            'leaveApplication' => $leaveApplication,
-            'employee' => $leaveApplication->employee,
-            'leavePrintCss' => File::exists(public_path('leave-application-print.css'))
-                ? File::get(public_path('leave-application-print.css'))
-                : '',
-            'applicantSignaturePath' => $this->publicDiskPath($leaveApplication->applicant_signature_path),
-            'hrSignaturePath' => $this->publicDiskPath($leaveApplication->hr_signature_path),
-            'divisionChiefSignaturePath' => $this->publicDiskPath($leaveApplication->division_chief_signature_path),
-            'regionalDirectorSignaturePath' => $this->publicDiskPath($leaveApplication->regional_director_signature_path),
-        ])->setPaper('a4', 'portrait');
+        try {
+            $pdf = Pdf::loadView('leaves.print', [
+                'leaveApplication' => $leaveApplication,
+                'employee' => $leaveApplication->employee,
+                'leavePrintCss' => File::exists(public_path('leave-application-print.css'))
+                    ? File::get(public_path('leave-application-print.css'))
+                    : '',
+                'applicantSignaturePath' => $this->publicDiskPath($leaveApplication->applicant_signature_path),
+                'hrSignaturePath' => $this->publicDiskPath($leaveApplication->hr_signature_path),
+                'divisionChiefSignaturePath' => $this->publicDiskPath($leaveApplication->division_chief_signature_path),
+                'regionalDirectorSignaturePath' => $this->publicDiskPath($leaveApplication->regional_director_signature_path),
+            ])->setPaper('a4', 'portrait');
 
-        return $pdf->stream($this->leaveApplicationFilename($leaveApplication));
+            return $pdf->stream($this->leaveApplicationFilename($leaveApplication));
+        } catch (\Exception $e) {
+            abort(500, 'Failed to generate PDF: ' . $e->getMessage());
+        }
     }
 
     public function store(Request $request)

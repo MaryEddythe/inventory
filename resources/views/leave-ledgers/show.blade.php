@@ -17,24 +17,6 @@
         </a>
     </div>
 
-    <div class="ledger-balance-highlights">
-        <div class="ledger-highlight-card vacation">
-            <span>Current Vacation Leave</span>
-            <strong>{{ number_format($balanceCard['vacation_balance'], 3) }}</strong>
-            <small>as of {{ $balanceCard['month'] }} {{ $balanceCard['year'] }} month-end</small>
-        </div>
-        <div class="ledger-highlight-card sick">
-            <span>Current Sick Leave</span>
-            <strong>{{ number_format($balanceCard['sick_balance'], 3) }}</strong>
-            <small>as of {{ $balanceCard['month'] }} {{ $balanceCard['year'] }} month-end</small>
-        </div>
-        <div class="ledger-highlight-card spl">
-            <span>SPL</span>
-            <strong>{{ number_format($balanceCard['spl_balance'], 0) }}</strong>
-            <small>remaining this year</small>
-        </div>
-    </div>
-
     <div class="ledger-folder-tabs" role="tablist" aria-label="Leave ledger tabs">
         <button type="button" class="ledger-folder-tab active" data-ledger-tab="ledger-sheet" role="tab" aria-selected="true">
             Ledger Sheet
@@ -54,81 +36,13 @@
 </div>
 @endsection
 
-@push('styles')
 <style>
     .leave-ledger-workspace {
         color: #111827;
     }
 
-    .ledger-balance-highlights {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .ledger-highlight-card {
-        border: 1px solid #e5e7eb;
-        border-left-width: 6px;
-        border-radius: 8px;
-        background: #fff;
-        padding: 1rem;
-        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-    }
-
-    .ledger-highlight-card span,
-    .ledger-highlight-card small {
-        display: block;
-        color: #64748b;
-        font-size: 0.78rem;
-    }
-
-    .ledger-highlight-card strong {
-        display: block;
-        font-size: 2rem;
-        line-height: 1.1;
-        margin: 0.25rem 0;
-    }
-
-    .ledger-highlight-card.vacation {
-        border-left-color: #2563eb;
-    }
-
-    .ledger-highlight-card.sick {
-        border-left-color: #16a34a;
-    }
-
-    .ledger-highlight-card.spl {
-        border-left-color: #f59e0b;
-    }
-
-    .ledger-folder-tabs {
-        display: flex;
-        align-items: flex-end;
-        gap: 0.25rem;
-        padding-left: 0.75rem;
-        margin-bottom: -1px;
-    }
-
-    .ledger-folder-tab {
-        border: 1px solid #d1d5db;
-        border-bottom: 0;
-        border-radius: 8px 8px 0 0;
-        background: #eef2f7;
-        color: #475569;
-        padding: 0.75rem 1.25rem;
-        font-weight: 700;
-    }
-
-    .ledger-folder-tab.active {
-        background: #fff;
-        color: #0f172a;
-        position: relative;
-        z-index: 2;
-    }
-
     .ledger-folder-panel {
-        display: none;
+        display: none !important;
         border: 1px solid #d1d5db;
         border-radius: 8px;
         background: #fff;
@@ -137,7 +51,7 @@
     }
 
     .ledger-folder-panel.active {
-        display: block;
+        display: block !important;
     }
 
     .ledger-meta-grid {
@@ -226,7 +140,6 @@
     }
 
     @media (max-width: 768px) {
-        .ledger-balance-highlights,
         .ledger-meta-grid,
         .balance-card-meta,
         .balance-card-values {
@@ -243,7 +156,6 @@
         }
     }
 </style>
-@endpush
 
 @push('scripts')
 <script>

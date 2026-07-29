@@ -161,21 +161,34 @@ class LeaveLedgerController extends Controller
 
     protected function buildBalanceCard(Employee $employee, array $ledger): array
     {
-        $closedRows = collect($ledger['rows'])
-            ->filter(fn (array $row) => ($row['is_closed'] ?? false) === true);
+        // Use the LAST row (current running balance) instead of last closed month
+        $rows = collect($ledger['rows']);
+        $lastRow = $rows->last();
 
-        $balanceRow = $closedRows->last()
-            ?: collect($ledger['rows'])->first();
+        // Determine the as-of date: if the last row has a month, use that month's end
+        // otherwise use the current date
+        $asOfDate = isset($lastRow['month'])
+            ? Carbon::create((int) $ledger['year'], (int) $lastRow['month'], 1)->endOfMonth()
+            : now();
 
-        $balanceDate = isset($balanceRow['month'])
-            ? Carbon::create((int) $ledger['year'], (int) $balanceRow['month'], 1)->endOfMonth()
-            : now()->subMonthNoOverflow()->endOfMonth();
+        // If the last row's month hasn't ended yet, use the previous closed month's end
+        // for the "as of" label, but still show the current running balance
+        $isLastRowClosed = ($lastRow['is_closed'] ?? false) === true;
+        $balanceDate = $isLastRowClosed
+            ? $asOfDate
+            : ($rows->filter(fn (array $r) => ($r['is_closed'] ?? false) === true)->last()['month'] ?? null
+                ? Carbon::create(
+                    (int) $ledger['year'],
+                    (int) ($rows->filter(fn (array $r) => ($r['is_closed'] ?? false) === true)->last()['month'] ?? now()->month),
+                    1
+                )->endOfMonth()
+                : now()->subMonthNoOverflow()->endOfMonth());
 
         return [
             'month' => $balanceDate->format('F'),
             'year' => $balanceDate->format('Y'),
-            'vacation_balance' => (float) ($balanceRow['vacation_balance'] ?? 0),
-            'sick_balance' => (float) ($balanceRow['sick_balance'] ?? 0),
+            'vacation_balance' => (float) ($lastRow['vacation_balance'] ?? 0),
+            'sick_balance' => (float) ($lastRow['sick_balance'] ?? 0),
             'spl_balance' => $this->specialPrivilegeLeaveBalance($employee, (int) $ledger['year'], $balanceDate),
         ];
     }

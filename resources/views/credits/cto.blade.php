@@ -450,6 +450,17 @@
 
                 <div class="form-grid">
                     <div>
+                        <label class="form-group-label">Start Date *</label>
+                        <input type="date" name="start_date" id="ctoStartDate" class="form-control" required>
+                    </div>
+                    <div>
+                        <label class="form-group-label">End Date</label>
+                        <input type="date" name="end_date" id="ctoEndDate" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div>
                         <label class="form-group-label">Credit Hours *</label>
                         <input type="number" name="credit_hours" id="ctoCreditHours" class="form-control" min="0" step="1" placeholder="Enter hours" required />
                     </div>

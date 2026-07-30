@@ -18,6 +18,7 @@ class EmployeeLeaveHistory extends Model
         'hours_used',
         'hours_remaining',
         'remarks',
+        'location',
     ];
 
     protected $casts = [

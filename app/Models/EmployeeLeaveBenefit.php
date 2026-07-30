@@ -23,6 +23,7 @@ class EmployeeLeaveBenefit extends Model
         'hours_remaining',
         'status',
         'remarks',
+        'location',
     ];
 
     protected $casts = [

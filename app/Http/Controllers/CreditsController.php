@@ -143,9 +143,10 @@ class CreditsController extends Controller
             'end_date'     => 'nullable|date|after_or_equal:start_date',
             'credit_type'  => 'required|string',
             'date_applied' => 'required|date',
-            // FIX: was 'date_effective' which does not exist in schema — use date_applied only
             'credit_hours' => 'nullable|integer|min:0',
             'status'       => 'required|in:ACTIVE,INACTIVE',
+            'remarks'      => 'nullable|string',
+            'location'     => 'nullable|string',
         ]);
 
         $typeLower = strtolower(trim((string) $validated['credit_type']));
@@ -160,6 +161,8 @@ class CreditsController extends Controller
         $credit->end_date     = $validated['end_date'] ? Carbon::parse($validated['end_date'])->toDateString() : null;
         $credit->date_applied = Carbon::parse($validated['date_applied'])->toDateString();
         $credit->status       = $validated['status'];
+        $credit->remarks      = $validated['remarks'] ?? $credit->remarks;
+        $credit->location     = $validated['location'] ?? $credit->location;
 
         $isCto = $credit->credit_type === 'Credited Time-Off';
 
@@ -177,9 +180,7 @@ class CreditsController extends Controller
         $credit->load('employee.division');
         if ($credit->employee) {
             $credit->name            = $credit->employee->full_name;
-            // FIX: table column is 'departments', not 'division'
             $credit->departments     = optional($credit->employee->division)->code ?? 'N/A';
-            // FIX: table column is 'role', not 'position'
             $credit->role            = $credit->employee->position;
             $credit->employment_type = $credit->employee->employment_type;
         }
@@ -194,11 +195,6 @@ class CreditsController extends Controller
         $credit->delete();
         return redirect()->route('credits.index')->with('success', 'Leave credit deleted successfully');
     }
-
-    /**
-     * Employee search — used by both the index modal (single) and the CTO modal (multi).
-     * Accepts both ?q= and ?query= so both blade forms work without change.
-     */
     public function search(Request $request): JsonResponse
     {
         // FIX: CTO blade sends ?query=, index blade sends ?q=  — accept both
@@ -219,14 +215,13 @@ class CreditsController extends Controller
             ->get()
             ->map(function ($emp) {
                 return [
-                    // FIX: expose emp_no (the FK used by employee_leave_benefits) alongside id
-                    'id'              => $emp->emp_no,   // used as the value stored in hidden input
+                    'id'              => $emp->emp_no,   
                     'emp_no'          => $emp->emp_no,
                     'full_name'       => $emp->full_name,
                     'fullname'        => $emp->full_name, // CTO blade reads 'fullname'
                     'employee_id'     => $emp->employee_id,
                     'division_code'   => optional($emp->division)->code ?? 'N/A',
-                    'department_name' => optional($emp->division)->code ?? 'N/A', // CTO blade reads 'department_name'
+                    'department_name' => optional($emp->division)->code ?? 'N/A', 
                     'position'        => $emp->position,
                     'employment_type' => $emp->employment_type,
                 ];
@@ -237,12 +232,6 @@ class CreditsController extends Controller
 
     public function store(Request $request)
     {
-        // FIX 1: removed 'employment_type' from required — CTO modal has no such field;
-        //         it is derived per-employee from the DB inside the loop (source of truth).
-        // FIX 2: 'employee_id' changed to nullable — CTO modal only sends 'employee_ids' (JSON array).
-        //         Single-employee (index modal) still works via the nullable fallback in extractEmployeeIds().
-        // FIX 3: 'date_applied' and 'date_effective' changed to nullable — CTO modal fills these
-        //         via JS hidden fields; if JS fails they'd block the whole submission.
         $validated = $request->validate([
             'employee_id'  => 'nullable|exists:inventory.employees,emp_no',
             'employee_ids' => 'nullable',
@@ -252,6 +241,7 @@ class CreditsController extends Controller
             'date_applied' => 'nullable|date',
             'credit_hours' => 'nullable|integer|min:0',
             'remarks'      => 'nullable|string',
+            'location'     => 'nullable|string',
             'cto_action'   => 'nullable|in:add,deduct',
         ]);
 
@@ -336,22 +326,17 @@ class CreditsController extends Controller
                         ->sum('credit_hours');
                 }
 
-                // Debug: log the raw employee attributes so you can confirm the real column names
-                // Check storage/logs/laravel.log — look for 'CTO employee debug' after submitting.
-                // Once confirmed, remove this log block.
                 \Log::info('CTO employee debug', [
                     'emp_no'     => $employee->emp_no,
                     'attributes' => $employee->getAttributes(),
                 ]);
 
-                // Resolve position: try common column name variants used in DENR/HR systems
                 $resolvedRole = $employee->position
                     ?? $employee->pos_title
                     ?? $employee->designation
                     ?? $employee->job_title
                     ?? 'N/A';
 
-                // Resolve employment type: try common column name variants
                 $resolvedEmploymentType = $employee->employment_type
                     ?? $employee->appointment_status
                     ?? $employee->emp_type
@@ -373,6 +358,7 @@ class CreditsController extends Controller
                     'hours_remaining' => $isCto ? ($currentCtoHours + $creditHours) : null,
                     'status'          => 'ACTIVE',
                     'remarks'         => $validated['remarks'] ?? null,
+                    'location'        => $validated['location'] ?? null,
                 ];
 
                 $benefit = EmployeeLeaveBenefit::create($creditData);
@@ -387,6 +373,7 @@ class CreditsController extends Controller
                             'hours_used'      => $ctoAction === 'deduct' ? abs($creditHours) : 0,
                             'hours_remaining' => $currentCtoHours + $creditHours,
                             'remarks'         => $validated['remarks'] ?? null,
+                            'location'        => $validated['location'] ?? null,
                         ]);
                     } catch (\Exception $e) {
                         \Log::warning('EmployeeLeaveHistory creation failed: ' . $e->getMessage());
@@ -423,13 +410,10 @@ class CreditsController extends Controller
             }
         }
 
-        // Single-select path (index modal): fall back to employee_id scalar
         if (empty($employeeIds) && !empty($validated['employee_id'])) {
             $employeeIds = [$validated['employee_id']];
         }
 
-        // FIX: cast to int only if values are numeric; emp_no may be stored as int in DB.
-        // array_filter removes any nulls/empty strings that sneak in from JS.
         return array_values(
             array_unique(
                 array_map('intval', array_filter($employeeIds, fn($v) => is_numeric($v)))

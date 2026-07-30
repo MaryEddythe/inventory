@@ -80,8 +80,8 @@
 
     /* ===== MULTIPLE EMPLOYEE SEARCH STYLES ===== */
     .search-container {
-    margin-bottom: 1.5rem;
-    position: relative;
+        margin-bottom: 1.5rem;
+        position: relative;
     }
 
     .search-bar {
@@ -92,21 +92,16 @@
         width: 100%;
         min-height: 46px;
         padding: 0.55rem 0.75rem;
-
         border: 1px solid #cbd5e1;
         border-radius: 5px;
-
         background: #fff;
-
         transition: all 0.2s ease;
         box-sizing: border-box;
     }
 
     .search-bar.focused {
         border-color: #0066cc;
-        box-shadow:
-            0 0 0 3px rgba(0, 102, 204, 0.08),
-            0 0 0 1px rgba(0, 102, 204, 0.2);
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.08), 0 0 0 1px rgba(0, 102, 204, 0.2);
     }
 
     #selectedEmployeesList {
@@ -139,50 +134,41 @@
         text-overflow: ellipsis;
     }
     .employee-pill-remove {
-    background: none;
-    border: none;
-
-    cursor: pointer;
-
-    font-size: 1rem;
-    line-height: 1;
-
-    color: #3b82f6;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+        color: #3b82f6;
     }
 
     .employee-pill-remove:hover {
         color: #1e3a8a;
     }
     .search-bar-input {
-    flex: 1;
-    min-width: 140px;
-
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-
-    background: transparent !important;
-
-    padding: 0.25rem 0 !important;
-    margin: 0 !important;
-
-    font-size: 0.9rem;
-    font-family: inherit;
-    color: #111827;
-
-    height: auto !important;
+        flex: 1;
+        min-width: 140px;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0.25rem 0 !important;
+        margin: 0 !important;
+        font-size: 0.9rem;
+        font-family: inherit;
+        color: #111827;
+        height: auto !important;
     }   
     .search-bar-input:focus {
-    outline: none !important;
-    border: none !important;
-    box-shadow: none !important;
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
     .search-bar-input::placeholder {
         color: #94a3b8;
     }
 
-    /* Match form-controls to search bar style */
     .modal-body .form-control {
         width: 100%;
         padding: 0.75rem 1rem;
@@ -202,7 +188,6 @@
         box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.08), 0 0 0 1px rgba(0, 102, 204, 0.2);
     }
 
-    /* Dropdown — flush against the bar */
     .search-results {
         position: absolute;
         top: calc(100% + 6px);
@@ -246,7 +231,6 @@
         font-size: 0.85rem;
     }
 
-    /* Hidden multi-select field for form submission */
     #selectedEmployeeIds {
         display: none;
     }
@@ -260,77 +244,133 @@
         font-size: 0.82rem;
         margin-top: 0.2rem;
     }
-    .cto-group-toggle {
-        border: 1px solid #bfdbfe;
-        background: #eff6ff;
-        border-radius: 999px;
-        color: #1e40af;
-        cursor: pointer;
-        font-size: 0.82rem;
-        font-weight: 800;
-        padding: 0.35rem 0.7rem;
-        white-space: nowrap;
-    }
-    .cto-group-toggle:hover {
-        background: #dbeafe;
-    }
-    .cto-detail-row {
+
+    /* ===== SHOW EMPLOYEES POPUP MODAL ===== */
+    .employees-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 3000;
         display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    .employees-modal-overlay.active {
+        display: flex;
+    }
+    .employees-modal-content {
+        background: #fff;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .employees-modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
         background: #f8fafc;
     }
-    .cto-detail-row.active {
-        display: table-row;
-    }
-    .cto-detail-row > td {
-        padding: 0.9rem 1rem 1.1rem;
-    }
-    .cto-detail-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0 0.55rem;
-        background: transparent;
-    }
-    .cto-detail-table thead {
-        display: none;
-    }
-    .cto-detail-table tbody,
-    .cto-detail-table tr,
-    .cto-detail-table td {
-        display: block;
-    }
-    .cto-detail-table tbody {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 0.65rem;
-    }
-    .cto-detail-table tr {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 0.8rem;
-    }
-    .cto-detail-table td {
-        border: none;
-        padding: 0;
-        color: #64748b;
-        font-size: 0.82rem;
-    }
-    .cto-detail-table td:nth-child(2) {
+    .employees-modal-title {
+        font-size: 1.1rem;
+        font-weight: 800;
         color: #0f172a;
-        font-size: 0.9rem;
-        font-weight: 800;
-        margin: 0.35rem 0 0.2rem;
     }
-    .cto-detail-table td:nth-child(6) {
-        display: inline-flex;
-        width: fit-content;
-        margin-top: 0.5rem;
-        background: #dbeafe;
-        border: 1px solid #93c5fd;
-        border-radius: 999px;
-        color: #1e40af;
+    .employees-modal-close {
+        background: transparent;
+        border: 1.5px solid #cbd5e1;
+        color: #475569;
+        border-radius: 5px;
+        padding: 0.4rem 0.6rem;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.85rem;
+        line-height: 1;
+        transition: all 0.2s ease;
+    }
+    .employees-modal-close:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+    }
+    .employees-modal-body {
+        padding: 1.5rem;
+    }
+
+    /* ===== EDIT CTO POPUP MODAL ===== */
+    .edit-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 4000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    .edit-modal-overlay.active {
+        display: flex;
+    }
+    .edit-modal-content {
+        background: #fff;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .edit-modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        background: #f8fafc;
+    }
+    .edit-modal-title {
+        font-size: 1.1rem;
         font-weight: 800;
-        padding: 0.25rem 0.55rem;
+        color: #0f172a;
+    }
+    .edit-modal-body {
+        padding: 1.5rem;
+    }
+    .edit-modal-footer {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    /* Action buttons */
+    .btn-action-edit {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        font-weight: 700;
+        padding: 0.35rem 0.65rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.15s ease;
+    }
+    .btn-action-edit:hover {
+        background: #dbeafe;
+        border-color: #93c5fd;
     }
 </style>
 
@@ -343,7 +383,6 @@
 
     <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
         <button type="button" class="btn btn-primary" onclick="openCreateCtoModal()">+ Add CTO</button>
-        <a href="{{ route('credits.index') }}" class="btn btn-outline">Back to Leave Credits</a>
     </div>
 </div>
 
@@ -359,33 +398,33 @@
             <div class="modal-body">
 
                 <div class="search-container" id="employeeSearchWrap">
-    <label class="form-group-label">Employees (Multiple Selection) *</label>
+                    <label class="form-group-label">Employees (Multiple Selection) *</label>
 
-        <div class="search-bar" id="employeeSearchBar">
-            <div id="selectedEmployeesList"></div>
+                    <div class="search-bar" id="employeeSearchBar">
+                        <div id="selectedEmployeesList"></div>
 
-            <input
-                type="text"
-                id="ctoEmployeeSearch"
-                class="search-bar-input"
-                placeholder="Type to search employees..."
-                autocomplete="off"
-            >
-        </div>
+                        <input
+                            type="text"
+                            id="ctoEmployeeSearch"
+                            class="search-bar-input"
+                            placeholder="Type to search employees..."
+                            autocomplete="off"
+                        >
+                    </div>
 
-        <div
-            class="search-results"
-            id="ctoSearchResults"
-            style="display:none;"
-        ></div>
+                    <div
+                        class="search-results"
+                        id="ctoSearchResults"
+                        style="display:none;"
+                    ></div>
 
-        <input
-            type="hidden"
-            id="selectedEmployeeIds"
-            name="employee_ids"
-            value="[]"
-        >
-</div>
+                    <input
+                        type="hidden"
+                        id="selectedEmployeeIds"
+                        name="employee_ids"
+                        value="[]"
+                    >
+                </div>
 
                 <input type="hidden" name="credit_type" value="Credited Time-Off" />
                 <input type="hidden" name="cto_action" value="add" />
@@ -404,7 +443,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <div class="form-grid">
                     <div>
@@ -439,6 +477,83 @@
 </div>
 
 
+<!-- ===== SHOW EMPLOYEES POPUP MODAL ===== -->
+<div class="employees-modal-overlay" id="showEmployeesModal">
+    <div class="employees-modal-content">
+        <div class="employees-modal-header">
+            <div>
+                <div class="employees-modal-title" id="employeesModalTitle">Employees</div>
+                <div class="text-secondary" style="font-size:0.85rem;" id="employeesModalCount"></div>
+            </div>
+            <button class="employees-modal-close" onclick="closeShowEmployeesModal()">Close</button>
+        </div>
+        <div class="employees-modal-body" id="employeesModalBody">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+</div>
+
+
+<!-- ===== EDIT CTO POPUP MODAL ===== -->
+<div class="edit-modal-overlay" id="editCtoModal">
+    <div class="edit-modal-content">
+        <div class="edit-modal-header">
+            <div class="edit-modal-title">Edit CTO</div>
+            <button class="employees-modal-close" onclick="closeEditCtoModal()">Close</button>
+        </div>
+        <form method="POST" action="" id="editCtoForm" onsubmit="handleEditSubmit(event)">
+            @csrf
+            @method('PUT')
+            <div class="edit-modal-body">
+                <div class="form-grid">
+                    <div>
+                        <label class="form-group-label">Start Date *</label>
+                        <input type="date" name="start_date" id="editStartDate" class="form-control" required>
+                    </div>
+                    <div>
+                        <label class="form-group-label">End Date</label>
+                        <input type="date" name="end_date" id="editEndDate" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-grid" style="margin-top:1rem;">
+                    <div>
+                        <label class="form-group-label">Credit Hours *</label>
+                        <input type="number" name="credit_hours" id="editCreditHours" class="form-control" min="0" step="1" required />
+                    </div>
+                    <div>
+                        <label class="form-group-label">Status</label>
+                        <select name="status" id="editStatus" class="form-control" required>
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid" style="margin-top:1rem;">
+                    <div>
+                        <label class="form-group-label">Special Order / Basis</label>
+                        <input type="text" name="remarks" id="editRemarks" class="form-control" placeholder="SO name, business hours, or beyond schedule">
+                    </div>
+                    <div>
+                        <label class="form-group-label">Location</label>
+                        <input type="text" name="location" id="editLocation" class="form-control" placeholder="Enter location">
+                    </div>
+                </div>
+
+                <input type="hidden" id="editDateApplied" name="date_applied" />
+                <input type="hidden" name="credit_type" value="Credited Time-Off" />
+            </div>
+
+            <div class="edit-modal-footer">
+                <button type="button" onclick="closeEditCtoModal()" class="btn btn-outline">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update CTO</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
 <div class="card border-0 shadow-sm rounded-4" style="background: #fff;">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -452,14 +567,14 @@
             <table class="table table-hover align-middle" style="margin:0;">
                 <thead>
                     <tr class="text-muted" style="font-size:0.85rem; letter-spacing:0.02em;">
-                        <th style="width:28%;">Special Order / Basis</th>
-                        <th style="width:12%;">Location</th>
-                        <th style="width:10%;">Employees</th>
-                        <th style="width:12%;">Total Hours</th>
-                        <th style="width:12%;">Start Date</th>
-                        <th style="width:12%;">End Date</th>
-                        <th style="width:12%;">Status</th>
-                        <th style="width:14%;">&nbsp;</th>
+                        <th style="width:26%;">Special Order / Basis</th>
+                        <th style="width:10%;">Location</th>
+                        <th style="width:9%;">Employees</th>
+                        <th style="width:10%;">Total Hours</th>
+                        <th style="width:11%;">Start Date</th>
+                        <th style="width:11%;">End Date</th>
+                        <th style="width:10%;">Status</th>
+                        <th style="width:13%;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -472,7 +587,7 @@
                             $groupLocation = $groupBenefits->map(fn ($benefit) => trim((string) ($benefit->location ?? '')))->filter()->first();
                         @endphp
 
-                        <tr>
+                        <tr id="{{ $groupId }}">
                             <td>
                                 <div class="fw-bold" style="color:#0f172a;">{{ $basis }}</div>
                                 <div class="text-secondary" style="font-size:0.8rem;">{{ $firstBenefit->credit_type ?? 'Credited Time-Off' }}</div>
@@ -499,61 +614,13 @@
                                     {{ $firstBenefit->status ?? 'ACTIVE' }}
                                 </span>
                             </td>
-                            <td class="text-end">
-                                <button type="button" class="btn btn-sm" style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; font-weight:800;" aria-expanded="false" onclick="toggleCtoGroup('{{ $groupId }}', this)">
-                                    Show employees
+                            <td class="text-end" style="white-space:nowrap;">
+                                <button type="button" class="btn-action-edit" onclick="openShowEmployeesModal('{{ $groupId }}', '{{ addslashes($basis) }}', {{ $groupBenefits->count() }})">
+                                    Show Employees
                                 </button>
-                            </td>
-                        </tr>
-
-                        <tr id="{{ $groupId }}" class="cto-detail-row">
-                            <td colspan="8" class="bg-light">
-                                <div class="p-3">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <div class="fw-bold" style="color:#0f172a;">Employees</div>
-                                        <div class="text-secondary" style="font-size:0.85rem;">{{ $groupBenefits->count() }} selected</div>
-                                    </div>
-
-                                    <div class="table-responsive">
-                                        <table class="table table-sm align-middle" style="background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden;">
-                                            <thead style="background:#f8fafc;">
-                                                <tr class="text-muted" style="font-size:0.78rem;">
-                                                    <th>Employee ID</th>
-                                                    <th>Name</th>
-                                                    <th>Division</th>
-                                                    <th>Position</th>
-                                                    <th>Employment Type</th>
-                                                    <th class="text-end">Hours</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($groupBenefits as $benefit)
-                                                    <tr>
-                                                        <td>
-                                                            <span class="badge rounded-pill px-3 py-2" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; font-weight:800;">{{ $benefit->employee->employee_id ?? 'N/A' }}</span>
-                                                        </td>
-                                                        <td class="fw-semibold" style="color:#0f172a;">{{ $benefit->name }}</td>
-                                                        <td class="text-secondary">{{ $benefit->departments ?? 'N/A' }}</td>
-                                                        <td class="text-secondary">{{ $benefit->role ?? 'N/A' }}</td>
-                                                        <td>
-                                                            <span class="badge rounded-pill px-3 py-2" style="background:#f1f5f9; color:#334155; border:1px solid #e2e8f0; font-weight:800;">
-                                                                {{ $benefit->employment_type === 'PERMANENT' ? 'Permanent' : 'COS' }}
-                                                            </span>
-                                                        </td>
-                                                        <td class="fw-semibold text-end">
-                                                                @php
-                                                                    $s = !empty($benefit->start_date) ? \Carbon\Carbon::parse($benefit->start_date) : null;
-                                                                    $e = !empty($benefit->end_date)   ? \Carbon\Carbon::parse($benefit->end_date)   : $s;
-                                                                    $hrs = $s ? (($s->diffInDays($e) + 1) * 10) : 0;
-                                                                @endphp
-                                                                {{ $hrs }} hrs
-                                                            </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                <button type="button" class="btn-action-edit" onclick="openEditCtoModal('{{ $firstBenefit->id }}', '{{ $firstBenefit->start_date }}', '{{ $firstBenefit->end_date ?? '' }}', '{{ $firstBenefit->credit_hours }}', '{{ $firstBenefit->status }}', '{{ addslashes($firstBenefit->remarks ?? '') }}', '{{ addslashes($firstBenefit->location ?? '') }}', '{{ $firstBenefit->date_applied }}')">
+                                    Edit
+                                </button>
                             </td>
                         </tr>
                     @empty
@@ -572,25 +639,115 @@
     </div>
 </div>
 
-<script>
-// Ensures the nested table rows inherit the original expand/collapse behavior
-</script>
+<!-- ===== HIDDEN EMPLOYEE DETAILS FOR MODAL ===== -->
+<div style="display:none;" id="employeeDetailsContainer">
+    @forelse($ctoGroups as $basis => $groupBenefits)
+        @php
+            $detailsId = 'cto-group-' . md5($basis);
+        @endphp
+        <div id="details-{{ $detailsId }}">
+            <table class="table table-sm align-middle" style="background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden;">
+                <thead style="background:#f8fafc;">
+                    <tr class="text-muted" style="font-size:0.78rem;">
+                        <th>Name</th>
+                        <th>Division</th>
+                        <th>Position</th>
+                        <th>Employment Type</th>
+                        <th class="text-end">Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($groupBenefits as $benefit)
+                        @php
+                            $empDivision = optional($benefit->employee->division)->code ?? $benefit->departments ?? 'N/A';
+                            $empPosition = $benefit->employee->position ?? $benefit->role ?? 'N/A';
+                        @endphp
+                        <tr>
+                            <td class="fw-semibold" style="color:#0f172a;">{{ $benefit->name }}</td>
+                            <td class="text-secondary">{{ $empDivision }}</td>
+                            <td class="text-secondary">{{ $empPosition }}</td>
+                            <td>
+                                <span class="badge rounded-pill px-3 py-2" style="background:#f1f5f9; color:#334155; border:1px solid #e2e8f0; font-weight:800;">
+                                    {{ $benefit->employment_type === 'PERMANENT' ? 'Permanent' : 'COS' }}
+                                </span>
+                            </td>
+                            <td class="fw-semibold text-end">
+                                @php
+                                    $s = !empty($benefit->start_date) ? \Carbon\Carbon::parse($benefit->start_date) : null;
+                                    $e = !empty($benefit->end_date)   ? \Carbon\Carbon::parse($benefit->end_date)   : $s;
+                                    $hrs = $s ? (($s->diffInDays($e) + 1) * 10) : 0;
+                                @endphp
+                                {{ $hrs }} hrs
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @empty
+    @endforelse
+</div>
 
 <script>
     let selectedEmployees = [];
     let lastSearchItems = [];
 
-    function toggleCtoGroup(groupId, button) {
-        const row = document.getElementById(groupId);
-        if (!row) return;
+    // ===== SHOW EMPLOYEES MODAL =====
+    function openShowEmployeesModal(groupId, basis, count) {
+        const modal = document.getElementById('showEmployeesModal');
+        if (!modal) return;
 
-        const isOpen = row.classList.toggle('active');
-        if (button) {
-            button.textContent = isOpen ? 'Hide employees' : 'Show employees';
-            button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        document.getElementById('employeesModalTitle').textContent = 'Employees - ' + basis;
+        document.getElementById('employeesModalCount').textContent = count + ' selected';
+
+        // Get the employees table from the hidden details container
+        const detailsContainer = document.getElementById('details-' + groupId);
+        let bodyContent = '';
+        if (detailsContainer) {
+            bodyContent = detailsContainer.innerHTML;
         }
+
+        if (!bodyContent) {
+            bodyContent = '<div class="text-center py-4 text-secondary">No employee details available.</div>';
+        }
+
+        document.getElementById('employeesModalBody').innerHTML = bodyContent;
+        modal.classList.add('active');
     }
 
+    function closeShowEmployeesModal() {
+        const modal = document.getElementById('showEmployeesModal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    // ===== EDIT CTO MODAL =====
+    function openEditCtoModal(id, startDate, endDate, creditHours, status, remarks, location, dateApplied) {
+        const modal = document.getElementById('editCtoModal');
+        if (!modal) return;
+
+        document.getElementById('editCtoForm').action = '{{ url("/credits") }}/' + id;
+        document.getElementById('editStartDate').value = startDate;
+        document.getElementById('editEndDate').value = endDate;
+        document.getElementById('editCreditHours').value = creditHours;
+        document.getElementById('editStatus').value = status;
+        document.getElementById('editRemarks').value = remarks;
+        document.getElementById('editLocation').value = location;
+        document.getElementById('editDateApplied').value = dateApplied || new Date().toISOString().slice(0, 10);
+
+        modal.classList.add('active');
+    }
+
+    function closeEditCtoModal() {
+        const modal = document.getElementById('editCtoModal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    function handleEditSubmit(event) {
+        // Allow normal form submission
+        return true;
+    }
+
+    // ===== CREATE CTO MODAL =====
     function openCreateCtoModal(){
         const el = document.getElementById('createCtoModal');
         if(!el) return;
@@ -601,45 +758,6 @@
         document.getElementById('ctoEmployeeSearch').value = '';
         document.getElementById('ctoSearchResults').style.display = 'none';
     }
-
-    function populateEmployeeDropdown() {
-    fetchEmployees()
-    .then(employees => {
-        // Clear the existing suggestions
-        const suggestionsDiv = document.getElementById('suggestions');
-        suggestionsDiv.innerHTML = '';
-
-        // Populate the suggestions
-        employees.forEach(employee => {
-            const suggestionItem = document.createElement('div');
-            suggestionItem.className = 'suggestion-item';
-            suggestionItem.innerHTML = `
-                <div class="suggestion-fullname"><strong>${employee.full_name}</strong></div>
-                <div class="suggestion-division"><small>${employee.division_code}</small></div>
-            `;
-
-            suggestionItem.dataset.index = employee.id;
-            suggestionItem.style.cursor = 'pointer';
-
-            // Use closure to properly capture the employee object
-            (function(employee) {
-                suggestionItem.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Selected employee:', employee);
-                    selectEmployee(employee);
-                });
-            })(employee);
-
-            suggestionsDiv.appendChild(suggestionItem);
-        });
-        currentIndex = -1;
-        console.log('🎉 Dropdown populated:', employees.length, 'items');
-    })
-    .catch(error => {
-        console.error('Error fetching employees:', error);
-    });
-}
 
     function closeCreateCtoModal(){
         const el = document.getElementById('createCtoModal');
@@ -656,7 +774,6 @@
         const startDate = document.getElementById('ctoStartDate')?.value;
         const today = new Date().toISOString().slice(0, 10);
 
-        // FIX: Always write dates before any early return so they're never empty
         const dateApplied = document.getElementById('ctoDateApplied');
         const dateEffective = document.getElementById('ctoDateEffective');
         if (dateApplied) dateApplied.value = dateApplied.value || today;
@@ -668,7 +785,6 @@
             return false;
         }
 
-        // FIX: Always sync hidden field to current selectedEmployees array before submit
         hiddenField.value = JSON.stringify(selectedEmployees.map(e => String(e.id)));
     }
 
@@ -680,7 +796,6 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
 
-        // Surface errors in UI/debugging instead of silently returning []
         if (!res.ok) {
             try {
                 const err = await res.json();
@@ -690,7 +805,6 @@
             }
             return [];
         }
-        if (!res.ok) return [];
         return await res.json();
     }
 
@@ -714,7 +828,6 @@
             return;
         }
 
-        // Backend returns: emp_no, fullname, department_name (not id/full_name/division_code)
         const selectedIds = new Set(selectedEmployees.map(e => e.id));
         resultsEl.innerHTML = items.map(item => {
             const id = item.emp_no ?? item.id;
@@ -752,7 +865,6 @@
                 if (existsIndex > -1) {
                     selectedEmployees.splice(existsIndex, 1);
                 } else {
-                    // Normalize selected object shape so the rest of the UI works consistently
                     selectedEmployees.push({
                         id: String(selected.emp_no ?? selected.id),
                         full_name: selected.fullname ?? selected.full_name ?? '',
@@ -849,11 +961,11 @@
         document.addEventListener('keydown', function(e){
             if(e.key === 'Escape'){
                 closeCreateCtoModal();
+                closeShowEmployeesModal();
+                closeEditCtoModal();
             }
         });
     });
 </script>
-
-
 
 @endsection

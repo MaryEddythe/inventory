@@ -144,7 +144,7 @@ class User extends Authenticatable
 
     protected function mapSidebarItem(SidebarItem $item, array $allowedIds): ?array
     {
-        if ($item->key === 'leave-ledgers' && (int) $this->role_id !== 4) {
+        if ($item->key === 'leave-ledgers' && ! $this->isSuperAdmin() && (int) $this->role_id !== 4) {
             return null;
         }
 

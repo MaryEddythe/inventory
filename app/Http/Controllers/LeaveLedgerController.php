@@ -251,7 +251,8 @@ class LeaveLedgerController extends Controller
 
     protected function authorizeHr(): void
     {
-        abort_unless((int) auth()->user()?->role_id === 4, 403);
+        $user = auth()->user();
+        abort_unless($user && ($user->isSuperAdmin() || (int) $user->role_id === 4), 403);
     }
 
     protected function abortUnlessPermanent(Employee $employee): void

@@ -17,6 +17,26 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Notification actions must be available to every authenticated recipient,
+// including roles without a matching sidebar item.
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications/{notification}/read', function (string $notification) {
+        $user = auth()->user();
+        $record = $user->notifications()->findOrFail($notification);
+        $record->markAsRead();
+
+        return redirect()->to(data_get($record->data, 'url', route('leave-applications.index')));
+    })->name('notifications.read');
+
+    Route::post('/notifications/read-all', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+
+        return request()->expectsJson()
+            ? response()->json(['ok' => true])
+            : back();
+    })->name('notifications.read-all');
+});
+
 // Protected Routes
 Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/', function () {
@@ -112,21 +132,6 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::get('/api/search-employees', [InventoryItemController::class, 'searchEmployees'])->name('api.search-employees');
     Route::get('/api/items-by-personnel', [InventoryItemController::class, 'getItemsByPersonnel'])->name('api.items-by-personnel');
     Route::get('/api/item-details/{itemId}', [InventoryItemController::class, 'getItemDetails'])->name('api.item-details');
-
-    // Notifications
-    Route::get('/notifications/{notification}/read', function (string $notification) {
-        $user = auth()->user();
-        $record = $user?->notifications()->findOrFail($notification);
-        $record->markAsRead();
-        return redirect()->to(data_get($record->data, 'url', route('leave-applications.index')));
-    })->name('notifications.read');
-    Route::post('/notifications/read-all', function () {
-        auth()->user()?->unreadNotifications->markAsRead();
-        if (request()->expectsJson()) {
-            return response()->json(['ok' => true]);
-        }
-        return back();
-    })->name('notifications.read-all');
 
     Route::get('/user/confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
     Route::post('/user/confirm-password', [ConfirmablePasswordController::class, 'store'])->name('password.confirm.store');

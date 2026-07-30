@@ -314,7 +314,6 @@
                                     <th>Date From</th>
                                     <th>Date To</th>
                                     <th>Status</th>
-                                    <th>Process Flow</th>
                                     <th>HR</th>
                                     <th>Div Chief</th>
                                     <th>RD</th>
@@ -357,21 +356,6 @@
                                             @endphp
                                             <span class="badge bg-{{ $statusClass }}">{{ $statusLabel }}</span>
                                         </td>
-                                        <td>
-                                            @php
-                                                $flow = [
-                                                    ['HR', (bool) $application->hr_signed_at],
-                                                    ['Div Chief', (bool) $application->division_chief_signed_at],
-                                                    ['RD', (bool) $application->regional_director_signed_at],
-                                                    ['Completed', (string) $application->status === 'completed'],
-                                                ];
-                                            @endphp
-                                            <div class="small text-nowrap">
-                                                @foreach($flow as $index => [$label, $done])
-                                                    <span class="{{ $done ? 'text-success fw-semibold' : 'text-muted' }}">{{ $done ? '✓' : '○' }} {{ $label }}</span>@if($index < 3) <span class="text-muted">→</span> @endif
-                                                @endforeach
-                                            </div>
-                                        </td>
                                         <td>@if($application->hr_signature_path)<span class="text-success" title="{{ optional($application->hrSigner)->name ?? 'HR' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
                                         <td>@if($application->division_chief_signature_path)<span class="text-success" title="{{ optional($application->divisionChiefSigner)->name ?? 'Div Chief' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
                                         <td>@if($application->regional_director_signature_path)<span class="text-success" title="{{ optional($application->regionalDirectorSigner)->name ?? 'RD' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
@@ -388,7 +372,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="9" class="text-center">No leave applications</td></tr>
+                                    <tr><td colspan="8" class="text-center">No leave applications</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

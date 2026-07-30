@@ -139,6 +139,7 @@ class CreditsController extends Controller
             'status'       => 'required|in:ACTIVE,INACTIVE',
             'remarks'      => 'nullable|string',
             'location'     => 'nullable|string',
+            'so_to_no'     => 'nullable|string|max:255',
             'employee_ids' => 'nullable',
         ]);
 
@@ -223,6 +224,7 @@ class CreditsController extends Controller
                     'status'          => $validated['status'],
                     'remarks'         => $validated['remarks'] ?? $currentRemarks,
                     'location'        => $validated['location'] ?? null,
+                    'so_to_no'        => $validated['so_to_no'] ?? null,
                 ]);
             }
 
@@ -237,6 +239,7 @@ class CreditsController extends Controller
                 $existingBenefit->status       = $validated['status'];
                 $existingBenefit->remarks      = $validated['remarks'] ?? $currentRemarks;
                 $existingBenefit->location     = $validated['location'] ?? $existingBenefit->location;
+                $existingBenefit->so_to_no     = $validated['so_to_no'] ?? $existingBenefit->so_to_no;
 
                 $existingBenefit->load('employee.division');
                 if ($existingBenefit->employee) {
@@ -335,6 +338,7 @@ class CreditsController extends Controller
             'credit_hours' => 'nullable|integer|min:0',
             'remarks'      => 'nullable|string',
             'location'     => 'nullable|string',
+            'so_to_no'     => 'nullable|string|max:255',
             'cto_action'   => 'nullable|in:add,deduct',
         ]);
 
@@ -447,6 +451,7 @@ class CreditsController extends Controller
                     'status'          => 'ACTIVE',
                     'remarks'         => $validated['remarks'] ?? null,
                     'location'        => $validated['location'] ?? null,
+                    'so_to_no'        => $validated['so_to_no'] ?? null,
                 ];
 
                 $benefit = EmployeeLeaveBenefit::create($creditData);

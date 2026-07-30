@@ -431,23 +431,8 @@
 
                 <div class="form-grid">
                     <div>
-                        <label class="form-group-label">Start Date *</label>
-                        <div class="date-input-with-icon">
-                            <input type="date" name="start_date" id="ctoStartDate" class="form-control" required>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="form-group-label">End Date</label>
-                        <div class="date-input-with-icon">
-                            <input type="date" name="end_date" id="ctoEndDate" class="form-control">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div>
-                        <label class="form-group-label">Credit Hours *</label>
-                        <input type="number" name="credit_hours" id="ctoCreditHours" class="form-control" min="0" step="1" placeholder="Enter hours" required />
+                        <label class="form-group-label">S.O / T.O No *</label>
+                        <input type="text" name="so_to_no" class="form-control" placeholder="Enter SO/TO number" required>
                     </div>
                     <div>
                         <label class="form-group-label">Special Order / Basis</label>
@@ -459,6 +444,14 @@
                     <div>
                         <label class="form-group-label">Location</label>
                         <input type="text" name="location" class="form-control" placeholder="Enter location">
+                    </div>
+                    <div></div>
+                </div>
+
+                <div class="form-grid">
+                    <div>
+                        <label class="form-group-label">Credit Hours *</label>
+                        <input type="number" name="credit_hours" id="ctoCreditHours" class="form-control" min="0" step="1" placeholder="Enter hours" required />
                     </div>
                     <div></div>
                 </div>
@@ -561,13 +554,21 @@
 
                 <div class="form-grid" style="margin-top:1rem;">
                     <div>
+                        <label class="form-group-label">S.O / T.O No</label>
+                        <input type="text" name="so_to_no" id="editSoToNo" class="form-control" placeholder="Enter SO/TO number">
+                    </div>
+                    <div>
                         <label class="form-group-label">Special Order / Basis</label>
                         <input type="text" name="remarks" id="editRemarks" class="form-control" placeholder="SO name, business hours, or beyond schedule">
                     </div>
+                </div>
+
+                <div class="form-grid" style="margin-top:1rem;">
                     <div>
                         <label class="form-group-label">Location</label>
                         <input type="text" name="location" id="editLocation" class="form-control" placeholder="Enter location">
                     </div>
+                    <div></div>
                 </div>
 
                 <input type="hidden" id="editDateApplied" name="date_applied" />
@@ -596,14 +597,15 @@
             <table class="table table-hover align-middle" style="margin:0;">
                 <thead>
                     <tr class="text-muted" style="font-size:0.85rem; letter-spacing:0.02em;">
-                        <th style="width:26%;">Special Order / Basis</th>
+                        <th style="width:20%;">Special Order / Basis</th>
+                        <th style="width:10%;">S.O / T.O No</th>
                         <th style="width:10%;">Location</th>
                         <th style="width:9%;">Employees</th>
                         <th style="width:10%;">Total Hours</th>
                         <th style="width:11%;">Start Date</th>
                         <th style="width:11%;">End Date</th>
                         <th style="width:10%;">Status</th>
-                        <th style="width:13%;">Action</th>
+                        <th style="width:10%;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -621,6 +623,7 @@
                                 <div class="fw-bold" style="color:#0f172a;">{{ $basis }}</div>
                                 <div class="text-secondary" style="font-size:0.8rem;">{{ $firstBenefit->credit_type ?? 'Credited Time-Off' }}</div>
                             </td>
+                            <td class="fw-semibold">{{ $firstBenefit->so_to_no ?: '—' }}</td>
                             <td class="fw-semibold">{{ $groupLocation ?: '—' }}</td>
                             <td class="fw-semibold">{{ $groupBenefits->count() }}</td>
                             @php
@@ -647,14 +650,14 @@
                                 <button type="button" class="btn-action-edit" onclick="openShowEmployeesModal('{{ $groupId }}', '{{ addslashes($basis) }}', {{ $groupBenefits->count() }})">
                                     Show Employees
                                 </button>
-                                <button type="button" class="btn-action-edit" onclick="openEditCtoModal('{{ $firstBenefit->id }}', '{{ $firstBenefit->start_date }}', '{{ $firstBenefit->end_date ?? '' }}', '{{ $firstBenefit->credit_hours }}', '{{ $firstBenefit->status }}', '{{ addslashes($firstBenefit->remarks ?? '') }}', '{{ addslashes($firstBenefit->location ?? '') }}', '{{ $firstBenefit->date_applied }}', {{ json_encode($groupBenefits->map(function($b) { return ['id' => (string) $b->emp_no, 'full_name' => $b->name ?? optional($b->employee)->full_name ?? '', 'employee_id' => (string) $b->emp_no, 'division_code' => $b->departments ?? 'N/A']; })->values()) }})">
+                                <button type="button" class="btn-action-edit" onclick="openEditCtoModal('{{ $firstBenefit->id }}', '{{ $firstBenefit->start_date }}', '{{ $firstBenefit->end_date ?? '' }}', '{{ $firstBenefit->credit_hours }}', '{{ $firstBenefit->status }}', '{{ addslashes($firstBenefit->remarks ?? '') }}', '{{ addslashes($firstBenefit->location ?? '') }}', '{{ addslashes($firstBenefit->so_to_no ?? '') }}', '{{ $firstBenefit->date_applied }}', {{ json_encode($groupBenefits->map(function($b) { return ['id' => (string) $b->emp_no, 'full_name' => $b->name ?? optional($b->employee)->full_name ?? '', 'employee_id' => (string) $b->emp_no, 'division_code' => $b->departments ?? 'N/A']; })->values()) }})">
                                     Edit
                                 </button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5">
+                            <td colspan="9" class="text-center py-5">
                                 <div class="empty-state">
                                     <div class="empty-state-icon" style="font-size:1.8rem; color:#94a3b8;">–</div>
                                     <div class="empty-state-text" style="color:#64748b; font-weight:600;">No CTO credits found</div>
@@ -753,7 +756,7 @@
     let editSelectedEmployees = [];
     let editLastSearchItems = [];
 
-    function openEditCtoModal(id, startDate, endDate, creditHours, status, remarks, location, dateApplied, employees) {
+    function openEditCtoModal(id, startDate, endDate, creditHours, status, remarks, location, soToNo, dateApplied, employees) {
         const modal = document.getElementById('editCtoModal');
         if (!modal) return;
 
@@ -764,6 +767,7 @@
         document.getElementById('editStatus').value = status;
         document.getElementById('editRemarks').value = remarks;
         document.getElementById('editLocation').value = location;
+        document.getElementById('editSoToNo').value = soToNo;
         document.getElementById('editDateApplied').value = dateApplied || new Date().toISOString().slice(0, 10);
 
         // Populate employees

@@ -24,6 +24,7 @@ class EmployeeLeaveBenefit extends Model
         'status',
         'remarks',
         'location',
+        'so_to_no',
     ];
 
     protected $casts = [

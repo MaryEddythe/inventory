@@ -277,6 +277,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Credit Type</th>
+                                <th>S.O / T.O No</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 <th>Hours</th>
@@ -287,6 +288,7 @@
                             @forelse($benefits as $benefit)
                                 <tr>
                                     <td>{{ $benefit->credit_type }}</td>
+                                    <td>{{ $benefit->so_to_no ?: '-' }}</td>
                                     <td>{{ $benefit->start_date?->format('M d, Y') }}</td>
                                     <td>{{ $benefit->end_date ? $benefit->end_date->format('M d, Y') : '-' }}</td>
                                     <td>{{ $benefit->credit_hours }}</td>
@@ -294,7 +296,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">No leave credits found</td>
+                                    <td colspan="6" class="text-center">No leave credits found</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -311,6 +313,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Leave Type</th>
+                                    <th>S.O / T.O No</th>
                                     <th>Date From</th>
                                     <th>Date To</th>
                                     <th>Status</th>
@@ -331,6 +334,7 @@
                                             </div>
                                         @endif
                                     </td>
+                                        <td>{{ $application->cto_so_to_no ?: '-' }}</td>
                                         <td>{{ $application->date_from?->format('M d, Y') }}</td>
                                         <td>{{ $application->date_to ? $application->date_to->format('M d, Y') : '-' }}</td>
                                         <td>
@@ -372,7 +376,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="8" class="text-center">No leave applications</td></tr>
+                                    <tr><td colspan="9" class="text-center">No leave applications</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -910,10 +914,11 @@
         const isCto = document.getElementById('leaveType')?.value === 'Credited Time-Off';
         const wrapper = document.getElementById('ctoLeaveFields');
         const source = document.getElementById('ctoLeaveHistoryId');
+        const soToNo = document.getElementById('ctoSoToNo');
         const duration = document.getElementById('ctoDuration');
 
         if (wrapper) wrapper.classList.toggle('d-none', !isCto);
-        [source, duration].forEach(field => {
+        [source, soToNo, duration].forEach(field => {
             if (!field) return;
             field.disabled = !isCto;
             field.required = isCto;

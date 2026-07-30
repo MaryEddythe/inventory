@@ -123,12 +123,10 @@
         <td><div class="card">
             <h2>COMPENSATORY DAY / TIME OFF</h2>
             <table class="detail-table">
-                <tr><td>Employee</td><td>{{ $employee?->full_name ?? '—' }}</td></tr>
-                <tr><td>Position</td><td>{{ $employee?->position ?? '—' }}</td></tr>
                 <tr><td>Hours / Days Applied</td><td>{{ $duration }}</td></tr>
                 <tr><td>Date Covered</td><td>{{ $leaveApplication->date_from?->format('M d, Y') }}@if($leaveApplication->date_to && !$leaveApplication->date_to->isSameDay($leaveApplication->date_from)) to {{ $leaveApplication->date_to->format('M d, Y') }}@endif</td></tr>
                 <tr><td>Special Order</td><td>{{ $leaveApplication->cto_remarks ?: '—' }}</td></tr>
-                <tr><td>Purpose</td><td>{{ $leaveApplication->reason ?: '—' }}</td></tr>
+                <tr><td>S.O / T.O No.</td><td>{{ $leaveApplication->cto_so_to_no ?: '—' }}</td></tr>
             </table>
         </div></td>
     </tr></table>

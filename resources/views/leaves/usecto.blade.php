@@ -16,6 +16,10 @@
                 @endforelse
             </select>
         </div>
+        <div class="mb-3">
+            <label class="leave-form-label" for="ctoSoToNo">S.O / T.O No:</label>
+            <input type="text" name="cto_so_to_no" id="ctoSoToNo" class="leave-form-control" placeholder="Enter SO/TO number" disabled>
+        </div>
         <div>
             <label class="leave-form-label" for="ctoDuration">Time to use *</label>
             <select name="cto_duration" id="ctoDuration" class="leave-form-control" disabled>

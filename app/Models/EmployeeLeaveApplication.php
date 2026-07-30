@@ -24,6 +24,7 @@ class EmployeeLeaveApplication extends Model
         'reason',
         'cto_leave_history_id',
         'cto_remarks',
+        'cto_so_to_no',
         'cto_duration',
         'applicant_signature_path',
         'applicant_signed_at',

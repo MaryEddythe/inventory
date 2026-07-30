@@ -323,7 +323,14 @@
                             <tbody>
                                 @forelse($leaveApplications as $application)
                                     <tr>
-                                        <td>{{ $application->leave_type }}</td>
+                                    <td>
+                                        {{ $application->leave_type }}
+                                        @if($application->cto_duration)
+                                            <div class="small text-muted">
+                                                {{ match($application->cto_duration) { 'am' => 'AM · 4 hours', 'pm' => 'PM · 6 hours', default => 'Whole Day · 10 hours' } }}
+                                            </div>
+                                        @endif
+                                    </td>
                                         <td>{{ $application->date_from?->format('M d, Y') }}</td>
                                         <td>{{ $application->date_to ? $application->date_to->format('M d, Y') : '-' }}</td>
                                         <td>
@@ -601,6 +608,8 @@
                     </div>
                 </div>
 
+                @include('leaves.usecto', ['ctoHistory' => $ctoHistory])
+
                 <div class="leave-form-grid full">
                     <div>
                         <label class="leave-form-label">Date Applied</label>
@@ -819,7 +828,18 @@
         document.getElementById('signatureModal').classList.remove('active');
     }
 
+    @php
+        $ctoCreditSourcesJson = $ctoHistory->map(function ($h) {
+            return [
+                'id' => $h->id,
+                'remarks' => $h->remarks ?: 'No remarks provided',
+                'hours' => $h->credits_added,
+                'date' => optional($h->created_at)->format('M d, Y'),
+            ];
+        })->values();
+    @endphp
     const leaveTypesByEmploymentType = @json($leaveTypesForModal);
+    const ctoCreditSources = @json($ctoCreditSourcesJson);
 
     const currentEmployee = {
         id: {{ $employee->emp_no }},
@@ -839,6 +859,7 @@
         document.getElementById('leaveEmploymentType').value = emp.employment_type;
 
         updateLeaveTypeOptions(emp.employment_type);
+        toggleCtoFields();
         closeLeaveSignSection();
         document.getElementById('leaveModal').classList.add('active');
     }
@@ -853,6 +874,7 @@
         document.getElementById('leavePosition').value = '';
         document.getElementById('leaveEmploymentType').value = '';
         document.getElementById('leaveType').innerHTML = '<option value="">-- Select Leave Type --</option>';
+        toggleCtoFields();
         closeLeaveSignSection();
         syncLeaveSignatureMode();
     }
@@ -869,6 +891,21 @@
             opt.value = type;
             opt.textContent = type;
             select.appendChild(opt);
+        });
+    }
+
+    function toggleCtoFields() {
+        const isCto = document.getElementById('leaveType')?.value === 'Credited Time-Off';
+        const wrapper = document.getElementById('ctoLeaveFields');
+        const source = document.getElementById('ctoLeaveHistoryId');
+        const duration = document.getElementById('ctoDuration');
+
+        if (wrapper) wrapper.classList.toggle('d-none', !isCto);
+        [source, duration].forEach(field => {
+            if (!field) return;
+            field.disabled = !isCto;
+            field.required = isCto;
+            if (!isCto) field.value = '';
         });
     }
 
@@ -916,12 +953,15 @@
     }
 
     document.addEventListener('change', function (event) {
+        if (event.target && event.target.id === 'leaveType') {
+            toggleCtoFields();
+        }
         if (event.target && event.target.name === 'signature_mode') {
             syncLeaveSignatureMode();
         }
     });
 
-    @if($errors->hasAny(['leave_type', 'date_from', 'date_to', 'signature_mode', 'signature_path', 'current_password']))
+    @if($errors->hasAny(['leave_type', 'date_from', 'date_to', 'cto_leave_history_id', 'cto_duration', 'signature_mode', 'signature_path', 'current_password']))
     document.addEventListener('DOMContentLoaded', function () {
         openLeaveModal();
         toggleLeaveSignSection();

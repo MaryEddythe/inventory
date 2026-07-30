@@ -505,6 +505,35 @@
             @csrf
             @method('PUT')
             <div class="edit-modal-body">
+                <div class="search-container" id="editEmployeeSearchWrap">
+                    <label class="form-group-label">Employees (Multiple Selection) *</label>
+
+                    <div class="search-bar" id="editEmployeeSearchBar">
+                        <div id="editSelectedEmployeesList"></div>
+
+                        <input
+                            type="text"
+                            id="editCtoEmployeeSearch"
+                            class="search-bar-input"
+                            placeholder="Type to search employees..."
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div
+                        class="search-results"
+                        id="editCtoSearchResults"
+                        style="display:none;"
+                    ></div>
+
+                    <input
+                        type="hidden"
+                        id="editSelectedEmployeeIds"
+                        name="employee_ids"
+                        value="[]"
+                    >
+                </div>
+
                 <div class="form-grid">
                     <div>
                         <label class="form-group-label">Start Date *</label>
@@ -618,7 +647,7 @@
                                 <button type="button" class="btn-action-edit" onclick="openShowEmployeesModal('{{ $groupId }}', '{{ addslashes($basis) }}', {{ $groupBenefits->count() }})">
                                     Show Employees
                                 </button>
-                                <button type="button" class="btn-action-edit" onclick="openEditCtoModal('{{ $firstBenefit->id }}', '{{ $firstBenefit->start_date }}', '{{ $firstBenefit->end_date ?? '' }}', '{{ $firstBenefit->credit_hours }}', '{{ $firstBenefit->status }}', '{{ addslashes($firstBenefit->remarks ?? '') }}', '{{ addslashes($firstBenefit->location ?? '') }}', '{{ $firstBenefit->date_applied }}')">
+                                <button type="button" class="btn-action-edit" onclick="openEditCtoModal('{{ $firstBenefit->id }}', '{{ $firstBenefit->start_date }}', '{{ $firstBenefit->end_date ?? '' }}', '{{ $firstBenefit->credit_hours }}', '{{ $firstBenefit->status }}', '{{ addslashes($firstBenefit->remarks ?? '') }}', '{{ addslashes($firstBenefit->location ?? '') }}', '{{ $firstBenefit->date_applied }}', {{ json_encode($groupBenefits->map(function($b) { return ['id' => (string) $b->emp_no, 'full_name' => $b->name ?? optional($b->employee)->full_name ?? '', 'employee_id' => (string) $b->emp_no, 'division_code' => $b->departments ?? 'N/A']; })->values()) }})">
                                     Edit
                                 </button>
                             </td>
@@ -721,7 +750,10 @@
     }
 
     // ===== EDIT CTO MODAL =====
-    function openEditCtoModal(id, startDate, endDate, creditHours, status, remarks, location, dateApplied) {
+    let editSelectedEmployees = [];
+    let editLastSearchItems = [];
+
+    function openEditCtoModal(id, startDate, endDate, creditHours, status, remarks, location, dateApplied, employees) {
         const modal = document.getElementById('editCtoModal');
         if (!modal) return;
 
@@ -734,17 +766,155 @@
         document.getElementById('editLocation').value = location;
         document.getElementById('editDateApplied').value = dateApplied || new Date().toISOString().slice(0, 10);
 
+        // Populate employees
+        editSelectedEmployees = (employees || []).map(e => ({
+            id: String(e.id || e.emp_no || ''),
+            full_name: e.full_name || '',
+            employee_id: String(e.employee_id || e.id || e.emp_no || ''),
+            division_code: e.division_code || 'N/A',
+        }));
+
+        editRenderSelectedEmployees();
+        document.getElementById('editCtoSearchResults').style.display = 'none';
+        document.getElementById('editCtoEmployeeSearch').value = '';
+
         modal.classList.add('active');
     }
 
     function closeEditCtoModal() {
         const modal = document.getElementById('editCtoModal');
         if (modal) modal.classList.remove('active');
+        editSelectedEmployees = [];
+        editLastSearchItems = [];
+        document.getElementById('editSelectedEmployeesList').innerHTML = '';
+        document.getElementById('editCtoSearchResults').style.display = 'none';
     }
 
     function handleEditSubmit(event) {
-        // Allow normal form submission
+        const hiddenField = document.getElementById('editSelectedEmployeeIds');
+        if (editSelectedEmployees.length === 0) {
+            event.preventDefault();
+            alert('Please select at least one employee.');
+            return false;
+        }
+        hiddenField.value = JSON.stringify(editSelectedEmployees.map(e => String(e.id)));
         return true;
+    }
+
+    function editShowDropdown() {
+        const el = document.getElementById('editCtoSearchResults');
+        if (el) el.style.display = 'block';
+    }
+
+    function editHideDropdown() {
+        const el = document.getElementById('editCtoSearchResults');
+        if (el) el.style.display = 'none';
+    }
+
+    function editRenderSearchResults(items) {
+        const resultsEl = document.getElementById('editCtoSearchResults');
+        if (!resultsEl) return;
+
+        if (!items || items.length === 0) {
+            resultsEl.innerHTML = '<div class="search-result-empty">No employees found</div>';
+            editShowDropdown();
+            return;
+        }
+
+        const selectedIds = new Set(editSelectedEmployees.map(e => e.id));
+        resultsEl.innerHTML = items.map(item => {
+            const id = item.emp_no ?? item.id;
+            const fullName = item.fullname ?? item.full_name ?? '';
+            const employeeId = item.emp_no ?? item.employee_id ?? '';
+            const divisionCode = item.department_name ?? item.division_code ?? '';
+
+            const isSelected = selectedIds.has(String(id));
+
+            return `
+                <button type="button" class="search-result-item ${isSelected ? 'already-selected' : ''}" data-employee-id="${id}">
+                    <div style="font-weight:700">${fullName}${isSelected ? ' <span style="color:#3b82f6;font-size:0.75em;">✓ selected</span>' : ''}</div>
+                    <div style="font-size:0.82em; color:#64748b;">${employeeId} · ${divisionCode}</div>
+                </button>
+            `;
+        }).join('');
+
+        editShowDropdown();
+    }
+
+    function editAttachResultClickHandlers() {
+        const resultsEl = document.getElementById('editCtoSearchResults');
+        if (!resultsEl) return;
+
+        resultsEl.querySelectorAll('.search-result-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const employeeIdRaw = btn.getAttribute('data-employee-id');
+                const employeeId = employeeIdRaw != null ? String(employeeIdRaw) : '';
+
+                const selected = editLastSearchItems.find(x => String(x.emp_no ?? x.id) === employeeId);
+                if (!selected) return;
+
+                const existsIndex = editSelectedEmployees.findIndex(er => String(er.id) === employeeId);
+                if (existsIndex > -1) {
+                    editSelectedEmployees.splice(existsIndex, 1);
+                } else {
+                    editSelectedEmployees.push({
+                        id: String(selected.emp_no ?? selected.id),
+                        full_name: selected.fullname ?? selected.full_name ?? '',
+                        employee_id: selected.emp_no ?? selected.employee_id ?? '',
+                        division_code: selected.department_name ?? selected.division_code ?? '',
+                    });
+                }
+
+                const searchInput = document.getElementById('editCtoEmployeeSearch');
+                searchInput.value = '';
+                searchInput.focus();
+
+                editRenderSelectedEmployees();
+                editRenderSearchResults(editLastSearchItems);
+                editAttachResultClickHandlers();
+            });
+        });
+    }
+
+    function editRenderSelectedEmployees() {
+        const listEl = document.getElementById('editSelectedEmployeesList');
+        const searchBar = document.getElementById('editEmployeeSearchBar');
+        const searchInput = document.getElementById('editCtoEmployeeSearch');
+
+        if (!listEl || !searchBar) return;
+
+        if (editSelectedEmployees.length === 0) {
+            listEl.innerHTML = '';
+            searchBar.classList.remove('has-pills');
+            searchInput.placeholder = 'Type to search employees...';
+            return;
+        }
+
+        searchBar.classList.add('has-pills');
+        searchInput.placeholder = '';
+
+        listEl.innerHTML = editSelectedEmployees.map(emp => `
+            <span class="employee-pill">
+                <span class="employee-pill-name">${emp.full_name || ''}</span>
+                <button type="button" class="employee-pill-remove" onclick="editRemoveSelectedEmployee('${emp.id}', event)">&times;</button>
+            </span>
+        `).join('');
+    }
+
+    function editRemoveSelectedEmployee(employeeId, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const id = String(employeeId);
+        editSelectedEmployees = editSelectedEmployees.filter(e => String(e.id) !== id);
+        editRenderSelectedEmployees();
+
+        if (editLastSearchItems.length > 0) {
+            editRenderSearchResults(editLastSearchItems);
+            editAttachResultClickHandlers();
+        }
+
+        document.getElementById('editCtoEmployeeSearch').focus();
     }
 
     // ===== CREATE CTO MODAL =====
@@ -924,6 +1094,41 @@
         document.getElementById('ctoEmployeeSearch').focus();
     }
 
+    function setupEditSearch() {
+        const searchInput = document.getElementById('editCtoEmployeeSearch');
+        const searchBar = document.getElementById('editEmployeeSearchBar');
+
+        if (!searchInput || !searchBar) return;
+
+        let debounceTimer = null;
+
+        searchInput.addEventListener('focus', () => {
+            searchBar.classList.add('focused');
+        });
+
+        searchInput.addEventListener('blur', () => {
+            searchBar.classList.remove('focused');
+            setTimeout(() => { editHideDropdown(); }, 150);
+        });
+
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value;
+
+            clearTimeout(debounceTimer);
+            if (!q || q.trim().length === 0) {
+                editHideDropdown();
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                const items = await searchEmployees(q);
+                editLastSearchItems = items;
+                editRenderSearchResults(items);
+                editAttachResultClickHandlers();
+            }, 200);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const searchInput = document.getElementById('ctoEmployeeSearch');
         const searchBar = document.getElementById('employeeSearchBar');
@@ -957,6 +1162,8 @@
                 attachResultClickHandlers();
             }, 200);
         });
+
+        setupEditSearch();
 
         document.addEventListener('keydown', function(e){
             if(e.key === 'Escape'){

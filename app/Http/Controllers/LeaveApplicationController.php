@@ -139,7 +139,10 @@ class LeaveApplicationController extends Controller
         ]);
 
         try {
-            $pdf = Pdf::loadView('leaves.print', [
+            $view = $this->canonicalLeaveType((string) $leaveApplication->leave_type) === 'Credited Time-Off'
+                ? 'leaves.cto-print'
+                : 'leaves.print';
+            $pdf = Pdf::loadView($view, [
                 'leaveApplication' => $leaveApplication,
                 'employee' => $leaveApplication->employee,
                 'leavePrintCss' => File::exists(public_path('leave-application-print.css'))
@@ -168,6 +171,8 @@ class LeaveApplicationController extends Controller
             'date_from' => 'required|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'reason' => 'nullable|string|max:2000',
+            'cto_leave_history_id' => 'nullable|integer',
+            'cto_duration' => 'nullable|in:am,pm,whole_day',
             'signature_mode' => 'required|in:saved,upload',
             'signature_path' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
             'current_password' => 'required|string',
@@ -191,6 +196,42 @@ class LeaveApplicationController extends Controller
                     'current_password' => 'The password you entered does not match your login password.',
                 ])
                 ->withInput();
+        }
+
+        $leaveType = $this->canonicalLeaveType($validated['leave_type']);
+        $ctoHistory = null;
+        if ($leaveType === 'Credited Time-Off') {
+            $request->validate([
+                'cto_leave_history_id' => 'required|integer',
+                'cto_duration' => 'required|in:am,pm,whole_day',
+            ]);
+
+            $ctoHistory = EmployeeLeaveHistory::query()
+                ->whereKey($validated['cto_leave_history_id'])
+                ->where('emp_no', $employee->emp_no)
+                ->where(function ($query) {
+                    $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', ['credited time-off', 'credited time off'])
+                        ->orWhereRaw('LOWER(credit_type) LIKE ?', ['%cto%']);
+                })
+                ->where('credits_added', '>', 0)
+                ->first();
+
+            if (! $ctoHistory) {
+                return back()->withErrors(['cto_leave_history_id' => 'Please select an available CTO credit.'])->withInput();
+            }
+
+            $requestedHours = $this->ctoDurationHours($validated['cto_duration']);
+            $availableHours = (int) EmployeeLeaveBenefit::query()
+                ->where('emp_no', $employee->emp_no)
+                ->where(function ($query) {
+                    $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', ['credited time-off', 'credited time off'])
+                        ->orWhereRaw('LOWER(credit_type) LIKE ?', ['%cto%']);
+                })
+                ->sum('credit_hours');
+
+            if ($availableHours < $requestedHours) {
+                return back()->withErrors(['cto_duration' => 'Insufficient CTO balance for the selected duration.'])->withInput();
+            }
         }
 
         $signaturePath = $user->signature_path;
@@ -225,10 +266,13 @@ class LeaveApplicationController extends Controller
 
         $application = EmployeeLeaveApplication::create([
             'employee_id' => $employee->emp_no,
-            'leave_type' => $validated['leave_type'],
+            'leave_type' => $leaveType,
             'date_from' => $validated['date_from'],
             'date_to' => $validated['date_to'] ?? null,
             'reason' => $validated['reason'] ?? null,
+            'cto_leave_history_id' => $ctoHistory?->id,
+            'cto_remarks' => $ctoHistory?->remarks,
+            'cto_duration' => $leaveType === 'Credited Time-Off' ? $validated['cto_duration'] : null,
             'applicant_signature_path' => $signaturePath,
             'applicant_signed_at' => now(),
             'status' => PendingHr::class,
@@ -581,6 +625,10 @@ class LeaveApplicationController extends Controller
             ->whereRaw('LOWER(TRIM(credit_type)) = ?', [strtolower($leaveType)])
             ->sum('credit_hours');
 
+        if ($isCto && $currentBalance < $hoursUsed) {
+            throw new \RuntimeException('The employee no longer has enough CTO hours to approve this request.');
+        }
+
         $creditHours = $isCto ? -$hoursUsed : $hoursUsed;
         $hoursRemaining = $isCto
             ? max(0, $currentBalance - $hoursUsed)
@@ -601,7 +649,8 @@ class LeaveApplicationController extends Controller
             'hours_used' => $hoursUsed,
             'hours_remaining' => $hoursRemaining,
             'status' => 'ACTIVE',
-            'remarks' => 'Deducted from approved leave application #' . $application->id,
+            'remarks' => 'Deducted from approved leave application #' . $application->id
+                . ($application->cto_remarks ? ' (CTO source: ' . $application->cto_remarks . ')' : ''),
         ]);
 
         EmployeeLeaveHistory::create([
@@ -611,16 +660,31 @@ class LeaveApplicationController extends Controller
             'credits_added' => 0,
             'hours_used' => $hoursUsed,
             'hours_remaining' => $hoursRemaining,
-            'remarks' => 'Approved leave application #' . $application->id,
+            'remarks' => 'Approved leave application #' . $application->id
+                . ($application->cto_remarks ? ' (CTO source: ' . $application->cto_remarks . ')' : ''),
         ]);
     }
 
     protected function leaveApplicationHours(EmployeeLeaveApplication $application): int
     {
+        if ($this->canonicalLeaveType((string) $application->leave_type) === 'Credited Time-Off') {
+            return $this->ctoDurationHours((string) $application->cto_duration);
+        }
+
         $start = Carbon::parse($application->date_from);
         $end = $application->date_to ? Carbon::parse($application->date_to) : $start;
 
         return ((int) $start->diffInDays($end) + 1) * 10;
+    }
+
+    protected function ctoDurationHours(string $duration): int
+    {
+        return match ($duration) {
+            'am' => 4,
+            'pm' => 6,
+            'whole_day' => 10,
+            default => 0,
+        };
     }
 
     protected function canonicalLeaveType(string $leaveType): string

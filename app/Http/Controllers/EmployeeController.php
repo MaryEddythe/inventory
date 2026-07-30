@@ -119,6 +119,16 @@ class EmployeeController extends Controller
     {
         $employee->load(['division', 'leaveBenefits']);
 
+        $ctoHistory = \App\Models\EmployeeLeaveHistory::query()
+            ->where('emp_no', $employee->emp_no)
+            ->where(function ($query) {
+                $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', ['credited time-off', 'credited time off'])
+                    ->orWhereRaw('LOWER(credit_type) LIKE ?', ['%cto%']);
+            })
+            ->where('credits_added', '>', 0)
+            ->latest()
+            ->get();
+
         $leaveApplications = $employee->leaveApplications()
             ->with([
                 'hrSigner',
@@ -131,7 +141,7 @@ class EmployeeController extends Controller
         // Compute ledger-based accumulated days for Vacation Leave and Sick Leave
         $ledgerDays = $this->computeLedgerAccumulatedDays($employee);
 
-        return view('employees.show', compact('employee', 'leaveApplications', 'ledgerDays'));
+        return view('employees.show', compact('employee', 'leaveApplications', 'ledgerDays', 'ctoHistory'));
     }
 
     /**

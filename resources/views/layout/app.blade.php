@@ -118,7 +118,7 @@
                                 data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
                             <i class="bi bi-bell"></i>
                             @if($headerUnreadCount > 0)
-                                <span class="notification-badge">{{ $headerUnreadCount > 99 ? '99+' : $headerUnreadCount }}</span>
+                            <span class="notification-badge" id="notificationBadge">{{ $headerUnreadCount > 99 ? '99+' : $headerUnreadCount }}</span>
                             @endif
                         </button>
 
@@ -126,11 +126,11 @@
                             <div class="notification-menu-header d-flex align-items-center justify-content-between gap-3">
                                 <div>
                                     <div class="notification-menu-title">Notifications</div>
-                                    <div class="notification-menu-subtitle">{{ $headerUnreadCount }} unread</div>
+                                    <div class="notification-menu-subtitle" id="notificationUnreadLabel">{{ $headerUnreadCount }} unread</div>
                                 </div>
 
                                 @if($headerUnreadCount > 0)
-                                    <form method="POST" action="{{ route('notifications.read-all') }}">
+                                    <form method="POST" action="{{ route('notifications.read-all') }}" id="markAllNotificationsReadForm">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-primary">Mark all read</button>
                                     </form>
@@ -149,7 +149,7 @@
                                             <div class="notification-item-top">
                                                 <span class="notification-item-title">{{ $notificationData['headline'] ?? 'Leave update' }}</span>
                                                 @if($isUnread)
-                                                    <span class="notification-item-dot"></span>
+                                                <span class="notification-item-dot"></span>
                                                 @endif
                                             </div>
                                             <div class="notification-item-message">{{ $notificationData['message'] ?? 'You have a new leave update.' }}</div>
@@ -192,6 +192,31 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const markAllReadForm = document.getElementById('markAllNotificationsReadForm');
+            markAllReadForm?.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    this.submit();
+                    return;
+                }
+
+                document.getElementById('notificationBadge')?.remove();
+                const unreadLabel = document.getElementById('notificationUnreadLabel');
+                if (unreadLabel) unreadLabel.textContent = '0 unread';
+                document.querySelectorAll('.notification-item.is-unread').forEach(item => item.classList.remove('is-unread'));
+                document.querySelectorAll('.notification-item-dot').forEach(dot => dot.remove());
+                this.remove();
+            });
+
             const body = document.body;
             const toggle = document.getElementById('sidebarToggle');
             const closeButtons = document.querySelectorAll('[data-sidebar-close]');

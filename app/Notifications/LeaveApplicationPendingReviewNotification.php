@@ -36,7 +36,7 @@ class LeaveApplicationPendingReviewNotification extends Notification
             'step' => $this->stepLabel,
             'headline' => $this->headline,
             'message' => $this->message,
-            'url' => route('leave-applications.index'),
+            'url' => route('leave-applications.index', ['application' => $this->application->id]),
         ];
     }
 
@@ -48,6 +48,6 @@ class LeaveApplicationPendingReviewNotification extends Notification
             ->line($this->message)
             ->line('Leave type: ' . $this->application->leave_type)
             ->line('Step: ' . $this->stepLabel)
-            ->action('View Leave Applications', route('leave-applications.index'));
+            ->action('View Leave Applications', route('leave-applications.index', ['application' => $this->application->id]));
     }
 }

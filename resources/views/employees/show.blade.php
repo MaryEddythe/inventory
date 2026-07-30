@@ -303,7 +303,7 @@
                     </div>
                 </details>
 
-                <details class="leave-record-panel">
+                <details class="leave-record-panel" @if(session('leave_application_submitted')) open @endif>
                     <summary><span>Leave Applications</span><span class="leave-record-count">{{ $leaveApplications->count() }} application{{ $leaveApplications->count() === 1 ? '' : 's' }}</span></summary>
                     <div class="leave-record-panel-content">
                     <div class="table-responsive">
@@ -314,6 +314,7 @@
                                     <th>Date From</th>
                                     <th>Date To</th>
                                     <th>Status</th>
+                                    <th>Process Flow</th>
                                     <th>HR</th>
                                     <th>Div Chief</th>
                                     <th>RD</th>
@@ -340,6 +341,7 @@
                                                     str_contains($application->status, 'pending_division') || str_contains($application->status, 'PendingDivision') => 'info',
                                                     str_contains($application->status, 'pending_regional') || str_contains($application->status, 'PendingRegional') => 'primary',
                                                     str_contains($application->status, 'Approved') => 'success',
+                                                    str_contains($application->status, 'completed') || str_contains($application->status, 'Completed') => 'success',
                                                     str_contains($application->status, 'Denied') => 'danger',
                                                     default => 'secondary',
                                                 };
@@ -348,11 +350,27 @@
                                                     str_contains($application->status, 'pending_division') || str_contains($application->status, 'PendingDivision') => 'Pending Div Chief',
                                                     str_contains($application->status, 'pending_regional') || str_contains($application->status, 'PendingRegional') => 'Pending RD',
                                                     str_contains($application->status, 'Approved') => 'Approved',
+                                                    str_contains($application->status, 'completed') || str_contains($application->status, 'Completed') => 'Completed',
                                                     str_contains($application->status, 'Denied') => 'Denied',
                                                     default => $application->status,
                                                 };
                                             @endphp
                                             <span class="badge bg-{{ $statusClass }}">{{ $statusLabel }}</span>
+                                        </td>
+                                        <td>
+                                            @php
+                                                $flow = [
+                                                    ['HR', (bool) $application->hr_signed_at],
+                                                    ['Div Chief', (bool) $application->division_chief_signed_at],
+                                                    ['RD', (bool) $application->regional_director_signed_at],
+                                                    ['Completed', (string) $application->status === 'completed'],
+                                                ];
+                                            @endphp
+                                            <div class="small text-nowrap">
+                                                @foreach($flow as $index => [$label, $done])
+                                                    <span class="{{ $done ? 'text-success fw-semibold' : 'text-muted' }}">{{ $done ? '✓' : '○' }} {{ $label }}</span>@if($index < 3) <span class="text-muted">→</span> @endif
+                                                @endforeach
+                                            </div>
                                         </td>
                                         <td>@if($application->hr_signature_path)<span class="text-success" title="{{ optional($application->hrSigner)->name ?? 'HR' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
                                         <td>@if($application->division_chief_signature_path)<span class="text-success" title="{{ optional($application->divisionChiefSigner)->name ?? 'Div Chief' }}">✓</span>@else<span class="text-muted">—</span>@endif</td>
@@ -370,7 +388,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="8" class="text-center">No leave applications</td></tr>
+                                    <tr><td colspan="9" class="text-center">No leave applications</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -562,6 +580,16 @@
         <form method="POST" action="{{ route('leave-applications.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="leave-modal-body">
+                @if($errors->any())
+                    <div class="alert alert-danger">
+                        <div class="fw-semibold mb-1">Your leave application was not submitted.</div>
+                        <ul class="mb-0 ps-3">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="leave-form-grid full">
                     <div>
                         <label class="leave-form-label">Employee</label>
@@ -829,25 +857,25 @@
     }
 
     @php
-        $ctoCreditSourcesJson = $ctoHistory->map(function ($h) {
+        $ctoCreditSourcesJson = $ctoHistory->map(function ($b) {
             return [
-                'id' => $h->id,
-                'remarks' => $h->remarks ?: 'No remarks provided',
-                'hours' => $h->credits_added,
-                'date' => optional($h->created_at)->format('M d, Y'),
+                'id' => $b->id,
+                'remarks' => $b->remarks ?: 'No remarks provided',
+                'hours' => $b->credit_hours,
+                'date' => optional($b->start_date)->format('M d, Y'),
             ];
         })->values();
     @endphp
-    const leaveTypesByEmploymentType = @json($leaveTypesForModal);
-    const ctoCreditSources = @json($ctoCreditSourcesJson);
+    const leaveTypesByEmploymentType = JSON.parse('{!! json_encode($leaveTypesForModal) !!}');
+    const ctoCreditSources = JSON.parse('{!! json_encode($ctoCreditSourcesJson) !!}');
 
-    const currentEmployee = {
-        id: {{ $employee->emp_no }},
-        full_name: '{{ $employee->full_name }}',
-        division_code: '{{ optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A' }}',
-        position: '{{ $employee->position }}',
-        employment_type: '{{ $employee->employment_type }}',
-    };
+    const currentEmployee = JSON.parse('{!! json_encode([
+        'id' => $employee->emp_no,
+        'full_name' => $employee->full_name,
+        'division_code' => optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A',
+        'position' => $employee->position,
+        'employment_type' => $employee->employment_type,
+    ]) !!}');
 
     function openLeaveModal() {
         const emp = currentEmployee;
@@ -961,7 +989,7 @@
         }
     });
 
-    @if($errors->hasAny(['leave_type', 'date_from', 'date_to', 'cto_leave_history_id', 'cto_duration', 'signature_mode', 'signature_path', 'current_password']))
+    @if($errors->hasAny(['employee_id', 'leave_type', 'date_from', 'date_to', 'cto_leave_history_id', 'cto_duration', 'signature_mode', 'signature_path', 'current_password']))
     document.addEventListener('DOMContentLoaded', function () {
         openLeaveModal();
         toggleLeaveSignSection();

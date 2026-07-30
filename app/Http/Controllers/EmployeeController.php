@@ -119,15 +119,17 @@ class EmployeeController extends Controller
     {
         $employee->load(['division', 'leaveBenefits']);
 
-        $ctoHistory = \App\Models\EmployeeLeaveHistory::query()
-            ->where('emp_no', $employee->emp_no)
-            ->where(function ($query) {
-                $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', ['credited time-off', 'credited time off'])
-                    ->orWhereRaw('LOWER(credit_type) LIKE ?', ['%cto%']);
+        // Reuse the exact records displayed in Leave Credits History.
+        $ctoHistory = $employee->leaveBenefits
+            ->filter(function ($benefit) {
+                $type = strtolower(trim((string) $benefit->credit_type));
+
+                return ($type === 'credited time-off' || $type === 'credited time off' || str_contains($type, 'cto'))
+                    && (int) $benefit->credit_hours > 0
+                    && filled($benefit->remarks);
             })
-            ->where('credits_added', '>', 0)
-            ->latest()
-            ->get();
+            ->sortByDesc('start_date')
+            ->values();
 
         $leaveApplications = $employee->leaveApplications()
             ->with([

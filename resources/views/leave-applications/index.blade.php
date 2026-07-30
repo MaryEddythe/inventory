@@ -8,6 +8,7 @@
         'pending_division_chief' => ['label' => 'Pending Division Chief', 'class' => 'bg-info text-dark'],
         'pending_regional_director' => ['label' => 'Pending Regional Director', 'class' => 'bg-primary'],
         'approved' => ['label' => 'Approved', 'class' => 'bg-success'],
+        'completed' => ['label' => 'Completed', 'class' => 'bg-success'],
         'rejected' => ['label' => 'Rejected', 'class' => 'bg-danger'],
     ];
     $savedSignatureUrl = auth()->user()?->signature_path ? asset('storage/' . auth()->user()->signature_path) : null;
@@ -386,6 +387,15 @@
                 openHrSignModal(signButton);
             }
         });
+
+        const requestedApplicationId = @json(request('application'));
+        if (requestedApplicationId) {
+            const signButton = document.querySelector(`[data-leave-id="${requestedApplicationId}"]`);
+            if (signButton) {
+                signButton.closest('tr')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                openHrSignModal(signButton);
+            }
+        }
 
         @if(session('hr_sign_leave_id') || session('division_chief_sign_leave_id') || session('regional_director_sign_leave_id'))
             hrModal?.classList.add('active');

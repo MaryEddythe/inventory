@@ -30,7 +30,7 @@ class LeaveApplicationSubmittedNotification extends Notification
             'headline' => 'New leave application awaiting HR review',
             'message' => $this->application->employee?->full_name . ' submitted a leave application that is now pending HR approval.',
             'step' => 'HR',
-            'url' => route('leave-applications.index'),
+            'url' => route('leave-applications.index', ['application' => $this->application->id]),
         ];
     }
 
@@ -42,6 +42,6 @@ class LeaveApplicationSubmittedNotification extends Notification
             ->line($this->application->employee?->full_name . ' submitted a leave application.')
             ->line('Leave type: ' . $this->application->leave_type)
             ->line('The application is now pending HR review.')
-            ->action('Review Leave Applications', route('leave-applications.index'));
+            ->action('Review Leave Applications', route('leave-applications.index', ['application' => $this->application->id]));
     }
 }

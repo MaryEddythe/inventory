@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\LeaveApplicationSubmittedNotification;
 use App\Notifications\LeaveApplicationPendingReviewNotification;
 use App\States\LeaveApplication\Approved;
+use App\States\LeaveApplication\Completed;
 use App\States\LeaveApplication\PendingDivisionChief;
 use App\States\LeaveApplication\PendingHr;
 use App\States\LeaveApplication\PendingRegionalDirector;
@@ -206,14 +207,14 @@ class LeaveApplicationController extends Controller
                 'cto_duration' => 'required|in:am,pm,whole_day',
             ]);
 
-            $ctoHistory = EmployeeLeaveHistory::query()
+            $ctoHistory = EmployeeLeaveBenefit::query()
                 ->whereKey($validated['cto_leave_history_id'])
                 ->where('emp_no', $employee->emp_no)
                 ->where(function ($query) {
                     $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', ['credited time-off', 'credited time off'])
                         ->orWhereRaw('LOWER(credit_type) LIKE ?', ['%cto%']);
                 })
-                ->where('credits_added', '>', 0)
+                ->where('credit_hours', '>', 0)
                 ->first();
 
             if (! $ctoHistory) {
@@ -300,7 +301,10 @@ class LeaveApplicationController extends Controller
             ->get()
             ->each(fn (User $hrUser) => $hrUser->notify(new LeaveApplicationSubmittedNotification($application)));
 
-        return back()->with('success', 'Leave application submitted successfully.');
+        return redirect()
+            ->route('employees.show', $employee)
+            ->with('success', 'Leave application submitted successfully and is now pending HR review.')
+            ->with('leave_application_submitted', $application->id);
     }
 
     public function signHr(Request $request, EmployeeLeaveApplication $leaveApplication)
@@ -473,13 +477,15 @@ class LeaveApplicationController extends Controller
                 ->with('regional_director_sign_leave_id', $leaveApplication->id);
         }
 
-        DB::transaction(function () use ($leaveApplication, $user) {
+        $isCto = $this->canonicalLeaveType((string) $leaveApplication->leave_type) === 'Credited Time-Off';
+
+        DB::transaction(function () use ($leaveApplication, $user, $isCto) {
             $leaveApplication->forceFill([
                 'regional_director_signed_by' => $user->id,
                 'regional_director_signed_at' => now(),
                 'regional_director_signature_path' => $user->signature_path,
-                'current_step' => 'approved',
-                'status' => Approved::class,
+                'current_step' => $isCto ? 'completed' : 'approved',
+                'status' => $isCto ? Completed::class : Approved::class,
             ])->save();
 
             $this->deductLeaveBenefitForApplication($leaveApplication);
@@ -497,7 +503,9 @@ class LeaveApplicationController extends Controller
             ])
             ->log('regional director signed leave application');
 
-        return back()->with('success', 'Leave application approved by the Regional Director.');
+        return back()->with('success', $isCto
+            ? 'CTO application completed by the Regional Director.'
+            : 'Leave application approved by the Regional Director.');
     }
 
     protected function pendingStatusesForUser(?User $user): array

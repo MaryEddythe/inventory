@@ -122,6 +122,9 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     })->name('notifications.read');
     Route::post('/notifications/read-all', function () {
         auth()->user()?->unreadNotifications->markAsRead();
+        if (request()->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
         return back();
     })->name('notifications.read-all');
 

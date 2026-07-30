@@ -14,6 +14,7 @@ abstract class LeaveApplicationState extends State
             ->allowTransition(PendingHr::class, PendingDivisionChief::class)
             ->allowTransition(PendingDivisionChief::class, PendingRegionalDirector::class)
             ->allowTransition(PendingRegionalDirector::class, Approved::class)
+            ->allowTransition(PendingRegionalDirector::class, Completed::class)
             ->allowTransition(PendingHr::class, Rejected::class)
             ->allowTransition(PendingDivisionChief::class, Rejected::class)
             ->allowTransition(PendingRegionalDirector::class, Rejected::class);

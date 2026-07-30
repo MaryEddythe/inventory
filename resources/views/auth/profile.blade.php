@@ -233,6 +233,7 @@
                             'pending_division_chief' => ['label' => 'Pending Division Chief', 'class' => 'bg-info text-dark'],
                             'pending_regional_director' => ['label' => 'Pending Regional Director', 'class' => 'bg-primary'],
                             'approved' => ['label' => 'Approved', 'class' => 'bg-success'],
+                            'completed' => ['label' => 'Completed', 'class' => 'bg-success'],
                             'rejected' => ['label' => 'Rejected', 'class' => 'bg-danger'],
                         ];
                     @endphp

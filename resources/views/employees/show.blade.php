@@ -851,6 +851,7 @@
                 'remarks' => $b->remarks ?: 'No remarks provided',
                 'hours' => $b->credit_hours,
                 'date' => optional($b->start_date)->format('M d, Y'),
+                'so_to_no' => $b->so_to_no ?: '',
             ];
         })->values();
     @endphp
@@ -924,6 +925,20 @@
             field.required = isCto;
             if (!isCto) field.value = '';
         });
+
+        if (isCto) {
+            syncCtoSoToNo();
+        }
+    }
+
+    function syncCtoSoToNo() {
+        const source = document.getElementById('ctoLeaveHistoryId');
+        const soToNo = document.getElementById('ctoSoToNo');
+        if (!source || !soToNo) return;
+
+        const selectedId = source.value;
+        const credit = ctoCreditSources.find(c => String(c.id) === String(selectedId));
+        soToNo.value = credit ? (credit.so_to_no || '') : '';
     }
 
     function toggleLeaveSignSection() {
@@ -972,6 +987,9 @@
     document.addEventListener('change', function (event) {
         if (event.target && event.target.id === 'leaveType') {
             toggleCtoFields();
+        }
+        if (event.target && event.target.id === 'ctoLeaveHistoryId') {
+            syncCtoSoToNo();
         }
         if (event.target && event.target.name === 'signature_mode') {
             syncLeaveSignatureMode();

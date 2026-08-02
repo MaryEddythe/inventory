@@ -173,7 +173,9 @@ class User extends Authenticatable
             'route_name' => $routeName,
             'route_pattern' => $routePattern,
             'url' => $routeName && ! Str::contains($routeName, '*') ? route($routeName) : null,
-            'active' => $routePattern ? request()->routeIs($routePattern) : false,
+            'active' => $children->isNotEmpty()
+                ? $children->contains('active', true)
+                : ($routePattern ? request()->routeIs($routePattern) : false),
             'children' => $children,
         ];
     }

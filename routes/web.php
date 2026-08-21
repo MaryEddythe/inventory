@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CreditsController;
+use App\Http\Controllers\CompanyAnnouncementController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\LeaveApplicationController;
@@ -35,6 +36,10 @@ Route::middleware('auth')->group(function () {
             ? response()->json(['ok' => true])
             : back();
     })->name('notifications.read-all');
+
+    Route::get('/company-announcements', [CompanyAnnouncementController::class, 'index'])->name('company-announcements.index');
+    Route::post('/company-announcements', [CompanyAnnouncementController::class, 'store'])->name('company-announcements.store');
+    Route::put('/company-announcements/{announcement}', [CompanyAnnouncementController::class, 'update'])->name('company-announcements.update');
 });
 
 // Protected Routes

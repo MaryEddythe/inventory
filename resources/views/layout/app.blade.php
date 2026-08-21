@@ -31,6 +31,10 @@
             </a>
 
             <nav class="sidebar-nav" aria-label="Primary navigation">
+                <a class="sidebar-nav-link {{ request()->routeIs('company-announcements.*') ? 'active' : '' }}" href="{{ route('company-announcements.index') }}">
+                    <i class="bi bi-megaphone"></i>
+                    <span>Company Announcements</span>
+                </a>
                 @php
                     $sidebarNavigation = auth()->user()?->sidebarNavigation() ?? collect();
 

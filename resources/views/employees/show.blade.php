@@ -61,18 +61,18 @@
                                     </button>
                                 @endif
                             </div>
-                            <small class="text-muted">{{ $employee->position }}</small>
+                                                            <small class="text-muted">{{ $employee->Role ?: '<span class="text-muted">—</span>' }}</small>
                         </div>
                     </div>
 
                     <dl class="employee-details-grid mb-0">
                         <div class="employee-detail-tile">
                             <dt>Employee ID</dt>
-                            <dd><span class="badge bg-primary">{{ $employee->employee_id }}</span></dd>
+                                                                <dd><span class="badge bg-primary">{{ $employee->emp_no ?: ($employee->employee_id ?: 'N/A') }}</span></dd>
                         </div>
                         <div class="employee-detail-tile">
                             <dt>Division</dt>
-                            <dd>{{ optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A' }}</dd>
+                                                            <dd>{{ optional($employee->departmentRecord)->description ?? optional($employee->departmentRecord)->department ?? 'N/A' }}</dd>
                         </div>
                         <div class="employee-detail-tile">
                             <dt>Employment Type</dt>
@@ -80,7 +80,7 @@
                         </div>
                         <div class="employee-detail-tile">
                             <dt>Position</dt>
-                            <dd>{{ $employee->position }}</dd>
+                                                            <dd>{{ $employee->Role ?: '<span class="text-muted">—</span>' }}</dd>
                         </div>
                         <div class="employee-detail-tile">
                             <dt>Date of Birth</dt>
@@ -861,8 +861,8 @@
     const currentEmployee = JSON.parse('{!! json_encode([
         'id' => $employee->emp_no,
         'full_name' => $employee->full_name,
-        'division_code' => optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A',
-        'position' => $employee->position,
+                'division_code' => optional($employee->departmentRecord)->department ?? optional($employee->departmentRecord)->description ?? 'N/A',
+        'position' => $employee->Role,
         'employment_type' => $employee->employment_type,
     ]) !!}');
 

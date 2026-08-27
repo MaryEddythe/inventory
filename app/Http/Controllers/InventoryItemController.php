@@ -133,6 +133,16 @@ class InventoryItemController extends Controller
             $query->where('division', $request->division);
         }
 
+        $selectedClassifications = $request->input('classification', []);
+        if (!is_array($selectedClassifications)) {
+            $selectedClassifications = [$selectedClassifications];
+        }
+        $selectedClassifications = array_filter($selectedClassifications);
+
+        if (!empty($selectedClassifications)) {
+            $query->whereIn('classification', $selectedClassifications);
+        }
+
         if ($request->filled('date_from')) {
             $query->whereDate('date_acquired', '>=', $request->date_from);
         }
@@ -154,12 +164,19 @@ class InventoryItemController extends Controller
 
         $departments = Department::orderBy('department')->get();
         $employees = Employee::orderBy('firstname')->get();
+        $classifications = InventoryItem::active()
+            ->whereNotNull('classification')
+            ->where('classification', '!=', '')
+            ->distinct()
+            ->orderBy('classification')
+            ->pluck('classification');
 
         return view('inventory.tabs.index', compact(
             'items',
             'groupedItems',
             'departments',
             'employees',
+            'classifications',
             'perPage'
         ));
     }

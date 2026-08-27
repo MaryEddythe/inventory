@@ -117,7 +117,7 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee)
     {
-        $employee->load(['division', 'leaveBenefits']);
+        $employee->load(['departmentRecord', 'leaveBenefits']);
 
         // Reuse the exact records displayed in Leave Credits History.
         $ctoHistory = $employee->leaveBenefits
@@ -216,7 +216,8 @@ class EmployeeController extends Controller
 
     public function edit(Employee $employee)
     {
-        $employee->load('division');
+        $employee->load(['departmentRecord']);
+
         // Division data is stored in inventory.departments (not inventory.divisions)
         $divisions = \App\Models\Department::orderByDesc('last_updated')->get();
 
@@ -264,7 +265,7 @@ class EmployeeController extends Controller
 
     public function leaveHistory(Employee $employee)
     {
-        $employee->load(['division', 'leaveHistory.leaveBenefit']);
+                $employee->load(['departmentRecord', 'leaveHistory.leaveBenefit']);
 
         return view('employees.leave-history', [
             'employee' => $employee,

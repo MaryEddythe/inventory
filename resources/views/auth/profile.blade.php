@@ -238,6 +238,61 @@
                         ];
                     @endphp
 
+                                        @if($user?->employee)
+                        <div class="card mt-4 shadow-sm">
+                            <div class="card-header bg-info bg-opacity-10 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <div>
+                                    <h5 class="mb-0"><i class="bi bi-person-badge me-2"></i>Employee Information</h5>
+                                    <small class="text-muted">Division / role / employment details.</small>
+                                </div>
+                                @if($user->role)
+                                    <span class="badge bg-info text-dark text-uppercase">{{ $user->role->name }}</span>
+                                @endif
+                            </div>
+
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless mb-0 align-middle">
+                                        <tbody>
+                                            <tr>
+                                                <th class="w-50 text-end">Full Name</th>
+                                                <td>{{ $user->employee->full_name ?: 'N/A' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">Employee ID</th>
+                                                <td>{{ $user->employee->employee_id ?: $user->employee->emp_no }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">Position</th>
+                                                <td>{{ $user->employee->position ?: '<span class="text-muted">—</span>' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">Division</th>
+                                                <td>
+                                                    @if($user->employee->division)
+                                                        {{ $user->employee->division->name }}
+                                                        @if($user->employee->division->code)
+                                                            <span class="text-muted">({{ $user->employee->division->code }})</span>
+                                                        @endif
+                                                        @if($user->employee->division->description)
+                                                            <div class="small text-muted">{{ $user->employee->division->description }}</div>
+                                                        @endif
+                                                    @else
+                                                        <span class="text-muted">—</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">Employment Type</th>
+                                                <td>{{ $user->employee->employment_type ?: '<span class="text-muted">—</span>' }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     @if($user?->employee)
                         <div class="card mt-4 shadow-sm">
                             <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">

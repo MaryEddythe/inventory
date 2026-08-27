@@ -49,7 +49,7 @@
                                     $deptDesc = $dept->description ?? null;
                                     $deptText = $deptDesc ?? ($dept->department ?? $dept->dept_no ?? null);
                                 @endphp
-                                <option value="{{ $dept->dept_no }}" {{ (string) old('division_id', $employee->division_id) === (string) $dept->dept_no ? 'selected' : '' }}>
+                                                            <option value="{{ $dept->dept_no }}" {{ (string) old('division_id', $employee->department) === (string) $dept->dept_no ? 'selected' : '' }}>
                                     {{ $deptText }}
                                 </option>
                             @endforeach
@@ -61,7 +61,7 @@
 
                     <div class="form-group">
                         <label>Position <span class="required-asterisk">*</span></label>
-                        <input type="text" name="position" value="{{ old('position', $employee->position) }}" placeholder="e.g. Software Developer" required>
+                        <input type="text" name="position" value="{{ old('position', $employee->Role) }}" placeholder="e.g. Chief Finance and Administrative Division" required>
                         @error('position') <div class="error-text">{{ $message }}</div> @enderror
                     </div>
                 </div>

@@ -647,8 +647,8 @@ class LeaveApplicationController extends Controller
         $benefit = EmployeeLeaveBenefit::create([
             'emp_no' => $employee->emp_no,
             'name' => $employee->full_name,
-            'departments' => optional($employee->division)->code ?? optional($employee->division)->department ?? 'N/A',
-            'role' => $employee->position ?? 'N/A',
+                        'departments' => optional($employee->departmentRecord)->department ?? optional($employee->departmentRecord)->description ?? 'N/A',
+            'role' => $employee->Role ?? 'N/A',
             'employment_type' => $employee->employment_type ?? 'N/A',
             'credit_type' => $leaveType,
             'start_date' => $application->date_from,

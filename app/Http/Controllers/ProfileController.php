@@ -296,7 +296,10 @@
                     @if($user?->employee)
                         @php
                             $employeeNo = $user->employee->emp_no ?: $user->employee->employee_id;
-                            $employeeFiles = $employeeFiles ?? collect();
+                            $employeeFiles = \App\Models\EmployeeFile::where(
+                                'emp_no',
+                                $user->employee?->emp_no ?: $user->employee?->employee_id
+                            )->latest()->get();
 
                             $employeeFileTypes = [
                                 'PDS',

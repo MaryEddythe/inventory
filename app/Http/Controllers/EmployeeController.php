@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\CreateEmployeeDriveFolder;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\User;
+use App\Models\EmployeeFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
@@ -89,35 +90,17 @@ class EmployeeController extends Controller
             'dob' => $payload['dob'],
         ]);
 
-
-
-        // Dispatch job to create Drive folder
-        CreateEmployeeDriveFolder::dispatch($employee);
-
-        // Also persist the latest known folder URLs for this employee (if job/controller sets them).
-        // The `drive` column is intended to store *all* links created on employee creation.
-        // Since the folder creation logic lives in CreateEmployeeDriveFolder, this is a best-effort fallback.
-        try {
-            $employee->refresh();
-
-            $links = [];
-            if ($employee->drive_folder_url) {
-                $links[] = $employee->drive_folder_url;
-            }
-
-            $employee->drive = $links ? json_encode($links) : null;
-            $employee->save();
-        } catch (\Throwable $e) {
-            // Ignore; job will still set drive_folder_url and the UI can retry later.
-        }
-
         return redirect()->route('employees.show', $employee)
-            ->with('status', 'Employee created successfully. Drive folder is being created...');
+            ->with('status', 'Employee created successfully.');
     }
 
     public function show(Employee $employee)
     {
         $employee->load(['departmentRecord', 'leaveBenefits']);
+
+        $employeeFiles = EmployeeFile::where('emp_no', $employee->emp_no)
+            ->latest()
+            ->get();
 
         // Reuse the exact records displayed in Leave Credits History.
         $ctoHistory = $employee->leaveBenefits
@@ -143,7 +126,13 @@ class EmployeeController extends Controller
         // Compute ledger-based accumulated days for Vacation Leave and Sick Leave
         $ledgerDays = $this->computeLedgerAccumulatedDays($employee);
 
-        return view('employees.show', compact('employee', 'leaveApplications', 'ledgerDays', 'ctoHistory'));
+        return view('employees.show', compact(
+            'employee',
+            'leaveApplications',
+            'ledgerDays',
+            'ctoHistory',
+            'employeeFiles'
+        ));
     }
 
     /**
@@ -279,52 +268,61 @@ class EmployeeController extends Controller
 
     public function uploadFile(Request $request, Employee $employee)
     {
-        $request->validate([
-'file' => 'required|file|max:20480', // 20MB
-            'file_type' => 'required|in:PDS,SALN,"NBI Clearance","Medical Certificate","PAG-IBIG","PhilHealth",PAG-IBIG,PhilHealth',
+        $fileTypes = [
+            'PDS',
+            'SALN',
+            'POLICE CLEARANCE CLEARANCE',
+            'MEDICAL CERTIFICATE',
+            'PAG-IBIG',
+            'PHILHEALTH',
+            'TIN',
+            'GSIS',
+            'PRC',
+            'Civil Service Eligibility',
+            'Contract of Employment',
+        ];
+
+        $validated = $request->validate([
+            'file' => ['required', 'file', 'max:20480', 'mimes:pdf,jpg,jpeg,png,doc,docx'],
+            'file_type' => ['required', 'in:' . implode(',', $fileTypes)],
         ]);
 
-
-        if (!$employee->drive_folder_id) {
-            return back()->with(
-                'error',
-                'Google Drive folder is not ready yet. Please wait a few seconds and try again.'
-            );
-        }
-
         try {
+            $file = $request->file('file');
+            $fileId = (string) Str::uuid();
+            $directory = "employee-files/{$employee->emp_no}";
 
-            $uploader = new DriveUploadService();
-
-            $result = $uploader->uploadToEmployeeFolder(
-                $request->file('file'),
-                $employee
+            $storedPath = $file->storeAs(
+                $directory,
+                "{$fileId}.{$file->getClientOriginalExtension()}",
+                'local'
             );
 
-            EmployeeFile::updateOrCreate(
-                [
-                    'employee_id' => $employee->id,
-                    'file_type' => $request->input('file_type'),
-                ],
-                [
-                    'file_name' => $result['file_name'] ?? $request->file('file')->getClientOriginalName(),
-                    'file_url' => $result['file_url'] ?? null,
-                    'file_id' => $result['file_id'] ?? null,
-                ]
-            );
+            $existingFile = EmployeeFile::where('emp_no', $employee->emp_no)
+                ->where('file_type', $validated['file_type'])
+                ->first();
 
-            return back()->with(
-                'success',
-                "File uploaded successfully to Google Drive!"
-            );
+            if ($existingFile) {
+                Storage::disk('local')->delete($existingFile->file_url);
+                $existingFile->update([
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_url' => $storedPath,
+                    'file_id' => $fileId,
+                ]);
+            } else {
+                EmployeeFile::create([
+                    'emp_no' => $employee->emp_no,
+                    'file_type' => $validated['file_type'],
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_url' => $storedPath,
+                    'file_id' => $fileId,
+                ]);
+            }
 
+            return back()->with('success', 'File uploaded successfully.');
 
-        } catch (\Exception $e) {
-
-            return back()->with(
-                'error',
-                'Upload failed: ' . $e->getMessage()
-            );
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Upload failed: ' . $e->getMessage());
         }
     }
 

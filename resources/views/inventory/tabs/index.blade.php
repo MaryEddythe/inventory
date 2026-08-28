@@ -40,7 +40,7 @@
                     id="openFilterBtn">
                     <i class="bi bi-funnel"></i> Filter
                 </button>
-                @include('inventory.modals.filter-modal', ['departments' => $departments])
+                @include('inventory.modals.filter-modal', ['departments' => $departments, 'classifications' => $classifications])
             </div>
                             
             <div class="dropdown">

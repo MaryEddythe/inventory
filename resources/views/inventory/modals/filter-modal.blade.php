@@ -21,6 +21,31 @@
             </select>
         </div>
 
+        <!-- Classification Filter -->
+        <div class="col-12">
+            <span class="form-label fw-600 small text-muted d-block">Classification</span>
+            @php
+                $selectedClassifications = (array) request('classification', []);
+            @endphp
+            <div class="row g-2">
+                @if(isset($classifications))
+                    @foreach($classifications as $classification)
+                        <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                    id="classification-{{ Str::slug($classification) }}"
+                                    name="classification[]" value="{{ $classification }}"
+                                    {{ in_array($classification, $selectedClassifications, true) ? 'checked' : '' }}>
+                                <label class="form-check-label small" for="classification-{{ Str::slug($classification) }}">
+                                    {{ $classification }}
+                                </label>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+
 
         <!-- Division Filter -->
         <div class="col-12">

@@ -61,18 +61,18 @@
                                     </button>
                                 @endif
                             </div>
-                            <small class="text-muted">{{ $employee->position }}</small>
+                                                            <small class="text-muted">{{ $employee->Role ?: '<span class="text-muted">—</span>' }}</small>
                         </div>
                     </div>
 
                     <dl class="employee-details-grid mb-0">
                         <div class="employee-detail-tile">
                             <dt>Employee ID</dt>
-                            <dd><span class="badge bg-primary">{{ $employee->employee_id }}</span></dd>
+                                                                <dd><span class="badge bg-primary">{{ $employee->emp_no ?: ($employee->employee_id ?: 'N/A') }}</span></dd>
                         </div>
                         <div class="employee-detail-tile">
                             <dt>Division</dt>
-                            <dd>{{ optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A' }}</dd>
+                                                            <dd>{{ optional($employee->departmentRecord)->description ?? optional($employee->departmentRecord)->department ?? 'N/A' }}</dd>
                         </div>
                         <div class="employee-detail-tile">
                             <dt>Employment Type</dt>
@@ -80,7 +80,7 @@
                         </div>
                         <div class="employee-detail-tile">
                             <dt>Position</dt>
-                            <dd>{{ $employee->position }}</dd>
+                                                            <dd>{{ $employee->Role ?: '<span class="text-muted">—</span>' }}</dd>
                         </div>
                         <div class="employee-detail-tile">
                             <dt>Date of Birth</dt>
@@ -113,62 +113,106 @@
         <div class="col-12 col-lg-6">
             <div class="card h-100">
                 <div class="card-body">
-                    <h3 class="card-title h5 fw-bold mb-3">Drive Folder</h3>
+                    <h3 class="card-title h5 fw-bold mb-3">
+                        <i class="bi bi-folder2-open me-2"></i>Employee Files
+                    </h3>
 
-                    @if($employee->drive_folder_url)
-                        <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-                            <span class="badge bg-success">Ready</span>
-                            <a href="{{ $employee->drive_folder_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                Open in Google Drive
-                            </a>
+                    @php
+                        $employeeFileTypes = [
+                            'PDS',
+                            'SALN',
+                            'POLICE CLEARANCE CLEARANCE',
+                            'MEDICAL CERTIFICATE',
+                            'PAG-IBIG',
+                            'PHILHEALTH',
+                            'TIN',
+                            'GSIS',
+                            'PRC',
+                            'Civil Service Eligibility',
+                            'Contract of Employment',
+                        ];
+                    @endphp
+
+                    <form method="POST"
+                          action="{{ route('employees.upload', $employee) }}"
+                          enctype="multipart/form-data"
+                          class="border rounded-3 p-3 bg-light mb-4">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Document Type</label>
+                            <select name="file_type" class="form-select form-select-sm" required>
+                                <option value="">-- Select Document Type --</option>
+                                @foreach($employeeFileTypes as $fileType)
+                                    <option value="{{ $fileType }}">{{ $fileType }}</option>
+                                @endforeach
+                            </select>
+                            @error('file_type')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Upload File</label>
+                            <input type="file"
+                                   name="file"
+                                   class="form-control form-control-sm"
+                                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                   required>
+                            <small class="text-muted">Maximum size: 20 MB</small>
+                            @error('file')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-upload me-2"></i>Upload File
+                        </button>
+                    </form>
+
+                    @if($employeeFiles->isNotEmpty())
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>File</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($employeeFiles as $employeeFile)
+                                        <tr>
+                                            <td>{{ $employeeFile->file_type }}</td>
+                                            <td class="text-break">{{ $employeeFile->file_name }}</td>
+                                            <td class="text-end">
+                                                <a href="{{ route('employee-files.download', $employeeFile) }}"
+                                                   class="btn btn-outline-primary btn-sm"
+                                                   title="Download">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+
+                                                <form method="POST"
+                                                      action="{{ route('employee-files.destroy', $employeeFile) }}"
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('Delete this file?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                            class="btn btn-outline-danger btn-sm"
+                                                            title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     @else
-                        <div class="alert alert-warning mb-3" role="alert">
-                            Drive folder is being created. Refresh in a few seconds.
-                            <a href="{{ route('employees.show', $employee) }}" class="ms-2 drive-refresh-link">Refresh</a>
-                        </div>
-                    @endif
-
-                    @if($employee->drive_folder_id)
-                        <div class="border rounded-3 p-3 bg-light">
-                            <div class="text-uppercase fw-bold text-muted file-upload-label">File Upload</div>
-
-                            <form method="POST" action="{{ route('employees.upload', $employee) }}" enctype="multipart/form-data" class="mt-3">
-                                @csrf
-
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">File Type</label>
-                                    @php
-                                        $uploadedTypes = $employee->files ? $employee->files->pluck('file_type')->all() : [];
-                                        $types = ['PDS', 'SALN', 'NBI Clearance', 'Medical Certificate', 'PAG-IBIG', 'PhilHealth'];
-                                        $availableTypes = array_values(array_diff($types, $uploadedTypes));
-                                    @endphp
-                                    <select name="file_type" class="form-select form-select-sm" required {{ empty($availableTypes) ? 'disabled' : '' }}>
-                                        <option value="">-- Select File Type --</option>
-                                        @foreach($availableTypes as $type)
-                                            <option value="{{ $type }}">{{ $type }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('file_type') <div class="text-danger mt-1 fw-semibold">{{ $message }}</div> @enderror
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Upload File <span class="text-muted">(max 20MB)</span></label>
-                                    <label class="btn btn-outline-secondary w-100 text-start">
-                                        <i class="bi bi-upload me-2"></i> Choose file
-                                        <input type="file" name="file" required class="d-none" />
-                                    </label>
-                                    @error('file') <div class="text-danger mt-1 fw-semibold">{{ $message }}</div> @enderror
-                                </div>
-
-                                <button type="submit" class="btn btn-primary btn-sm w-100">
-                                    Upload to Google Drive
-                                </button>
-                            </form>
-                        </div>
-                    @else
-                        <div class="alert alert-secondary mb-0">
-                            File upload will be available once the Drive folder is ready.
+                        <div class="alert alert-info mb-0">
+                            No files uploaded for this employee.
                         </div>
                     @endif
                 </div>
@@ -861,8 +905,8 @@
     const currentEmployee = JSON.parse('{!! json_encode([
         'id' => $employee->emp_no,
         'full_name' => $employee->full_name,
-        'division_code' => optional($employee->division)->department ?? optional($employee->division)->description ?? 'N/A',
-        'position' => $employee->position,
+                'division_code' => optional($employee->departmentRecord)->department ?? optional($employee->departmentRecord)->description ?? 'N/A',
+        'position' => $employee->Role,
         'employment_type' => $employee->employment_type,
     ]) !!}');
 

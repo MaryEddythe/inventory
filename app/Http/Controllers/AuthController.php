@@ -82,7 +82,11 @@ class AuthController extends Controller
 
     public function showProfile()
     {
-        $user = Auth::user();
+        // Eager-load the user's role and the linked employee's division so the
+        // profile view can display division/role information without triggering
+        // extra (N+1) queries. The `employee.division` nested eager-load mirrors
+        // the pattern already used when loading leave applications below.
+        $user = Auth::user()->loadMissing(['employee.division', 'role']);
 
         $leaveApplications = $user?->employee
             ? $user->employee->leaveApplications()

@@ -54,7 +54,7 @@
 <div class="page-header">
     <div class="credits-header">
         <div class="page-title">Leave History</div>
-        <div class="page-subtitle">{{ $employee->full_name }} · {{ $employee->employee_id }} · {{ optional($employee->division)->code ?? 'N/A' }}</div>
+        <div class="page-subtitle">{{ $employee->full_name }} · {{ $employee->emp_no ?: $employee->employee_id }} · {{ optional($employee->departmentRecord)->department ?? optional($employee->departmentRecord)->description ?? 'N/A' }}</div>
     </div>
     <a href="{{ route('employees.show', $employee) }}" class="btn btn-outline">← Back</a>
 </div>
@@ -80,8 +80,8 @@
             <tr>
                 <td><span class="badge badge-blue">{{ $employee->employee_id }}</span></td>
                 <td>{{ $leaveBenefit->name ?? $employee->full_name }}</td>
-                <td>{{ $leaveBenefit->division ?? optional($employee->division)->code ?? 'N/A' }}</td>
-                <td>{{ $leaveBenefit->position ?? $employee->position }}</td>
+                <td>{{ $leaveBenefit->departments ?? optional($employee->departmentRecord)->department ?? optional($employee->departmentRecord)->description ?? 'N/A' }}</td>
+                <td>{{ $leaveBenefit->role ?? $employee->Role ?? 'N/A' }}</td>
                 <td>{{ $leaveBenefit?->start_date?->format('M d, Y') }}</td>
                 <td>
                     @if($leaveBenefit?->end_date)

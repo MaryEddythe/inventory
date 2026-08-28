@@ -702,8 +702,8 @@
                 <tbody>
                     @foreach($groupBenefits as $benefit)
                         @php
-                            $empDivision = optional($benefit->employee->division)->code ?? $benefit->departments ?? 'N/A';
-                            $empPosition = $benefit->employee->position ?? $benefit->role ?? 'N/A';
+                                                        $empDivision = optional($benefit->employee->departmentRecord)->department ?? optional($benefit->employee->departmentRecord)->description ?? $benefit->departments ?? 'N/A';
+                            $empPosition = $benefit->role ?? $benefit->employee->Role ?? 'N/A';
                         @endphp
                         <tr>
                             <td class="fw-semibold" style="color:#0f172a;">{{ $benefit->name }}</td>

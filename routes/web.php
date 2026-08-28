@@ -181,4 +181,16 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
     Route::post('/profile/signature', [AuthController::class, 'storeSignature'])->name('profile.signature.store');
+
+    Route::post('/employee-files', [EmployeeFileController::class, 'store'])
+        ->name('employee-files.store');
+
+    Route::get('/employee-files/{employeeFile}/download', [EmployeeFileController::class, 'download'])
+        ->name('employee-files.download');
+
+    Route::delete('/employee-files/{employeeFile}', [EmployeeFileController::class, 'destroy'])
+        ->name('employee-files.destroy');
+
+    Route::post('/employees/{employee}/upload', [EmployeeController::class, 'uploadFile'])
+        ->name('employees.upload');
 });

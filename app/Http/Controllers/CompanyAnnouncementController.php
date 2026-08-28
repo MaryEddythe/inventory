@@ -21,7 +21,9 @@ class CompanyAnnouncementController extends Controller
             ->latest()
             ->get();
 
-        return view('announcements.dashboard', compact('announcements', 'canManageAnnouncements'));
+        $attendanceSlots = collect(config('attendance.biometric_slots', []));
+
+        return view('announcements.dashboard', compact('announcements', 'canManageAnnouncements', 'attendanceSlots'));
     }
 
     public function store(Request $request)

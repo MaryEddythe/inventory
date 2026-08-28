@@ -6,27 +6,11 @@
     $currentEmployee = $currentUser?->employee;
     $displayBio = trim((string) ($currentUser->bio ?? $currentEmployee?->position ?? $currentUser?->role?->name ?? ''));
     $displayBio = $displayBio !== '' ? $displayBio : 'Bio not set yet.';
-    $attendanceSlots = collect([
-        ['label' => 'Biometric 1', 'state' => 'Pending'],
-        ['label' => 'Biometric 2', 'state' => 'Pending'],
-        ['label' => 'Biometric 3', 'state' => 'Pending'],
-        ['label' => 'Biometric 4', 'state' => 'Pending'],
-        ['label' => 'Biometric 5', 'state' => 'Pending'],
-        ['label' => 'Biometric 6', 'state' => 'Pending'],
-        ['label' => 'Biometric 7', 'state' => 'Pending'],
-    ]);
 @endphp
 
 <style>
     .company-dashboard {
         min-height: calc(100vh - 96px);
-    }
-    .company-hero {
-        background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #38bdf8 100%);
-        color: #fff;
-        border-radius: 1.5rem;
-        padding: 1.75rem;
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
     }
     .company-panel {
         position: sticky;
@@ -45,12 +29,12 @@
     }
     .attendance-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: .75rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .5rem;
     }
     .attendance-tile {
         aspect-ratio: 1;
-        border-radius: 1rem;
+        border-radius: .75rem;
         background: rgba(255, 255, 255, 0.07);
         border: 1px solid rgba(255, 255, 255, 0.12);
         display: flex;
@@ -58,17 +42,29 @@
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: .75rem;
+        padding: .35rem;
     }
     .attendance-tile .tile-icon {
-        width: 2rem;
-        height: 2rem;
+        width: 1.5rem;
+        height: 1.5rem;
         border-radius: 999px;
         display: grid;
         place-items: center;
         background: rgba(56, 189, 248, 0.15);
         color: #7dd3fc;
-        margin-bottom: .5rem;
+        margin-bottom: .25rem;
+    }
+    .attendance-tile .tile-icon i {
+        font-size: .75rem;
+    }
+    .attendance-tile .tile-label {
+        font-size: .65rem;
+        line-height: 1.1;
+    }
+    .attendance-tile .tile-state {
+        font-size: .6rem;
+        line-height: 1.1;
+        opacity: .75;
     }
     .announcement-card {
         border: 0;
@@ -88,23 +84,6 @@
 </style>
 
 <div class="company-dashboard container-fluid py-3">
-    <div class="company-hero mb-4">
-        <div class="row g-3 align-items-end">
-            <div class="col-lg-8">
-                <div class="text-uppercase small fw-semibold opacity-75 mb-2">Company Announcements</div>
-                <h1 class="display-6 fw-bold mb-2">Everyone sees the same company updates here.</h1>
-                {{-- <p class="mb-0 opacity-75">
-                    This dashboard is open to all authenticated users. Only roles 1, 5, 6, 7, 8, 9, and 10 can create or edit announcements.
-                </p> --}}
-            </div>
-            <div class="col-lg-4 text-lg-end">
-                <a href="#announcementsFeed" class="btn btn-light fw-semibold px-4">
-                    <i class="bi bi-megaphone me-2"></i>View updates
-                </a>
-            </div>
-        </div>
-    </div>
-
     <div class="row g-4">
         <div class="col-12 col-lg-4">
             <div class="company-panel">
@@ -132,7 +111,7 @@
                             <div class="small text-uppercase opacity-75">Attendance</div>
                             <div class="fw-semibold">Biometric placeholders</div>
                         </div>
-                        <span class="badge badge-soft rounded-pill">7 slots</span>
+                        <span class="badge badge-soft rounded-pill">{{ $attendanceSlots->count() }} slots</span>
                     </div>
 
                     <div class="attendance-grid">
@@ -141,8 +120,8 @@
                                 <div class="tile-icon">
                                     <i class="bi bi-fingerprint"></i>
                                 </div>
-                                <div class="fw-semibold small">{{ $slot['label'] }}</div>
-                                <div class="small opacity-75">{{ $slot['state'] }}</div>
+                                <div class="tile-label fw-semibold">{{ $slot['label'] }}</div>
+                                <div class="tile-state">{{ $slot['state'] }}</div>
                             </div>
                         @endforeach
                     </div>

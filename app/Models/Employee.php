@@ -129,4 +129,9 @@ class Employee extends Model
         return $this->hasMany(EmployeeLeaveApplication::class, 'employee_id', 'emp_no');
     }
 
+    public function attendanceRecords(): HasMany
+    {
+        return $this->hasMany(AttendanceRecord::class, 'employee_id', 'emp_no');
+    }
+
 }

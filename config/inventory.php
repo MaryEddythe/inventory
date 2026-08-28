@@ -104,7 +104,7 @@ return [
             'slug' => 'hr',
             'name' => 'HR',
             'is_superadmin' => false,
-            'sidebar_item_keys' => ['employees', 'calendar', 'leave-applications', 'leave-ledgers'],
+            'sidebar_item_keys' => ['employees', 'calendar', 'attendance', 'leave-applications', 'leave-ledgers'],
         ],
         [
             'slug' => 'rd',
@@ -257,6 +257,15 @@ return [
             'icon' => 'bi bi-calendar3',
             'parent_key' => null,
             'sort_order' => 60,
+        ],
+        [
+            'key' => 'attendance',
+            'label' => 'Attendance',
+            'route_name' => 'attendance.index',
+            'route_pattern' => 'attendance.*',
+            'icon' => 'bi bi-clock-history',
+            'parent_key' => null,
+            'sort_order' => 65,
         ],
         [
             'key' => 'leave-applications',

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\CompanyAnnouncementController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\LeaveApplicationController;
@@ -152,6 +153,12 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::post('/calendar', [EventController::class, 'store'])->name('calendar.store');
     Route::get('/api/events', [EventController::class, 'getEvents'])->name('calendar.api.events');
     Route::get('/api/events/types', [EventController::class, 'getTypes'])->name('calendar.api.events.types');
+
+    // Attendance Monitoring
+    Route::middleware('hr.access')->group(function () {
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+        Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+    });
 
     // Leave Applications Routes
     Route::get('/leave-applications', [LeaveApplicationController::class, 'index'])->name('leave-applications.index');

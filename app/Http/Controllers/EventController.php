@@ -9,7 +9,17 @@ class EventController extends Controller
 {
     public function index()
     {
-        return Event::all();
+        return view('calendar.index', ['events' => Event::all()]);
+    }
+
+    public function create()
+    {
+        return view('calendar.create');
+    }
+
+    public function getEvents()
+    {
+        return response()->json(Event::all());
     }
 
     public function getTypes()

@@ -148,7 +148,9 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
 
     // Calendar Routes
     Route::get('/calendar', [EventController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/create', [EventController::class, 'create'])->name('calendar.create');
     Route::post('/calendar', [EventController::class, 'store'])->name('calendar.store');
+    Route::get('/api/events', [EventController::class, 'getEvents'])->name('calendar.api.events');
     Route::get('/api/events/types', [EventController::class, 'getTypes'])->name('calendar.api.events.types');
 
     // Leave Applications Routes

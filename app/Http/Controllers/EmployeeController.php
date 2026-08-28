@@ -46,6 +46,12 @@ class EmployeeController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        if ($request->wantsJson()) {
+            $html = view('employees.partials.employee-table', ['employees' => $employees])->render();
+
+            return response()->json(['html' => $html]);
+        }
+
         return view('employees.index', compact('employees'));
     }
 

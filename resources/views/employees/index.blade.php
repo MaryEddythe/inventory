@@ -39,9 +39,6 @@
                     placeholder="Search employees (name, department, position, folder)"
                     aria-label="Search employees"
                 >
-                <button type="submit" class="btn btn-outline-secondary">
-                    <i class="bi bi-search"></i>
-                </button>
                 @if(request('search'))
                     <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary" title="Clear">
                         <i class="bi bi-x-lg"></i>
@@ -56,102 +53,8 @@
     </div>
 
 
-    <div class="table-responsive mt-2">
-        @if($employees->count() > 0)
-            <table class="table table-borderless mb-0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Department</th>
-                        <th>Position</th>
-                        <th>Employment Type</th>
-                        <th>Folder</th>
-                        <th style="min-width: 170px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($employees as $emp)
-                        <tr>
-                            <td class="fw-bold">
-                                {{ $emp->lastname ?? 'N/A' }}, {{ $emp->firstname ?? 'N/A' }}
-                            </td>
-                            <td>
-                                @php
-                                    $deptDesc = $emp->inv_dept_description ?? ($emp->department->description ?? $emp->description ?? 'N/A');
-                                    $deptCode = strtoupper(trim($emp->inv_dept_code ?? ''));
-                                    $badgeClassMap = [
-                                        'MMD' => 'badge-division-MMD',
-                                        'MSESDD' => 'badge-division-MSESDD',
-                                        'GD' => 'badge-division-GD',
-                                        'ORD' => 'badge-division-ORD',
-                                        'FAD' => 'badge-division-FAD',
-                                        'COA' => 'badge-division-COA',
-                                    ];
-                                    $badgeClass = $badgeClassMap[$deptCode] ?? 'badge-division';
-                                @endphp
-
-                                <span class="badge {{ $badgeClass }}">{{ $deptDesc }}</span>
-                            </td>
-                            <td>{{ $emp->Role ?? 'N/A' }}</td>
-                            <td>
-                                @php
-                                    $et = $emp->employment_type ?? null;
-                                @endphp
-                                @if($et === 'Permanent' || $et === 'PERMANENT' || $et === 'Permanent ')
-                                    Permanent
-                                @else
-                                    COS
-                                @endif
-                            </td>
-                            <td>
-                                @if($emp->drive_folder_url)
-                                    <a href="{{ $emp->drive_folder_url }}" target="_blank" rel="noopener">Open Folder</a>
-                                @else
-                                    <span class="text-muted">Pending</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('employees.show', $emp) }}" class="btn btn-link p-0 text-decoration-none" title="View">
-                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition" aria-hidden="true">
-                                            <i class="bi bi-eye" style="font-size: 1rem;"></i>
-                                        </span>
-                                    </a>
-                                    <a href="{{ route('employees.edit', $emp) }}" class="btn btn-link p-0 text-decoration-none" title="Edit">
-                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition" aria-hidden="true">
-                                            <i class="bi bi-pencil-square" style="font-size: 1rem;"></i>
-                                        </span>
-                                    </a>
-
-                                    <form method="POST" action="{{ route('employees.destroy', $emp) }}" style="display: inline;" class="employee-delete-form">
-                                        @csrf @method('DELETE')
-                                        <button
-                                            class="btn btn-link p-0 text-decoration-none text-danger employee-delete-btn"
-                                            type="button"
-                                            title="Delete"
-                                            data-employee-name="{{ $emp->full_name }}"
-                                        >
-                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition" aria-hidden="true">
-                                                <i class="bi bi-trash" style="font-size: 1rem;"></i>
-                                            </span>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <div class="text-center py-4">No employees found</div>
-        @endif
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="text-muted small">Showing {{ $employees->firstItem() ?? 0 }} to {{ $employees->lastItem() ?? 0 }} of {{ $employees->total() }} entries</div>
-        <div>
-            {{ $employees->links('vendor.pagination.bootstrap-5') }}
-        </div>
+    <div id="employeesResultsWrap">
+        @include('employees.partials.employee-table', ['employees' => $employees])
     </div>
 </div>
 @endsection
@@ -177,44 +80,99 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Live (server-side) search: debounce input and submit GET form
-        // This triggers GET /employees?search=... (controller already paginates with withQueryString).
+        // Live (AJAX) search: debounce and swap only the results region so the
+        // input keeps focus — no full page reloads while typing.
         const searchInput = document.querySelector('input[name="search"]');
-        const searchForm = searchInput ? searchInput.closest('form') : null;
-        if (searchInput && searchForm) {
-            let t = null;
-            const submit = () => searchForm.submit();
+        const resultsWrap = document.getElementById('employeesResultsWrap');
+
+        if (searchInput && resultsWrap) {
+            let debounceTimer = null;
+            let activeRequest = null;
+
+            const loadResults = (url) => {
+                if (activeRequest) activeRequest.abort();
+                activeRequest = new AbortController();
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    signal: activeRequest.signal,
+                })
+                    .then((res) => {
+                        if (!res.ok) throw new Error('Request failed');
+                        return res.json();
+                    })
+                    .then((data) => {
+                        if (data.html) {
+                            resultsWrap.innerHTML = data.html;
+                            const clean = new URL(url, window.location.origin);
+                            history.replaceState(null, '', clean.pathname + clean.search);
+                        }
+                    })
+                    .catch(() => {
+                        // Silently ignore aborted/errored requests.
+                    });
+            };
+
+            const applySearch = () => {
+                const q = searchInput.value.trim();
+                const url = new URL(window.location.href);
+                if (q) url.searchParams.set('search', q);
+                else url.searchParams.delete('search');
+                url.searchParams.delete('page');
+                loadResults(url.toString());
+            };
 
             searchInput.addEventListener('input', function () {
-                clearTimeout(t);
-                t = setTimeout(submit, 300);
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(applySearch, 350);
+            });
+
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(debounceTimer);
+                    applySearch();
+                }
+            });
+
+            // AJAX pagination inside the results region (no full reload).
+            resultsWrap.addEventListener('click', function (e) {
+                const link = e.target.closest('a[href]');
+                if (!link) return;
+                const href = link.getAttribute('href') || '';
+                if (!/([?&])page=\d+/.test(href)) return;
+
+                e.preventDefault();
+                const url = new URL(href, window.location.origin);
+                const q = searchInput.value.trim();
+                if (q) url.searchParams.set('search', q);
+                else url.searchParams.delete('search');
+                loadResults(url.toString());
             });
         }
 
-        document.querySelectorAll('.employee-delete-btn').forEach(function (btn) {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
+        // Delete buttons keep working after AJAX re-renders via delegation.
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.employee-delete-btn');
+            if (!btn) return;
+            e.preventDefault();
 
+            const name = btn.getAttribute('data-employee-name') || 'this employee';
+            const form = btn.closest('form.employee-delete-form');
 
-                const name = btn.getAttribute('data-employee-name') || 'this employee';
-                const form = btn.closest('form.employee-delete-form');
-                const row = btn.closest('tr');
-
-                Swal.fire({
-                    title: 'Delete Employee?',
-                    text: `Are you sure you want to deactivate ${name}?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, deactivate',
-                    cancelButtonText: 'Cancel',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        if (form) form.submit();
-                        // Remove row only after submit is initiated to ensure backend update occurs
-                        if (row) row.remove();
-                    }
-                });
+            Swal.fire({
+                title: 'Delete Employee?',
+                text: `Are you sure you want to deactivate ${name}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, deactivate',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed && form) form.submit();
             });
         });
     });

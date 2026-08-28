@@ -264,8 +264,8 @@ return [
             'route_name' => 'leave-applications.index',
             'route_pattern' => 'leave-applications.*',
             'icon' => 'bi bi-file-earmark-text',
-            'parent_key' => null,
-            'sort_order' => 65,
+            'parent_key' => 'leave-credits',
+            'sort_order' => 20,
         ],
         [
             'key' => 'leave-ledgers',
@@ -273,8 +273,8 @@ return [
             'route_name' => 'leave-ledgers.index',
             'route_pattern' => 'leave-ledgers.*',
             'icon' => 'bi bi-journal-text',
-            'parent_key' => null,
-            'sort_order' => 66,
+            'parent_key' => 'leave-credits',
+            'sort_order' => 30,
         ],
         [
             'key' => 'leave-credits',

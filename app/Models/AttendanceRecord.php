@@ -12,9 +12,11 @@ class AttendanceRecord extends Model
 
     protected $fillable = [
         'employee_id',
+        'schedule_type',
         'attendance_date',
         'status',
         'check_in_at',
+        'check_out_at',
         'minutes_late',
         'notes',
         'late_warning_sent_at',
@@ -24,7 +26,8 @@ class AttendanceRecord extends Model
 
     protected $casts = [
         'attendance_date' => 'date',
-        'check_in_at' => 'datetime:H:i',
+        'check_in_at' => 'datetime',
+        'check_out_at' => 'datetime',
         'late_warning_sent_at' => 'datetime',
         'memo_flagged_at' => 'datetime',
         'absence_follow_up_sent_at' => 'datetime',

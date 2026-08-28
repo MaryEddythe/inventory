@@ -64,8 +64,40 @@
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <div>
+                <div class="fw-semibold">Schedule for Selected Date</div>
+                <div class="text-muted small">{{ $selectedDate }} is using {{ $selectedScheduleLabel }}</div>
+            </div>
+            <span class="badge {{ $selectedScheduleType === 'holiday' ? 'bg-info text-dark' : 'bg-secondary' }}">
+                {{ ucfirst($selectedScheduleType) }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="text-muted small mb-2">
+                Regular: 7:00 AM to 7:00 PM. Holiday: 8:00 AM to 5:00 PM. In both cases, 8:01 AM onward is late.
+            </div>
+            @if($selectedHoliday)
+                <div class="alert alert-info mb-0">
+                    Holiday day: <strong>{{ $selectedHoliday->title }}</strong>
+                    @if($selectedHoliday->notes)
+                        <div class="small mt-1">{{ $selectedHoliday->notes }}</div>
+                    @endif
+                </div>
+            @else
+                <div class="alert alert-light border mb-0">
+                    No holiday is set for this date. Attendance will use the regular schedule.
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div>
                 <div class="fw-semibold">Record Attendance</div>
-                <div class="text-muted small">Log a present, late, absent, or leave status for a specific employee.</div>
+                <div class="text-muted small">Log attendance using the regular or holiday schedule.</div>
+            </div>
+            <div class="text-muted small">
+                Late cutoff: 8:00 AM. Expected logout depends on the selected schedule.
             </div>
         </div>
         <div class="card-body">
@@ -103,6 +135,11 @@
                     @error('check_in_at')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label">Check-out Time</label>
+                    <input type="time" name="check_out_at" class="form-control" value="{{ old('check_out_at') }}">
+                    @error('check_out_at')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">Minutes Late</label>
                     <input type="number" min="0" name="minutes_late" class="form-control" value="{{ old('minutes_late') }}">
                     @error('minutes_late')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
@@ -118,6 +155,71 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div>
+                <div class="fw-semibold">Holiday Dates</div>
+                <div class="text-muted small">HR can mark any date as holiday and the attendance schedule switches automatically.</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('attendance.holidays.store') }}" class="row g-3 mb-3">
+                @csrf
+                <div class="col-md-3">
+                    <label class="form-label">Holiday Date</label>
+                    <input type="date" name="holiday_date" class="form-control" value="{{ $selectedDate }}" required>
+                    @error('holiday_date')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Holiday Title</label>
+                    <input type="text" name="title" class="form-control" placeholder="Holiday name" required>
+                    @error('title')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Notes</label>
+                    <input type="text" name="notes" class="form-control" placeholder="Optional notes">
+                    @error('notes')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-outline-primary w-100" type="submit">Add</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Title</th>
+                            <th>Notes</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($holidaysForMonth as $holiday)
+                            <tr>
+                                <td class="fw-semibold">{{ $holiday->holiday_date->format('M d, Y') }}</td>
+                                <td>{{ $holiday->title }}</td>
+                                <td>{{ $holiday->notes ?: '—' }}</td>
+                                <td class="text-end">
+                                    <form method="POST" action="{{ route('attendance.holidays.destroy', $holiday) }}" onsubmit="return confirm('Remove this holiday?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">No holidays found for this month.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -146,8 +248,11 @@
                         <tr>
                             <th>Employee</th>
                             <th>Role</th>
+                            <th>Schedule</th>
                             <th>Status</th>
                             <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Expected Logout</th>
                             <th>Minutes Late</th>
                             <th>Notes</th>
                         </tr>
@@ -157,19 +262,30 @@
                             <tr>
                                 <td class="fw-semibold">{{ $record->employee?->full_name ?? $record->employee_id }}</td>
                                 <td>{{ $record->employee?->Role ?? 'N/A' }}</td>
+                                <td>{{ data_get($schedules, $record->schedule_type . '.label', ucfirst($record->schedule_type)) }}</td>
                                 <td>
                                     <span class="badge {{ $record->status === 'late' ? 'bg-warning text-dark' : ($record->status === 'absent' ? 'bg-danger' : ($record->status === 'leave' ? 'bg-info text-dark' : 'bg-success')) }}">
                                         {{ ucfirst($record->status) }}
                                     </span>
                                 </td>
                                 <td>{{ $record->check_in_at?->format('h:i A') ?? 'N/A' }}</td>
+                                <td>{{ $record->check_out_at?->format('h:i A') ?? 'N/A' }}</td>
+                                <td>
+                                    @if($record->check_in_at)
+                                        @php
+                                            $schedule = $schedules[$record->schedule_type] ?? $schedules[config('attendance.default_schedule', 'regular')];
+                                            $expectedLogout = $record->check_in_at->copy()->addMinutes((int) ($schedule['checkout_offset_minutes'] ?? 0));
+                                        @endphp
+                                        {{ $expectedLogout->format('h:i A') }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
                                 <td>{{ $record->minutes_late !== null ? $record->minutes_late : '—' }}</td>
                                 <td>{{ $record->notes ?: '—' }}</td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">No attendance records found for this date.</td>
-                            </tr>
+                            <tr><td colspan="9" class="text-center text-muted py-4">No attendance records found for this date.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -202,6 +318,7 @@
                         <tr>
                             <th>Employee</th>
                             <th>Role</th>
+                            <th>Schedule</th>
                             <th class="text-center">Lates</th>
                             <th class="text-center">Absences</th>
                             <th>Warning</th>
@@ -214,6 +331,7 @@
                             <tr>
                                 <td class="fw-semibold">{{ $row['employee']->full_name }}</td>
                                 <td>{{ $row['employee']->Role ?? 'N/A' }}</td>
+                                <td>{{ $selectedSchedule['label'] ?? 'Regular' }}</td>
                                 <td class="text-center">
                                     <span class="badge {{ $row['late_count'] >= 10 ? 'bg-danger' : ($row['late_count'] >= 7 ? 'bg-warning text-dark' : 'bg-secondary') }}">
                                         {{ $row['late_count'] }}
@@ -238,7 +356,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">No employees available.</td>
+                                <td colspan="8" class="text-center text-muted py-4">No employees available.</td>
                             </tr>
                         @endforelse
                     </tbody>

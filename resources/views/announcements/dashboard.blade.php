@@ -188,7 +188,7 @@
                 <div class="card-header py-3">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div>
-                            <h3 class="h5 fw-bold mb-1">Company announcements</h3>
+                            <h3 class="h5 fw-bold mb-1">Home</h3>
                             <div class="announcement-meta">{{ $announcements->count() }} item(s) currently posted</div>
                         </div>
                         <span class="badge text-bg-secondary">All employees</span>

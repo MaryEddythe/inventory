@@ -22,18 +22,28 @@
     @endphp
     <div class="app-shell">
         <aside class="app-sidebar" id="appSidebar">
-            <a class="sidebar-brand" href="{{ route('inventory.dashboard') }}">
-                <span class="sidebar-brand-icon"><i class="bi bi-box-seam"></i></span>
+            <a class="sidebar-brand" href="{{ route('company-announcements.index') }}">
+                <span class="sidebar-brand-icon">
+                    <img src="{{ asset('assets/' . rawurlencode('mgb logo.png')) }}" alt="Mines and Geosciences Bureau VI logo" class="sidebar-brand-logo">
+                </span>
                 <span>
-                    <span class="sidebar-brand-title">MGB VI</span>
-                    <span class="sidebar-brand-subtitle">Inventory System</span>
+                    <span class="sidebar-brand-title">Mines and Geosciences Bureau VI</span>
                 </span>
             </a>
 
-            <nav class="sidebar-nav" aria-label="Primary navigation">
+            <div class="sidebar-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="sidebarSearch" placeholder="Search menu..." autocomplete="off" aria-label="Search sidebar menu">
+                <button type="button" class="sidebar-search-clear" id="sidebarSearchClear" aria-label="Clear search" tabindex="-1">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="sidebar-search-empty" id="sidebarSearchEmpty" hidden>No matching menu items.</div>
+
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Primary navigation">
                 <a class="sidebar-nav-link {{ request()->routeIs('company-announcements.*') ? 'active' : '' }}" href="{{ route('company-announcements.index') }}">
                     <i class="bi bi-megaphone"></i>
-                    <span>Company Announcements</span>
+                    <span>Home</span>
                 </a>
                 @php
                     $sidebarNavigation = auth()->user()?->sidebarNavigation() ?? collect();
@@ -117,6 +127,10 @@
                 </button>
 
                 <div class="app-toolbar-actions">
+                    <div class="app-toolbar-datetime d-none d-md-flex" id="headerDateTime" title="Date & time">
+                        <i class="bi bi-clock"></i>
+                        <span id="headerDateTimeText"></span>
+                    </div>
                     <div class="dropdown notification-dropdown">
                         <button class="btn btn-link notification-btn dropdown-toggle" type="button" id="notificationDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
@@ -294,6 +308,122 @@
             });
 
             syncToggle();
+
+            // Realtime date & time in the header toolbar.
+            const headerDateTimeText = document.getElementById('headerDateTimeText');
+            if (headerDateTimeText) {
+                const updateHeaderDateTime = () => {
+                    const now = new Date();
+                    const datePart = now.toLocaleDateString(undefined, {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                    });
+                    const timePart = now.toLocaleTimeString(undefined, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+                    headerDateTimeText.textContent = `${datePart} | ${timePart}`;
+                };
+                updateHeaderDateTime();
+                setInterval(updateHeaderDateTime, 1000);
+            }
+
+            // Live sidebar menu search.
+            const sidebarSearch = document.getElementById('sidebarSearch');
+            const sidebarNav = document.getElementById('sidebarNav');
+            const sidebarSearchEmpty = document.getElementById('sidebarSearchEmpty');
+            const sidebarSearchClear = document.getElementById('sidebarSearchClear');
+
+            if (sidebarSearch && sidebarNav) {
+                // Remember each dropdown's initial open/close state so clearing
+                // the search restores it.
+                sidebarNav.querySelectorAll('.sidebar-nav-dropdown .collapse').forEach(function (c) {
+                    const dd = c.closest('.sidebar-nav-dropdown');
+                    dd.setAttribute('data-was-open', c.classList.contains('show') ? '1' : '0');
+                });
+
+                const applySidebarSearch = () => {
+                    const q = sidebarSearch.value.trim().toLowerCase();
+                    const links = sidebarNav.querySelectorAll('a.sidebar-nav-link, a.sidebar-dropdown-item');
+                    const dropdowns = sidebarNav.querySelectorAll('.sidebar-nav-dropdown');
+
+                    if (q === '') {
+                        // Reset everything back to its original state.
+                        links.forEach(function (link) {
+                            link.style.display = '';
+                            delete link.dataset.sidebarMatch;
+                        });
+                        dropdowns.forEach(function (dd) {
+                            dd.style.display = '';
+                            delete dd.dataset.sidebarMatch;
+                            const body = dd.querySelector('.collapse');
+                            if (body) {
+                                const wasOpen = dd.getAttribute('data-was-open') === '1';
+                                body.classList.toggle('show', wasOpen);
+                                const toggle = dd.querySelector('.sidebar-dropdown-toggle');
+                                if (toggle) toggle.setAttribute('aria-expanded', wasOpen ? 'true' : 'false');
+                            }
+                        });
+                        sidebarSearchEmpty.hidden = true;
+                        sidebarSearchClear.classList.remove('visible');
+                        return;
+                    }
+
+                    let visible = 0;
+
+                    // Mark leaf links that match.
+                    links.forEach(function (link) {
+                        const label = (link.textContent || '').toLowerCase();
+                        const isMatch = label.includes(q);
+                        link.dataset.sidebarMatch = isMatch ? '1' : '0';
+                        link.style.display = isMatch ? '' : 'none';
+                        if (isMatch) visible++;
+                    });
+
+                    // Show dropdowns whose label or any child matches; auto-expand them.
+                    dropdowns.forEach(function (dd) {
+                        const toggle = dd.querySelector('.sidebar-dropdown-toggle');
+                        const toggleMatch = toggle ? (toggle.textContent || '').toLowerCase().includes(q) : false;
+                        const childMatch = dd.querySelector('a[data-sidebar-match="1"]') !== null;
+                        const hasMatch = toggleMatch || childMatch;
+
+                        dd.dataset.sidebarMatch = hasMatch ? '1' : '0';
+                        dd.style.display = hasMatch ? '' : 'none';
+
+                        if (!hasMatch) return;
+                        visible++;
+
+                        const body = dd.querySelector('.collapse');
+                        if (body) body.classList.add('show');
+                        const toggleBtn = dd.querySelector('.sidebar-dropdown-toggle');
+                        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                    });
+
+                    sidebarSearchEmpty.hidden = visible !== 0;
+                    sidebarSearchClear.classList.toggle('visible', q !== '');
+                };
+
+                sidebarSearch.addEventListener('input', applySidebarSearch);
+
+                if (sidebarSearchClear) {
+                    sidebarSearchClear.addEventListener('click', function () {
+                        sidebarSearch.value = '';
+                        applySidebarSearch();
+                        sidebarSearch.focus();
+                    });
+                }
+
+                sidebarSearch.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        sidebarSearch.value = '';
+                        applySidebarSearch();
+                        sidebarSearch.blur();
+                    }
+                });
+            }
         });
     </script>
     @stack('modals')

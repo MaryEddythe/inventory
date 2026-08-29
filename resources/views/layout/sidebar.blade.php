@@ -2,26 +2,17 @@
 @php($sidebarNavigation = $currentUser?->sidebarNavigation() ?? collect())
 
 <nav class="sidebar-nav" aria-label="Primary navigation">
-    <a href="{{ route('inventory.dashboard') }}" class="brand">
+        <a href="{{ route('inventory.dashboard') }}" class="brand">
         <span class="brand-full">
             <span class="brand-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-                </svg>
+                <img src="{{ asset('assets/' . rawurlencode('mgb logo.png')) }}" alt="Mines and Geosciences Bureau VI logo" class="img-fluid">
             </span>
             <span class="brand-text">
-                Inventory System
+                Mines and Geosciences Bureau VI
             </span>
         </span>
         <span class="brand-short">
-            <span class="brand-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-                </svg>
-            </span>
-            IS
+            MGB VI
         </span>
     </a>
 

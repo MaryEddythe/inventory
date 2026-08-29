@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
@@ -165,14 +166,16 @@ class User extends Authenticatable
         $routeName = $item->route_name;
         $routePattern = $item->route_pattern ?: $routeName;
 
+        $hasValidRoute = $routeName && ! Str::contains($routeName, '*') && Route::has($routeName);
+
         return [
             'id' => $item->id,
             'key' => $item->key,
             'label' => $item->label,
             'icon' => $item->icon,
-            'route_name' => $routeName,
-            'route_pattern' => $routePattern,
-            'url' => $routeName && ! Str::contains($routeName, '*') ? route($routeName) : null,
+            'route_name' => $hasValidRoute ? $routeName : null,
+            'route_pattern' => $hasValidRoute ? $routePattern : null,
+            'url' => $hasValidRoute ? route($routeName) : null,
             'active' => $children->isNotEmpty()
                 ? $children->contains('active', true)
                 : ($routePattern ? request()->routeIs($routePattern) : false),
@@ -182,7 +185,7 @@ class User extends Authenticatable
 
     protected function firstRouteNameFromNode(array $item): ?string
     {
-        if (! empty($item['route_name']) && ! Str::contains($item['route_name'], '*')) {
+        if (! empty($item['route_name']) && ! Str::contains($item['route_name'], '*') && Route::has($item['route_name'])) {
             return $item['route_name'];
         }
 

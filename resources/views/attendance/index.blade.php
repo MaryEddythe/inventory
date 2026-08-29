@@ -6,28 +6,34 @@
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-start mb-4">
         <div>
             <h1 class="h4 fw-bold mb-1">Attendance Monitor</h1>
-            <div class="text-muted small">Track lates, absences, leave follow-ups, and memo thresholds for HR monitoring.</div>
+            <div class="text-muted small">Track lates, absences, leave follow-ups, memo thresholds, and the Philippine holiday calendar in one place.</div>
         </div>
 
-        <form class="row g-2 align-items-end" method="GET" action="{{ route('attendance.index') }}">
-            <div class="col-auto">
-                <label class="form-label small text-muted mb-1">Date</label>
-                <input type="date" name="date" class="form-control" value="{{ $selectedDate }}">
-            </div>
-            <div class="col-auto">
-                <label class="form-label small text-muted mb-1">Month</label>
-                <input type="number" min="1" max="12" name="month" class="form-control" value="{{ $month }}">
-            </div>
-            <div class="col-auto">
-                <label class="form-label small text-muted mb-1">Year</label>
-                <input type="number" min="2020" max="2100" name="year" class="form-control" value="{{ $year }}">
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-outline-primary" type="submit">
-                    <i class="bi bi-funnel"></i> Filter
-                </button>
-            </div>
-        </form>
+        <div class="d-flex flex-wrap gap-2 align-items-end">
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#attendanceHolidayModal">
+                <i class="bi bi-calendar2-event"></i> Holiday Dates
+            </button>
+
+            <form class="row g-2 align-items-end" method="GET" action="{{ route('attendance.index') }}">
+                <div class="col-auto">
+                    <label class="form-label small text-muted mb-1">Date</label>
+                    <input type="date" name="date" class="form-control" value="{{ $selectedDate }}">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small text-muted mb-1">Month</label>
+                    <input type="number" min="1" max="12" name="month" class="form-control" value="{{ $month }}">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small text-muted mb-1">Year</label>
+                    <input type="number" min="2020" max="2100" name="year" class="form-control" value="{{ $year }}">
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-outline-primary" type="submit">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     @if(session('status'))
@@ -158,7 +164,8 @@
         </div>
     </div>
 
-    <div class="card shadow-sm mb-4">
+    @if(false)
+    <div class="card shadow-sm mb-4 d-none">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <div>
                 <div class="fw-semibold">Holiday Dates</div>
@@ -222,6 +229,8 @@
             </div>
         </div>
     </div>
+
+    @endif
 
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white p-0">
@@ -376,4 +385,8 @@
         }
     </style>
 </div>
+
+@push('modals')
+    @include('attendance.partials.holiday-modal')
+@endpush
 @endsection

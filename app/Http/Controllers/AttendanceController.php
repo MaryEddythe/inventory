@@ -6,6 +6,7 @@ use App\Models\AttendanceRecord;
 use App\Models\AttendanceHoliday;
 use App\Models\Employee;
 use App\Models\User;
+use App\Services\PhilippineHolidayService;
 use App\Notifications\AttendanceAbsenceFollowUpNotification;
 use App\Notifications\AttendanceLateThresholdNotification;
 use Carbon\Carbon;
@@ -15,15 +16,29 @@ use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
+    public function __construct(protected PhilippineHolidayService $philippineHolidayService)
+    {
+    }
+
     public function index(Request $request)
     {
         $month = (int) $request->query('month', now()->month);
         $year = (int) $request->query('year', now()->year);
         $selectedDate = Carbon::parse($request->query('date', now()->toDateString()))->toDateString();
         $schedules = $this->attendanceSchedules();
-        $selectedHoliday = AttendanceHoliday::query()
-            ->whereDate('holiday_date', $selectedDate)
-            ->first();
+        $customHolidaysForMonth = AttendanceHoliday::query()
+            ->whereBetween('holiday_date', [
+                Carbon::createFromDate($year, $month, 1)->startOfMonth()->toDateString(),
+                Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString(),
+            ])
+            ->orderBy('holiday_date')
+            ->get();
+        $officialHolidaysForMonth = $this->philippineHolidayService->officialHolidaysForMonth($year, $month);
+        $holidaysForMonth = $this->philippineHolidayService->mergeHolidays($officialHolidaysForMonth, $customHolidaysForMonth);
+        $selectedHoliday = $this->philippineHolidayService->mergeHolidayForDate(
+            $selectedDate,
+            AttendanceHoliday::query()->whereDate('holiday_date', $selectedDate)->get()
+        );
         $selectedScheduleType = $this->scheduleTypeForDate($selectedDate);
         $selectedSchedule = $schedules[$selectedScheduleType] ?? $this->attendanceSchedule($selectedScheduleType);
         $selectedScheduleLabel = $selectedHoliday
@@ -32,11 +47,6 @@ class AttendanceController extends Controller
 
         $monthStart = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $monthEnd = $monthStart->copy()->endOfMonth();
-
-        $holidaysForMonth = AttendanceHoliday::query()
-            ->whereBetween('holiday_date', [$monthStart->toDateString(), $monthEnd->toDateString()])
-            ->orderBy('holiday_date')
-            ->get();
 
         $employees = Employee::query()
             ->with(['division', 'departmentRecord', 'user'])
@@ -119,7 +129,35 @@ class AttendanceController extends Controller
             'selectedScheduleLabel',
             'schedules',
             'holidaysForMonth',
+            'officialHolidaysForMonth',
+            'customHolidaysForMonth',
             'selectedHoliday',
+            'monthStart',
+            'monthEnd'
+        ));
+    }
+
+    public function holidays(Request $request)
+    {
+        $month = (int) $request->query('month', now()->month);
+        $year = (int) $request->query('year', now()->year);
+        $monthStart = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $monthEnd = $monthStart->copy()->endOfMonth();
+
+        $customHolidays = AttendanceHoliday::query()
+            ->whereBetween('holiday_date', [$monthStart->toDateString(), $monthEnd->toDateString()])
+            ->orderBy('holiday_date')
+            ->get();
+
+        $officialHolidays = $this->philippineHolidayService->officialHolidaysForMonth($year, $month);
+        $holidays = $this->philippineHolidayService->mergeHolidays($officialHolidays, $customHolidays);
+
+        return view('attendance.holidays', compact(
+            'holidays',
+            'officialHolidays',
+            'customHolidays',
+            'month',
+            'year',
             'monthStart',
             'monthEnd'
         ));
@@ -204,7 +242,7 @@ class AttendanceController extends Controller
             ]
         );
 
-        $this->applyHolidayScheduleToRecords($holiday->holiday_date->toDateString());
+        $this->refreshScheduleForDate($holiday->holiday_date->toDateString());
 
         return back()->with('status', 'Holiday saved for ' . $holiday->holiday_date->toFormattedDateString() . '.');
     }
@@ -214,7 +252,7 @@ class AttendanceController extends Controller
         $date = $holiday->holiday_date->toDateString();
         $holiday->delete();
 
-        $this->applyRegularScheduleToRecords($date);
+        $this->refreshScheduleForDate($date);
 
         return back()->with('status', 'Holiday removed for ' . Carbon::parse($date)->toFormattedDateString() . '.');
     }
@@ -359,7 +397,9 @@ class AttendanceController extends Controller
 
     protected function scheduleTypeForDate(string $date): string
     {
-        return AttendanceHoliday::query()->whereDate('holiday_date', $date)->exists()
+        $customHoliday = AttendanceHoliday::query()->whereDate('holiday_date', $date)->exists();
+
+        return $customHoliday || $this->philippineHolidayService->holidayForDate($date)
             ? 'holiday'
             : config('attendance.default_schedule', 'regular');
     }
@@ -373,21 +413,14 @@ class AttendanceController extends Controller
         return Carbon::parse($date . ' ' . $time)->toDateTimeString();
     }
 
-    protected function applyHolidayScheduleToRecords(string $date): void
+    protected function refreshScheduleForDate(string $date): void
     {
-        AttendanceRecord::query()
-            ->whereDate('attendance_date', $date)
-            ->update([
-                'schedule_type' => 'holiday',
-            ]);
-    }
+        $scheduleType = $this->scheduleTypeForDate($date);
 
-    protected function applyRegularScheduleToRecords(string $date): void
-    {
         AttendanceRecord::query()
             ->whereDate('attendance_date', $date)
             ->update([
-                'schedule_type' => config('attendance.default_schedule', 'regular'),
+                'schedule_type' => $scheduleType,
             ]);
     }
 }

@@ -10,8 +10,6 @@ use App\Http\Controllers\LeaveApplicationController;
 use App\Http\Controllers\LeaveLedgerController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\SidebarAccessController;
-use App\Models\AttendanceHoliday;
-use Carbon\Carbon;
 use Laravel\Fortify\Http\Controllers\ConfirmablePasswordController;
 use Laravel\Fortify\Http\Controllers\ConfirmedPasswordStatusController;
 use Illuminate\Support\Facades\Route;
@@ -160,20 +158,7 @@ Route::middleware(['auth', 'sidebar.access'])->group(function () {
     Route::middleware('hr.access')->group(function () {
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
-        Route::get('/attendance-holidays', function (\Illuminate\Http\Request $request) {
-            $month = (int) $request->query('month', now()->month);
-            $year = (int) $request->query('year', now()->year);
-
-            $monthStart = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-            $monthEnd = $monthStart->copy()->endOfMonth();
-
-            $holidays = AttendanceHoliday::query()
-                ->whereBetween('holiday_date', [$monthStart->toDateString(), $monthEnd->toDateString()])
-                ->orderBy('holiday_date')
-                ->get();
-
-            return view('attendance.holidays', compact('holidays', 'month', 'year', 'monthStart', 'monthEnd'));
-        })->name('attendance-holidays.index');
+        Route::get('/attendance-holidays', [AttendanceController::class, 'holidays'])->name('attendance.holidays.index');
         Route::post('/attendance/holidays', [AttendanceController::class, 'storeHoliday'])->name('attendance.holidays.store');
         Route::delete('/attendance/holidays/{holiday}', [AttendanceController::class, 'destroyHoliday'])->name('attendance.holidays.destroy');
     });

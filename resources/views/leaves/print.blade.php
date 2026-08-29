@@ -102,6 +102,32 @@
     <meta charset="utf-8">
     <title>{{ $pageTitle }}</title>
     <style>{!! $leavePrintCss ?? '' !!}</style>
+    <style>
+        @font-face {
+            font-family: "Century Schoolbook";
+            font-style: normal;
+            font-weight: 700;
+            src: url("{{ base_path('assets/font/SCHLBKB.TTF') }}") format("truetype");
+        }
+
+        body,
+        .form-table td,
+        .form-table th,
+        .checkbox-item,
+        .label-sm,
+        .field-value,
+        .signature-name,
+        .details-of-leave,
+        .details-of-leave * {
+            font-family: "Century Schoolbook", "DejaVu Serif", serif;
+        }
+
+        .details-of-leave .leave-detail-copy,
+        .details-of-leave .checkbox-item,
+        .details-of-leave .label-sm {
+            line-height: 1.15;
+        }
+    </style>
 </head>
 <body>
     <div class="sheet">
@@ -117,7 +143,7 @@
         </div>
 
         <!-- ===== SECTION 1-5: BASIC INFO ===== -->
-        <div class="section">
+        <div class="section employee-information-section">
             <div class="section-title">I. Employee Information</div>
             <div class="section-body">
                 <table class="form-table">
@@ -151,7 +177,7 @@
         </div>
 
         <!-- ===== SECTION 6: DETAILS OF APPLICATION ===== -->
-        <div class="section">
+        <div class="section leave-details-section">
             <div class="section-title">II. Details of Application</div>
             <div class="section-body">
                 <table class="form-table">
@@ -174,48 +200,53 @@
                                 @endforeach
                             </table>
                         </td>
-                        <td style="vertical-align:top;padding:3px 5px;">
-                            <div class="label-sm">In case of Vacation/Special Privilege Leave:</div>
-                            <div class="checkbox-item" style="margin:2px 0;">
-                                <span class="box"></span>
-                                <span>Within the Philippines _________________________</span>
-                            </div>
-                            <div class="checkbox-item" style="margin:2px 0;">
-                                <span class="box"></span>
-                                <span>Abroad (Specify) ____________________________</span>
-                            </div>
+                        <td class="details-of-leave" style="vertical-align:top;padding:3px 5px;">
+                            <div class="leave-detail-copy">
+                                <div class="label-sm" style="margin-bottom:2px;">IN CASE OF VACATION/SPECIAL PRIVILEGE LEAVE:</div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>Within the Philippines _________________________</span>
+                                </div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>Abroad (Specify) ____________________________</span>
+                                </div>
 
-                            <div class="label-sm" style="margin-top:4px;">In case of Sick Leave:</div>
-                            <div class="checkbox-item" style="margin:2px 0;">
-                                <span class="box"></span>
-                                <span>In Hospital (Specify Illness) ____________________</span>
-                            </div>
-                            <div class="checkbox-item" style="margin:2px 0;">
-                                <span class="box"></span>
-                                <span>Out Patient (Specify Illness) ___________________</span>
-                            </div>
+                                <div class="label-sm" style="margin-top:6px; margin-bottom:2px;">IN CASE OF SICK LEAVE:</div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>In Hospital (Specify Illness) ____________________</span>
+                                </div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>Out Patient (Specify Illness) ___________________</span>
+                                </div>
 
-                            <div class="label-sm" style="margin-top:4px;">In case of Special Leave Benefits for Women:</div>
-                            <div class="label-sm">(Specify Illness) ________________________________</div>
+                                <div class="label-sm" style="margin-top:6px; margin-bottom:2px;">IN CASE OF SPECIAL LEAVE BENEFITS FOR WOMEN:</div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>(Specify Illness) ________________________________</span>
+                                </div>
 
-                            <div class="label-sm" style="margin-top:4px;">In case of Study Leave:</div>
-                            <div class="checkbox-item" style="margin:2px 0;">
-                                <span class="box"></span>
-                                <span>Completion of Master's Degree</span>
-                            </div>
-                            <div class="checkbox-item" style="margin:2px 0;">
-                                <span class="box"></span>
-                                <span>BAR/Board Examination Review</span>
-                            </div>
+                                <div class="label-sm" style="margin-top:6px; margin-bottom:2px;">IN CASE OF STUDY LEAVE:</div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>Completion of Master's Degree</span>
+                                </div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>BAR/Board Examination Review</span>
+                                </div>
 
-                            <div class="label-sm" style="margin-top:4px;">Other purpose:</div>
-                            <div class="checkbox-item" style="margin:2px 0;">
-                                <span class="box"></span>
-                                <span>Monetization of Leave Credits</span>
-                            </div>
-                            <div class="checkbox-item" style="margin:2px 0;">
-                                <span class="box"></span>
-                                <span>Terminal Leave</span>
+                                <div class="label-sm" style="margin-top:6px; margin-bottom:2px;">OTHER PURPOSE:</div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>Monetization of Leave Credits</span>
+                                </div>
+                                <div class="checkbox-item" style="margin:2px 0;">
+                                    <span class="box"></span>
+                                    <span>Terminal Leave</span>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -239,12 +270,14 @@
                                 <span>Requested</span>
                             </div>
                             <div class="blank-line" style="margin-top:2px;min-height:14px;"></div>
-                            <div style="text-align:center;margin-top:5px;">
+                            <div class="signature-block" style="text-align:center;margin-top:5px;">
                                 @if($applicantSignaturePath)
-                                    <img src="{{ $applicantSignaturePath }}" alt="Applicant Signature" style="max-width:100px;max-height:28px;object-fit:contain;margin-bottom:2px;">
+                                    <img src="{{ $applicantSignaturePath }}" alt="Applicant Signature" class="signature-img" style="max-width:100px;max-height:28px;object-fit:contain;display:block;margin:0 auto 2px auto;">
+                                @else
+                                    <div style="min-height:28px;"></div>
                                 @endif
-                                <div style="font-size:8px;font-weight:600;">{{ $employeeName }}</div>
-                                <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
+                                <div class="signature-line"></div>
+                                <div class="signature-name" style="font-size:8px;font-weight:700;">{{ $employeeName }}</div>
                                 <div class="label-sm" style="text-align:center;margin-top:1px;">(SIGNATURE OF APPLICANT)</div>
                             </div>
                         </td>
@@ -254,7 +287,7 @@
         </div>
 
         <!-- ===== SECTION 7: DETAILS OF ACTION ON APPLICATION ===== -->
-        <div class="section">
+        <div class="section action-on-application-section">
             <div class="section-title">III. Details of Action on Application</div>
             <div class="section-body">
                 <table class="form-table">
@@ -287,15 +320,15 @@
                                     <td style="padding:2px 4px;border:1.5px solid #111827;text-align:center;">&nbsp;</td>
                                 </tr>
                             </table>
-                            <div style="margin-top:8px;text-align:center;">
+                            <div class="signature-block" style="margin-top:8px;text-align:center;">
                                 @if($hrSignaturePath)
-                                    <img src="{{ $hrSignaturePath }}" alt="HR Signature" style="max-width:100px;max-height:28px;object-fit:contain;margin-bottom:2px;">
+                                    <img src="{{ $hrSignaturePath }}" alt="HR Signature" class="signature-img" style="max-width:100px;max-height:28px;object-fit:contain;display:block;margin:0 auto 2px auto;">
                                 @else
                                     <div style="min-height:28px;"></div>
                                 @endif
-                                <div style="font-size:8px;font-weight:700;">{{ $certificationOfficerName }}</div>
+                                <div class="signature-line"></div>
+                                <div class="signature-name" style="font-size:8px;font-weight:700;">{{ $certificationOfficerName }}</div>
                                 <div style="font-size:7px;color:#374151;">{{ $certificationOfficerPosition }}</div>
-                                <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
                                 <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                             </div>
                         </td>
@@ -311,15 +344,15 @@
                             <div class="blank-line" style="margin-bottom:3px;min-height:12px;"></div>
                             <div class="blank-line" style="margin-bottom:3px;min-height:12px;"></div>
                             <div class="blank-line" style="margin-bottom:6px;min-height:12px;"></div>
-                            <div style="margin-top:8px;text-align:center;">
+                            <div class="signature-block" style="margin-top:8px;text-align:center;">
                                 @if($divisionChiefSignaturePath)
-                                    <img src="{{ $divisionChiefSignaturePath }}" alt="Division Chief Signature" style="max-width:100px;max-height:28px;object-fit:contain;margin-bottom:2px;">
+                                    <img src="{{ $divisionChiefSignaturePath }}" alt="Division Chief Signature" class="signature-img" style="max-width:100px;max-height:28px;object-fit:contain;display:block;margin:0 auto 2px auto;">
                                 @else
                                     <div style="min-height:28px;"></div>
                                 @endif
-                                <div style="font-size:8px;font-weight:700;">{{ $recommendationOfficerName }}</div>
+                                <div class="signature-line"></div>
+                                <div class="signature-name" style="font-size:8px;font-weight:700;">{{ $recommendationOfficerName }}</div>
                                 <div style="font-size:7px;color:#374151;">{{ $recommendationOfficerPosition }}</div>
-                                <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
                                 <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                             </div>
                         </td>
@@ -351,15 +384,15 @@
                     </tr>
                 </table>
 
-                <div style="text-align:center;margin-top:8px;">
+                <div class="signature-block" style="text-align:center;margin-top:8px;">
                     @if($regionalDirectorSignaturePath)
-                        <img src="{{ $regionalDirectorSignaturePath }}" alt="Regional Director Signature" style="max-width:100px;max-height:28px;object-fit:contain;margin-bottom:2px;">
+                        <img src="{{ $regionalDirectorSignaturePath }}" alt="Regional Director Signature" class="signature-img" style="max-width:100px;max-height:28px;object-fit:contain;display:block;margin:0 auto 2px auto;">
                     @else
                         <div style="min-height:28px;"></div>
                     @endif
-                    <div style="font-size:8px;font-weight:700;">{{ $regionalDirectorName }}</div>
+                    <div class="signature-line"></div>
+                    <div class="signature-name" style="font-size:8px;font-weight:700;">{{ $regionalDirectorName }}</div>
                     <div style="font-size:7px;color:#374151;">Regional Director</div>
-                    <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
                     <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
                 </div>
             </div>

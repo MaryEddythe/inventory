@@ -58,7 +58,7 @@
 
         <!-- Key Metrics Summary -->
         <div class="row g-3 mb-4">
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="metric-card metric-card-primary">
                     <div class="metric-header">
                         <div class="metric-icon">
@@ -74,7 +74,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="metric-card metric-card-success">
                     <div class="metric-header">
                         <div class="metric-icon">
@@ -90,7 +90,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="metric-card metric-card-info">
                     <div class="metric-header">
                         <div class="metric-icon">
@@ -107,8 +107,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
     </div>
 
     <!-- Division Summary Section -->

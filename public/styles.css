@@ -2939,8 +2939,9 @@ mark {
   --dash-soft: #f8fafc;
   --dash-blue: #2563eb;
   --dash-blue-soft: #eff6ff;
-  max-width: 1500px;
-  margin-inline: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
 }
 
 .inventory-dashboard .dashboard-header {

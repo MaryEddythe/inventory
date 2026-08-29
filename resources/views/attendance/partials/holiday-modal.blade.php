@@ -111,27 +111,33 @@
 
 <style>
     .holiday-modal-dialog {
-        max-width: min(1500px, 98vw);
-        width: min(1500px, 98vw);
+        max-width: min(1600px, 96vw);
+        width: min(1600px, 96vw);
         background: transparent;
         border: 0;
         box-shadow: none;
     }
 
     .holiday-modal-content {
-        min-height: min(90vh, 900px);
+        min-height: min(92vh, 960px);
         width: 100%;
+        max-width: none;
     }
 
     .holiday-modal-body {
         display: flex;
         flex-direction: column;
         min-height: 0;
+        padding: 1.5rem 2rem 2rem;
     }
 
     .holiday-modal-grid {
         flex: 1 1 auto;
         min-height: 0;
+    }
+
+    .holiday-modal-grid > [class*="col-"] > div {
+        padding: 1.5rem;
     }
 
     .holiday-table-wrapper {

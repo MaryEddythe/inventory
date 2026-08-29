@@ -6,6 +6,18 @@
     $currentEmployee = $currentUser?->employee;
     $displayBio = trim((string) ($currentUser->bio ?? $currentEmployee?->position ?? $currentUser?->role?->name ?? ''));
     $displayBio = $displayBio !== '' ? $displayBio : 'Bio not set yet.';
+    $displayDivision = trim((string) ($currentEmployee?->division?->name ?? $currentEmployee?->division?->code ?? ''));
+    $displayDivision = $displayDivision !== '' ? $displayDivision : 'Division not set';
+    $displayRole = $currentUser->role?->name ?? 'Employee';
+    $profileImageUrl = $currentUser->profile_image
+        ? asset('storage/' . $currentUser->profile_image)
+        : 'https://ui-avatars.com/api/?name=' . urlencode($currentUser->username ?: $currentUser->name) . '&background=0D8ABC&color=fff';
+    $attendanceChecks = [
+        ['label' => 'Logged in morning', 'state' => 'Pending'],
+        ['label' => 'Logged out morning', 'state' => 'Pending'],
+        ['label' => 'Logged in afternoon', 'state' => 'Pending'],
+        ['label' => 'Logged out afternoon', 'state' => 'Pending'],
+    ];
 @endphp
 
 <style>
@@ -27,44 +39,61 @@
         color: #e2e8f0;
         border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .attendance-grid {
+    .attendance-summary {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: .5rem;
     }
+    .attendance-check {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        padding: .55rem .65rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: .65rem;
+        background: rgba(255, 255, 255, 0.07);
+    }
+    .attendance-check-label,
+    .attendance-check-state {
+        font-size: .65rem;
+        line-height: 1.2;
+    }
+    .attendance-check-state {
+        opacity: .7;
+        white-space: nowrap;
+    }
+    .attendance-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1cm);
+        gap: .5rem;
+        align-items: center;
+    }
     .attendance-tile {
-        aspect-ratio: 1;
-        border-radius: .75rem;
+        width: 1cm;
+        height: 1cm;
+        border-radius: .3rem;
         background: rgba(255, 255, 255, 0.07);
         border: 1px solid rgba(255, 255, 255, 0.12);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: .35rem;
+        display: grid;
+        place-items: center;
+        padding: 0;
     }
     .attendance-tile .tile-icon {
-        width: 1.5rem;
-        height: 1.5rem;
+        width: .45cm;
+        height: .45cm;
         border-radius: 999px;
         display: grid;
         place-items: center;
         background: rgba(56, 189, 248, 0.15);
         color: #7dd3fc;
-        margin-bottom: .25rem;
     }
     .attendance-tile .tile-icon i {
-        font-size: .75rem;
+        font-size: .55rem;
     }
-    .attendance-tile .tile-label {
-        font-size: .65rem;
-        line-height: 1.1;
-    }
+    .attendance-tile .tile-label,
     .attendance-tile .tile-state {
-        font-size: .6rem;
-        line-height: 1.1;
-        opacity: .75;
+        display: none;
     }
     .announcement-card {
         border: 0;
@@ -88,13 +117,12 @@
         <div class="col-12 col-lg-4">
             <div class="company-panel">
                 <div class="d-flex align-items-center gap-3 mb-4">
-                    <div class="rounded-circle bg-info-subtle text-info" style="width:72px;height:72px;font-size:1.6rem;display:grid;place-items:center;">
-                        <i class="bi bi-person-badge"></i>
-                    </div>
+                    <img src="{{ $profileImageUrl }}" alt="{{ $currentUser->name }}" class="rounded-circle" style="width:72px;height:72px;object-fit:cover;">
                     <div>
                         <div class="small text-uppercase text-info-emphasis opacity-75">Logged in user</div>
                         <h2 class="h4 fw-bold mb-1">{{ $currentUser->name }}</h2>
-                        <div class="badge badge-soft rounded-pill px-3 py-2">{{ $currentUser->role?->name ?? 'Employee' }}</div>
+                        <div class="small opacity-75 mb-2">{{ $displayDivision }}</div>
+                        <div class="badge badge-soft rounded-pill px-3 py-2">Role: {{ $displayRole }}</div>
                     </div>
                 </div>
 
@@ -106,10 +134,22 @@
                 </div>
 
                 <div class="mb-4">
+                    <div class="small text-uppercase opacity-75 mb-2">Attendance status</div>
+                    <div class="attendance-summary">
+                        @foreach($attendanceChecks as $check)
+                            <div class="attendance-check">
+                                <span class="attendance-check-label">{{ $check['label'] }}</span>
+                                <span class="attendance-check-state">{{ $check['state'] }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="mb-4">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div>
                             <div class="small text-uppercase opacity-75">Attendance</div>
-                            <div class="fw-semibold">Biometric placeholders</div>
+                            <div class="fw-semibold">Weekly biometric placeholders</div>
                         </div>
                         <span class="badge badge-soft rounded-pill">{{ $attendanceSlots->count() }} slots</span>
                     </div>

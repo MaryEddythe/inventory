@@ -1,5 +1,4 @@
-﻿@php
-    use App\Models\EmployeeLeaveBenefit;
+@php
     use App\Models\User;
     use App\Models\Role;
     use App\Models\Department;
@@ -23,43 +22,22 @@
 
     $selected = strtolower($leaveType);
 
-    // ── Build checklist dynamically from employee_leave_benefits.credit_type ──
-    $creditTypes = EmployeeLeaveBenefit::distinct()
-        ->pluck('credit_type')
-        ->filter()
-        ->values()
-        ->all();
-
-    $checklistLabels = [
-        'Vacation Leave' => 'Vacation Leave (Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
-        'Sick Leave' => 'Sick Leave (Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
-        'Maternity Leave' => 'Maternity Leave (R.A. No. 11210 / IRR issued by CSC, DOLE and SSS)',
-        'Paternity Leave' => 'Paternity Leave (R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended)',
-        'Special Privilege Leave' => 'Special Privilege Leave (Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
-        'Solo Parent Leave' => 'Solo Parent Leave (RA No. 8972 / CSC MC No. 8, s. 2004)',
-        'Study Leave' => 'Study Leave (Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
-        'Rehabilitation Leave' => 'Rehabilitation Privilege (Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292)',
-        'Special Emergency Leave' => 'Special Emergency (Calamity) Leave (CSC MC No. 2, s. 2012, as amended)',
-        'Wellness Leave' => 'Wellness Leave',
-        'Credited Time-Off' => 'Credited Time-Off',
+    $checklist = [
+        'Vacation Leave (Sec. 51, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['vacation leave', 'vacation'],
+        'Mandatory/Forced Leave (Sec. 25, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['mandatory/forced leave', 'mandatory'],
+        'Sick Leave (Sec. 43, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['sick leave', 'sick'],
+        'Maternity Leave (R.A. No. 11210 / IRR issued by CSC, DOLE and SSS)' => ['maternity leave', 'maternity'],
+        'Paternity Leave (R.A. No. 8187 / CSC MC No. 71, s. 1998, as amended)' => ['paternity leave', 'paternity'],
+        'Special Privilege Leave (Sec. 21, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['special privilege leave', 'special privilege'],
+        'Solo Parent Leave (RA No. 8972 / CSC MC No. 8, s. 2004)' => ['solo parent leave', 'solo parent'],
+        'Study Leave (Sec. 68, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['study leave', 'study'],
+        '10-Day VAWC Leave (RA No. 9262 / CSC MC No. 15, s. 2005)' => ['10-day vawc leave', 'vawc'],
+        'Rehabilitation Privilege (Sec. 55, Rule XVI, Omnibus Rules Implementing E.O. No. 292)' => ['rehabilitation leave', 'rehabilitation'],
+        'Special Leave Benefits for Women (RA No. 9710 / CSC MC No. 25, s. 2010)' => ['special leave benefits for women', 'special leave'],
+        'Special Emergency (Calamity) Leave (CSC MC No. 2, s. 2012, as amended)' => ['special emergency leave', 'special emergency', 'calamity'],
+        'Adoption Leave (R.A. No. 8552)' => ['adoption leave', 'adoption'],
+        'Others: Wellness Leave' => ['wellness leave', 'wellness'],
     ];
-
-    $checklist = [];
-    foreach ($creditTypes as $ct) {
-        $label = $checklistLabels[$ct] ?? $ct;
-        $needles = [strtolower($ct)];
-        if (str_contains(strtolower($ct), 'vacation')) $needles[] = 'vacation';
-        if (str_contains(strtolower($ct), 'sick')) $needles[] = 'sick';
-        if (str_contains(strtolower($ct), 'maternity')) $needles[] = 'maternity';
-        if (str_contains(strtolower($ct), 'paternity')) $needles[] = 'paternity';
-        if (str_contains(strtolower($ct), 'privilege')) $needles[] = 'special privilege';
-        if (str_contains(strtolower($ct), 'solo')) $needles[] = 'solo parent';
-        if (str_contains(strtolower($ct), 'rehabilitation')) $needles[] = 'rehabilitation';
-        if (str_contains(strtolower($ct), 'emergency')) $needles[] = 'calamity';
-        if (str_contains(strtolower($ct), 'wellness')) $needles[] = 'wellness';
-        if (str_contains(strtolower($ct), 'credited')) { $needles[] = 'credited time-off'; $needles[] = 'cto'; }
-        $checklist[$label] = $needles;
-    }
 
     $isChecked = function ($needles) use ($selected) {
         return collect($needles)->contains(fn ($n) => str_contains($selected, $n));
@@ -110,8 +88,13 @@
         ?? $divisionChiefRole?->name
         ?? 'Division Chief';
 
-    $rdRole = Role::query()->where('slug', 'rd')->first();
-    $rdUser = $rdRole ? User::query()->where('role_id', $rdRole->id)->orderBy('id')->first() : null;
+    $rdUser = User::query()
+        ->where('role_id', 5)
+        ->orderBy('id')
+        ->first();
+    $regionalDirectorName = $rdUser?->name
+        ?? optional($leaveApplication->regionalDirectorSigner)->name
+        ?? 'Regional Director';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -179,27 +162,16 @@
                     <tr>
                         <td style="vertical-align:top;padding:3px 5px;">
                             <table class="checkbox-grid">
-                                @foreach(collect($checklist)->chunk(2) as $pair)
+                                @foreach($checklist as $label => $needles)
                                     <tr>
-                                        @foreach($pair as $label => $needles)
-                                            <td style="width:50%;padding:1.5px 3px 1.5px 0;">
-                                                <div class="checkbox-item">
-                                                    <span class="box">{{ $isChecked($needles) ? 'X' : '' }}</span>
-                                                    <span>{{ $label }}</span>
-                                                </div>
-                                            </td>
-                                        @endforeach
+                                        <td style="width:100%;padding:1.5px 3px 1.5px 0;">
+                                            <div class="checkbox-item">
+                                                <span class="box">{{ $isChecked($needles) ? 'X' : '' }}</span>
+                                                <span>{{ $label }}</span>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforeach
-                                <tr>
-                                    <td style="padding:1.5px 3px 1.5px 0;">
-                                        <div class="checkbox-item">
-                                            <span class="box"></span>
-                                            <span>Others: ________________________</span>
-                                        </div>
-                                    </td>
-                                    <td style="padding:1.5px 3px 1.5px 0;"></td>
-                                </tr>
                             </table>
                         </td>
                         <td style="vertical-align:top;padding:3px 5px;">
@@ -385,7 +357,7 @@
                     @else
                         <div style="min-height:28px;"></div>
                     @endif
-                    <div style="font-size:8px;font-weight:700;">{{ optional($leaveApplication->regionalDirectorSigner)->name ?? 'Regional Director' }}</div>
+                    <div style="font-size:8px;font-weight:700;">{{ $regionalDirectorName }}</div>
                     <div style="font-size:7px;color:#374151;">Regional Director</div>
                     <div style="border-top:1.5px solid #111827;margin-top:2px;padding-top:2px;"></div>
                     <div class="label-sm" style="text-align:center;">AUTHORIZED OFFICER</div>
@@ -395,4 +367,3 @@
     </div>
 </body>
 </html>
-

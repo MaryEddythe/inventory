@@ -20,14 +20,6 @@
                     <input type="date" name="date" class="form-control" value="{{ $selectedDate }}">
                 </div>
                 <div class="col-auto">
-                    <label class="form-label small text-muted mb-1">Month</label>
-                    <input type="number" min="1" max="12" name="month" class="form-control" value="{{ $month }}">
-                </div>
-                <div class="col-auto">
-                    <label class="form-label small text-muted mb-1">Year</label>
-                    <input type="number" min="2020" max="2100" name="year" class="form-control" value="{{ $year }}">
-                </div>
-                <div class="col-auto">
                     <button class="btn btn-outline-primary" type="submit">
                         <i class="bi bi-funnel"></i> Filter
                     </button>

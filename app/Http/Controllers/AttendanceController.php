@@ -22,9 +22,9 @@ class AttendanceController extends Controller
 
     public function index(Request $request)
     {
-        $month = (int) $request->query('month', now()->month);
-        $year = (int) $request->query('year', now()->year);
         $selectedDate = Carbon::parse($request->query('date', now()->toDateString()))->toDateString();
+        $month = (int) Carbon::parse($selectedDate)->month;
+        $year = (int) Carbon::parse($selectedDate)->year;
         $schedules = $this->attendanceSchedules();
         $customHolidaysForMonth = AttendanceHoliday::query()
             ->whereBetween('holiday_date', [

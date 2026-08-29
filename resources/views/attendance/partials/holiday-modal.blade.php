@@ -1,6 +1,6 @@
 <div class="modal fade" id="attendanceHolidayModal" tabindex="-1" aria-labelledby="attendanceHolidayModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow">
+    <div class="modal-dialog holiday-modal-dialog modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow holiday-modal-content">
             <div class="modal-header border-0 pb-0">
                 <div>
                     <h2 class="modal-title h5 fw-bold mb-1" id="attendanceHolidayModalLabel">Holiday Dates</h2>
@@ -8,7 +8,7 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body pt-3">
+            <div class="modal-body pt-3 holiday-modal-body">
                 <div class="alert alert-info d-flex flex-wrap justify-content-between gap-2 align-items-center">
                     <div>
                         Official Philippine holidays are loaded automatically. HR-added holidays can still override or add dates when needed.
@@ -18,9 +18,9 @@
                     </a>
                 </div>
 
-                <div class="row g-4">
-                    <div class="col-12 col-lg-4">
-                        <div class="border rounded-4 p-3 h-100 bg-light">
+                <div class="row g-4 holiday-modal-grid">
+                    <div class="col-12 col-lg-4 d-flex">
+                        <div class="border rounded-4 p-3 h-100 bg-light w-100">
                             <div class="fw-semibold mb-3">Add Holiday</div>
                             <form method="POST" action="{{ route('attendance.holidays.store') }}" class="row g-3">
                                 @csrf
@@ -47,8 +47,8 @@
                         </div>
                     </div>
 
-                    <div class="col-12 col-lg-8">
-                        <div class="border rounded-4 p-3 h-100">
+                    <div class="col-12 col-lg-8 d-flex">
+                        <div class="border rounded-4 p-3 h-100 w-100 d-flex flex-column">
                             <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center mb-3">
                                 <div>
                                     <div class="fw-semibold">Holiday Dates for {{ $monthStart->format('F Y') }}</div>
@@ -57,7 +57,7 @@
                                 <span class="badge text-bg-secondary">{{ $holidaysForMonth->count() }} date(s)</span>
                             </div>
 
-                            <div class="table-responsive holiday-table-wrapper">
+                            <div class="table-responsive holiday-table-wrapper flex-grow-1">
                                 <table class="table table-hover align-middle mb-0 holiday-table">
                                     <thead class="table-light">
                                         <tr>
@@ -110,8 +110,33 @@
 </div>
 
 <style>
+    .holiday-modal-dialog {
+        max-width: min(1500px, 98vw);
+        width: min(1500px, 98vw);
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .holiday-modal-content {
+        min-height: min(90vh, 900px);
+        width: 100%;
+    }
+
+    .holiday-modal-body {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .holiday-modal-grid {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
     .holiday-table-wrapper {
-        max-height: min(60vh, 680px);
+        min-height: 0;
+        max-height: none;
     }
 
     .holiday-table th,

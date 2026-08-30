@@ -187,63 +187,57 @@
                     </tr>
                     <tr>
                         <td style="vertical-align:top;padding:3px 5px;">
-                            <table class="checkbox-grid">
-                                @foreach($checklist as $label => $needles)
-                                    <tr>
-                                        <td style="width:100%;padding:1.5px 3px 1.5px 0;">
-                                            <div class="checkbox-item">
-                                                <span class="box">{{ $isChecked($needles) ? 'X' : '' }}</span>
-                                                <span>{{ $label }}</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </table>
+                            @foreach($checklist as $label => $needles)
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 3px 0.8px 0;">
+                                    <span class="box">{{ $isChecked($needles) ? 'X' : '' }}</span>
+                                    <span>{{ $label }}</span>
+                                </div>
+                            @endforeach
                         </td>
                         <td class="details-of-leave" style="vertical-align:top;padding:3px 5px;">
                             <div class="leave-detail-copy">
-                                <div class="label-sm" style="margin-bottom:1px;">VACATION / SPECIAL PRIVILEGE:</div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="label-sm" style="height:8.4px;padding:3.2px 0 2px 0;">VACATION / SPECIAL PRIVILEGE:</div>
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>Within the Philippines</span>
                                 </div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>Abroad (Specify)</span>
                                 </div>
 
-                                <div class="label-sm" style="margin-top:3px; margin-bottom:1px;">SICK LEAVE:</div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="label-sm" style="height:8.4px;padding:3.2px 0 2px 0;">SICK LEAVE:</div>
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>In Hospital</span>
                                 </div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>Out Patient</span>
                                 </div>
 
-                                <div class="label-sm" style="margin-top:3px; margin-bottom:1px;">SPECIAL LEAVE BENEFITS:</div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="label-sm" style="height:8.4px;padding:3.2px 0 2px 0;">SPECIAL LEAVE BENEFITS:</div>
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>Specify Illness</span>
                                 </div>
 
-                                <div class="label-sm" style="margin-top:3px; margin-bottom:1px;">STUDY LEAVE:</div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="label-sm" style="height:8.4px;padding:3.2px 0 2px 0;">STUDY LEAVE:</div>
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>Master's Degree</span>
                                 </div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>Board Review</span>
                                 </div>
 
-                                <div class="label-sm" style="margin-top:3px; margin-bottom:1px;">OTHER PURPOSE:</div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="label-sm" style="height:8.4px;padding:3.2px 0 2px 0;">OTHER PURPOSE:</div>
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>Monetization of Leave Credits</span>
                                 </div>
-                                <div class="checkbox-item" style="margin:1px 0;">
+                                <div class="checkbox-item" style="height:8.4px;padding:4.4px 0 0.8px 0;margin:0;">
                                     <span class="box"></span>
                                     <span>Terminal Leave</span>
                                 </div>

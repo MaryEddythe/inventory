@@ -1,5 +1,5 @@
 @page {
-    size: A4 portrait;
+    size: A4;
     margin: 0.04in 0.04in 0.04in 0.04in;
 }
 
@@ -7,60 +7,111 @@ html, body {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100%;
 }
 
 body {
     font-family: "Century Schoolbook", "DejaVu Serif", serif;
     color: #111827;
-    font-size: 7.4px;
-    line-height: 1;
+    font-size: 6.2px;
+    line-height: 0.95;
 }
 
 * {
     box-sizing: border-box;
 }
 
+/*
+ * NOTES ON LAYOUT (dompdf 3.1)
+ * ----------------------------
+ * PHP HTML-to-PDF renderers such as dompdf are CSS 2.1-based and do NOT
+ * implement flexbox (`display:flex` is silently ignored).
+ *
+ * Every section gets an explicit height so the boxes always sum to one A4
+ * sheet (11.69in). Page 1 = the whole form; verified by measuring frame
+ * geometry through dompdf's `end_page_render` callback.
+ *
+ * IMPORTANT dompdf quirk: a `height` declared on a `<tr>` is IGNORED (row
+ * heights are always derived from the cells, see the Table/TableCell
+ * reflower classes).
+ * To stretch a row, set the height on its <td>/<th> cells instead. A table
+ * level height does not help either - the extra space is not distributed to
+ * rows (Cellmap::set_frame_heights is commented out in dompdf 3.1).
+ *
+ * Section III is filled by giving its content rows explicit CELL heights
+ * (.row-tall / .row-short) and pushing the certification/recommendation
+ * signature blocks to the bottom of their cells with a fixed-height spacer
+ * (.sig-spacer). The Regional Director signature is absolutely positioned
+ * at the bottom of the section body.
+ */
 .sheet {
     width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    height: 11.61in;
     overflow: hidden;
+    position: relative;
+    page-break-inside: avoid;
 }
 
 .header {
-    flex: 0 0 0.7in;
+    height: 0.70in;
+    min-height: 0;
 }
 
 .employee-information-section {
-    flex: 0 0 0.58in;
+    height: 0.55in;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .leave-details-section {
-    flex: 0 0 3.3in;
+    height: 3.30in;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .action-on-application-section {
-    flex: 1 1 auto;
     margin-bottom: 0;
+    height: 6.90in;
+    overflow: hidden;
 }
 
 .action-on-application-section .section-body {
     position: relative;
-    height: calc(100% - 16px);
-    min-height: 0;
+    height: 6.74in;
 }
 
-.action-on-application-section .section-body > .signature-block {
-    position: static;
-    margin-top: 4px;
+.action-on-application-section .rd-signature {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 6px;
+}
+
+/*
+ * Section III row stretching: dompdf ignores `height` on <tr>, so the
+ * content rows are stretched via their cells. The two tall cells end just
+ * above the absolutely-positioned RD signature block so the bordered table
+ * spans the full section body with no blank band in the middle.
+ */
+.action-on-application-section td.row-tall {
+    height: 4.10in;
+}
+
+.action-on-application-section td.row-short {
+    height: 1.70in;
+}
+
+.action-on-application-section .sig-spacer {
+    height: 2.85in;
+}
+
+.action-on-application-section .blank-line {
+    min-height: 0.30in;
 }
 
 /* ===== HEADER ===== */
 .header {
     text-align: center;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     position: relative;
 }
 
@@ -68,7 +119,7 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    width: 52px;
+    width: 46px;
     height: auto;
 }
 
@@ -84,7 +135,7 @@ body {
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    margin-top: 2px;
+    margin-top: 1.5px;
 }
 
 .header-mgb {
@@ -92,22 +143,22 @@ body {
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    margin-top: 2px;
+    margin-top: 1.5px;
 }
 
 .header-region {
     font-size: 7.5px;
     font-weight: 600;
-    margin-top: 2px;
+    margin-top: 1.5px;
 }
 
 .header-form-title {
     font-size: 12px;
     font-weight: 800;
-    margin-top: 5px;
+    margin-top: 4px;
     border-top: 2px solid #111827;
     border-bottom: 2px solid #111827;
-    padding: 3px 0;
+    padding: 2px 0;
     letter-spacing: 0.04em;
 }
 
@@ -125,7 +176,7 @@ body {
 /* ===== SECTIONS ===== */
 .section {
     border: 1.5px solid #111827;
-    margin-bottom: 2px;
+    margin-bottom: 1.5px;
 }
 
 .section-title {
@@ -135,7 +186,7 @@ body {
     border-bottom: 1.5px solid #111827;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    font-size: 6.8px;
+    font-size: 6.2px;
 }
 
 .section-body {
@@ -158,14 +209,14 @@ table.form-table th {
 
 table.form-table th {
     background: #f3f4f6;
-    font-size: 6.2px;
+    font-size: 5.8px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.02em;
 }
 
 table.form-table td {
-    font-size: 7.1px;
+    font-size: 6.2px;
     font-weight: 600;
 }
 
@@ -182,7 +233,7 @@ table.form-table td {
 .leave-details-section .details-of-leave,
 .leave-details-section .details-of-leave .checkbox-item,
 .leave-details-section .details-of-leave .label-sm {
-    line-height: 1.15;
+    line-height: 1.1;
 }
 
 .checkbox-grid {
@@ -194,34 +245,33 @@ table.form-table td {
     width: 50%;
     padding: 0 2px 0 0;
     vertical-align: top;
-    font-size: 5.9px;
+    font-size: 5.2px;
     line-height: 1;
 }
 
 .box {
     display: inline-block;
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border: 1px solid #111827;
     margin-right: 2px;
     text-align: center;
-    line-height: 6px;
-    font-size: 5.6px;
+    line-height: 5px;
+    font-size: 4.8px;
     font-weight: 700;
-    flex-shrink: 0;
 }
 
 .checkbox-item {
     display: flex;
     align-items: flex-start;
     gap: 2px;
-    margin: 1px 0;
+    margin: 0;
 }
 
 /* ===== SIGNATURES ===== */
 .signature-img {
     max-width: 100px;
-    max-height: 24px;
+    max-height: 22px;
     object-fit: contain;
     margin-bottom: 0;
 }
@@ -239,7 +289,7 @@ table.form-table td {
 
 /* ===== MISC ===== */
 .label-sm {
-    font-size: 5.6px;
+    font-size: 5px;
     font-weight: 700;
     color: #374151;
     text-transform: uppercase;
@@ -248,14 +298,14 @@ table.form-table td {
 
 .blank-line {
     border-bottom: 1.5px solid #111827;
-    min-height: 7px;
+    min-height: 5px;
     margin-top: 1px;
 }
 
 .field-value {
-    font-size: 6.8px;
+    font-size: 6px;
     font-weight: 600;
     border-bottom: 1.5px solid #111827;
     padding: 1px 0 1px 0;
-    min-height: 8px;
+    min-height: 6px;
 }

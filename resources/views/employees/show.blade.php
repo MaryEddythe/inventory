@@ -290,7 +290,7 @@
                         $usedHours = (int) ($benefitsByType->get($label)?->sum('credit_hours') ?? 0);
                         $usedDays = intdiv($usedHours, $dayBasedCreditFactor);
                         $remainingDays = max(0, (int) $annualDays - $usedDays);
-                        $displayUnit = 'days annually';
+                        $displayUnit = 'days accumulated';
                     } else {
                         $remainingDays = $annualDays;
                         $displayUnit = 'As per policy';
@@ -450,9 +450,9 @@
     .leave-overview-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
     .leave-section-eyebrow { margin: 0 0 0.25rem; color: #64748b; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
     .leave-credit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.75rem; }
-    .leave-credit-value { color: #0f172a; font-size: 1.1rem; font-weight: 700; display: flex; align-items: baseline; gap: 0.25rem; }
+    .leave-credit-value { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; color: #0f172a; font-size: 1.1rem; font-weight: 700; }
     .leave-credit-number { font-size: 1.5rem; font-weight: 800; color: #0f172a; line-height: 1; }
-    .leave-credit-unit { color: #64748b; font-size: 0.75rem; font-weight: 500; }
+    .leave-credit-unit { color: #64748b; font-size: 0.75rem; font-weight: 500; line-height: 1.2; }
     .leave-records-stack { display: grid; gap: 0.75rem; }
     .leave-record-panel { overflow: hidden; border: 1px solid #e2e8f0; border-radius: 0.625rem; background: #fff; }
     .leave-record-panel summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; color: #0f172a; cursor: pointer; font-weight: 700; list-style: none; }

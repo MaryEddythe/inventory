@@ -1119,6 +1119,109 @@ a.nav-links .active .nav-icon {
     margin-bottom: 0;
 }
 
+.leave-overview-card {
+    overflow: hidden;
+    border: 1px solid #e5e7eb !important;
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
+}
+
+.leave-overview-card .card-body {
+    padding: 1.5rem;
+}
+
+.leave-overview-card .leave-overview-heading {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.leave-overview-card .leave-section-eyebrow {
+    color: #800000;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+}
+
+.leave-overview-card .leave-credit-grid {
+    gap: 1rem;
+}
+
+.leave-overview-card .leave-credit-tile {
+    position: relative;
+    min-height: 112px;
+    padding: 1rem 1.1rem;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: #ffffff;
+    box-shadow: 0 5px 14px rgba(15, 23, 42, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.leave-overview-card .leave-credit-tile::after {
+    position: absolute;
+    right: -1.5rem;
+    bottom: -2rem;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: rgba(255, 193, 7, 0.12);
+    content: '';
+}
+
+.leave-overview-card .leave-credit-tile:hover {
+    transform: translateY(-2px);
+    border-color: #e0b100;
+    background: #fff8e1;
+    box-shadow: 0 10px 22px rgba(176, 128, 0, 0.14);
+}
+
+.leave-overview-card .leave-credit-label {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 0.65rem;
+    color: #52657d;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+}
+
+.leave-overview-card .leave-credit-value {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 0.35rem;
+    text-align: center;
+    color: #0f172a;
+}
+
+.leave-overview-card .leave-credit-number {
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #800000;
+}
+
+.leave-overview-card .leave-credit-unit {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+@media (max-width: 575.98px) {
+    .leave-overview-card .card-body {
+        padding: 1.1rem;
+    }
+
+    .leave-overview-card .leave-credit-tile {
+        min-height: 102px;
+    }
+}
+
 .nav-tabs .nav-item {
     margin-bottom: -2px;
 }

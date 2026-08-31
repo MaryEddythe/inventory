@@ -9,6 +9,7 @@ use App\Models\EmployeeLeaveBenefit;
 use App\Models\EmployeeLeaveHistory;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\LeaveBalanceCalculator;
 use App\Notifications\LeaveApplicationSubmittedNotification;
 use App\Notifications\LeaveApplicationPendingReviewNotification;
 use App\States\LeaveApplication\Approved;
@@ -235,37 +236,29 @@ class LeaveApplicationController extends Controller
 
         $leaveType = $this->canonicalLeaveType($validated['leave_type']);
         $ctoHistory = null;
+        $leaveBalanceCalculator = app(LeaveBalanceCalculator::class);
         if ($leaveType === 'Credited Time-Off') {
             $request->validate([
                 'cto_leave_history_id' => 'required|integer',
                 'cto_duration' => 'required|in:am,pm,whole_day',
             ]);
 
-            $ctoHistory = EmployeeLeaveBenefit::query()
-                ->whereKey($validated['cto_leave_history_id'])
-                ->where('emp_no', $employee->emp_no)
-                ->where(function ($query) {
-                    $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', ['credited time-off', 'credited time off'])
-                        ->orWhereRaw('LOWER(credit_type) LIKE ?', ['%cto%']);
-                })
-                ->where('credit_hours', '>', 0)
-                ->first();
+            $availableCtoCredits = $leaveBalanceCalculator->availableCtoCredits($employee);
+            $ctoHistory = $availableCtoCredits->firstWhere('id', (int) $validated['cto_leave_history_id']);
 
             if (! $ctoHistory) {
                 return back()->withErrors(['cto_leave_history_id' => 'Please select an available CTO credit.'])->withInput();
             }
 
             $requestedHours = $this->ctoDurationHours($validated['cto_duration']);
-            $availableHours = (int) EmployeeLeaveBenefit::query()
-                ->where('emp_no', $employee->emp_no)
-                ->where(function ($query) {
-                    $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', ['credited time-off', 'credited time off'])
-                        ->orWhereRaw('LOWER(credit_type) LIKE ?', ['%cto%']);
-                })
-                ->sum('credit_hours');
+            $availableHours = (int) $availableCtoCredits->sum('remaining_hours');
 
             if ($availableHours < $requestedHours) {
                 return back()->withErrors(['cto_duration' => 'Insufficient CTO balance for the selected duration.'])->withInput();
+            }
+
+            if ((int) ($ctoHistory->remaining_hours ?? 0) < $requestedHours) {
+                return back()->withErrors(['cto_leave_history_id' => 'That CTO credit does not have enough remaining hours for the selected duration.'])->withInput();
             }
         }
 

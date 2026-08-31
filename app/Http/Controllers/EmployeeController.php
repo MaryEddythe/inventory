@@ -109,17 +109,7 @@ class EmployeeController extends Controller
             ->latest()
             ->get();
 
-        // Reuse the exact records displayed in Leave Credits History.
-        $ctoHistory = $employee->leaveBenefits
-            ->filter(function ($benefit) {
-                $type = strtolower(trim((string) $benefit->credit_type));
-
-                return ($type === 'credited time-off' || $type === 'credited time off' || str_contains($type, 'cto'))
-                    && (int) $benefit->credit_hours > 0
-                    && filled($benefit->remarks);
-            })
-            ->sortByDesc('start_date')
-            ->values();
+        $ctoHistory = $leaveBalanceCalculator->availableCtoCredits($employee);
 
         $leaveApplications = $employee->leaveApplications()
             ->with([

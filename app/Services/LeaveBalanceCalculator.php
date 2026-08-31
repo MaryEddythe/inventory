@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\Employee;
 use App\Models\EmployeeLeaveApplication;
+use App\Models\EmployeeLeaveBenefit;
 use App\Models\EmployeeLeaveLedgerSetting;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class LeaveBalanceCalculator
 {
@@ -139,6 +141,62 @@ class LeaveBalanceCalculator
         return round($hoursWorked * self::DAYS_PER_HOUR, 7);
     }
 
+    /**
+     * Return only CTO credits that still have remaining hours available.
+     */
+    public function availableCtoCredits(Employee $employee): Collection
+    {
+        $credits = EmployeeLeaveBenefit::query()
+            ->where('emp_no', $employee->emp_no)
+            ->where(function ($query) {
+                $query->whereRaw('LOWER(TRIM(credit_type)) IN (?, ?)', [
+                    'credited time-off',
+                    'credited time off',
+                ])->orWhereRaw('LOWER(credit_type) LIKE ?', ['%cto%']);
+            })
+            ->where('credit_hours', '>', 0)
+            ->orderBy('start_date')
+            ->orderBy('id')
+            ->get();
+
+        $usedHoursByCreditId = EmployeeLeaveApplication::query()
+            ->where('employee_id', $employee->emp_no)
+            ->whereNotNull('cto_leave_history_id')
+            ->whereNotNull('regional_director_signed_at')
+            ->get()
+            ->filter(function (EmployeeLeaveApplication $application) {
+                $type = strtolower(trim((string) $application->leave_type));
+
+                return $type === 'credited time-off'
+                    || $type === 'credited time off'
+                    || str_contains($type, 'cto');
+            })
+            ->groupBy('cto_leave_history_id')
+            ->map(function (Collection $applications) {
+                return (int) $applications->sum(function (EmployeeLeaveApplication $application) {
+                    return $this->ctoApplicationHours((string) $application->cto_duration);
+                });
+            });
+
+        return $credits
+            ->map(function (EmployeeLeaveBenefit $credit) use ($usedHoursByCreditId) {
+                $usedHours = (int) ($usedHoursByCreditId->get($credit->id) ?? 0);
+                $remainingHours = max(0, (int) $credit->credit_hours - $usedHours);
+
+                if ($remainingHours <= 0) {
+                    return null;
+                }
+
+                $record = clone $credit;
+                $record->used_hours = $usedHours;
+                $record->remaining_hours = $remainingHours;
+
+                return $record;
+            })
+            ->filter()
+            ->values();
+    }
+
     protected function specialPrivilegeLeaveBalance(Employee $employee, int $year, Carbon $balanceDate): float
     {
         $usedDays = EmployeeLeaveApplication::query()
@@ -191,5 +249,15 @@ class LeaveBalanceCalculator
     protected function monthActionText(array $actions): ?string
     {
         return empty($actions) ? null : implode('; ', $actions);
+    }
+
+    protected function ctoApplicationHours(string $duration): int
+    {
+        return match ($duration) {
+            'am' => 4,
+            'pm' => 6,
+            'whole_day' => 10,
+            default => 0,
+        };
     }
 }

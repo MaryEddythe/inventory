@@ -255,7 +255,7 @@
                 || str_contains($type, 'cto');
         });
 
-        $ctoTotalHours = (int) $ctoCredits->sum('credit_hours');
+        $ctoTotalHours = (int) $ctoCredits->sum('remaining_hours');
         $vacationBalance = (float) ($ledgerDays['vacation_balance'] ?? 0);
         $sickBalance = (float) ($ledgerDays['sick_balance'] ?? 0);
     @endphp
@@ -299,7 +299,15 @@
                     }
                 @endphp
 
-                <div class="leave-credit-tile">
+                <div class="leave-credit-tile {{ $isCtoBenefit ? 'cto-clickable' : '' }}"
+                     @if($isCtoBenefit)
+                         data-cto-card="true"
+                         tabindex="0"
+                         role="button"
+                         aria-label="View credited time-off details"
+                         onclick="openCtoDetailModal()"
+                         onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCtoDetailModal(); }"
+                     @endif>
                     <div class="leave-credit-label">{{ $label }}</div>
                     <div class="leave-credit-value">
                         @if(is_int($remainingDays) || is_float($remainingDays))
@@ -852,6 +860,8 @@
     </div>
 </div>
 
+@include('employees.partials.cto-detail-modal', ['employee' => $employee, 'ctoHistory' => $ctoHistory])
+
 @php
     $leaveTypesForModal = [
         'PERMANENT' => [
@@ -890,12 +900,45 @@
         document.getElementById('signatureModal').classList.remove('active');
     }
 
+    function openCtoDetailModal() {
+        const modal = document.getElementById('ctoDetailModal');
+        if (!modal) return;
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeCtoDetailModal() {
+        const modal = document.getElementById('ctoDetailModal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeCtoDetailModal();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('ctoDetailModal');
+        if (!modal) return;
+
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                closeCtoDetailModal();
+            }
+        });
+    });
+
     @php
         $ctoCreditSourcesJson = $ctoHistory->map(function ($b) {
             return [
                 'id' => $b->id,
                 'remarks' => $b->remarks ?: 'No remarks provided',
-                'hours' => $b->credit_hours,
+                'hours' => $b->remaining_hours ?? $b->credit_hours,
+                'credited_hours' => $b->credit_hours,
+                'used_hours' => $b->used_hours ?? 0,
                 'date' => optional($b->start_date)->format('M d, Y'),
                 'so_to_no' => $b->so_to_no ?: '',
             ];

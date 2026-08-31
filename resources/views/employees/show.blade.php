@@ -258,7 +258,6 @@
         $ctoTotalHours = (int) $ctoCredits->sum('credit_hours');
         $vacationBalance = (float) ($ledgerDays['vacation_balance'] ?? 0);
         $sickBalance = (float) ($ledgerDays['sick_balance'] ?? 0);
-        $monthlyAccrual = 1.25;
     @endphp
 
 <div class="card mt-4 leave-overview-card">
@@ -270,24 +269,6 @@
                     <div class="text-muted small mt-1">Balances are shown in leave days. One approved leave day deducts one day from the corresponding balance.</div>
                 </div>
                 <button type="button" onclick="openLeaveModal()" class="btn btn-primary btn-sm">Apply Leave</button>
-            </div>
-
-            <div class="leave-balance-snapshot mb-3">
-                <div class="leave-balance-snapshot-tile">
-                    <span>Vacation Leave Balance</span>
-                    <strong>{{ number_format($vacationBalance, 3) }}</strong>
-                    <small>days remaining</small>
-                </div>
-                <div class="leave-balance-snapshot-tile">
-                    <span>Sick Leave Balance</span>
-                    <strong>{{ number_format($sickBalance, 3) }}</strong>
-                    <small>days remaining</small>
-                </div>
-                <div class="leave-balance-snapshot-tile">
-                    <span>Monthly Accrual</span>
-                    <strong>{{ number_format($monthlyAccrual, 2) }}</strong>
-                    <small>days per month</small>
-                </div>
             </div>
 
             <div class="leave-credit-grid">
@@ -470,11 +451,6 @@
     .drive-refresh-link { color: #92400e; text-decoration: underline; }
     .leave-overview-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
     .leave-section-eyebrow { margin: 0 0 0.25rem; color: #64748b; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
-    .leave-balance-snapshot { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
-    .leave-balance-snapshot-tile { padding: 1rem; border: 1px solid #dbe4ee; border-radius: 0.75rem; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
-    .leave-balance-snapshot-tile span { display: block; margin-bottom: 0.4rem; color: #64748b; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-    .leave-balance-snapshot-tile strong { display: block; color: #0f172a; font-size: 1.75rem; font-weight: 800; line-height: 1; }
-    .leave-balance-snapshot-tile small { color: #64748b; font-size: 0.8rem; }
     .leave-credit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.75rem; }
     .leave-credit-value { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; color: #0f172a; font-size: 1.1rem; font-weight: 700; }
     .leave-credit-number { font-size: 1.5rem; font-weight: 800; color: #0f172a; line-height: 1; }

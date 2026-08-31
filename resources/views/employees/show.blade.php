@@ -256,7 +256,9 @@
         });
 
         $ctoTotalHours = (int) $ctoCredits->sum('credit_hours');
-        $dayBasedCreditFactor = 10;
+        $vacationBalance = (float) ($ledgerDays['vacation_balance'] ?? 0);
+        $sickBalance = (float) ($ledgerDays['sick_balance'] ?? 0);
+        $monthlyAccrual = 1.25;
     @endphp
 
 <div class="card mt-4 leave-overview-card">
@@ -265,8 +267,27 @@
                 <div>
                     <p class="leave-section-eyebrow">Time off</p>
                     <h3 class="card-title h5 fw-bold mb-0">Leave Benefits</h3>
+                    <div class="text-muted small mt-1">Balances are shown in leave days. One approved leave day deducts one day from the corresponding balance.</div>
                 </div>
                 <button type="button" onclick="openLeaveModal()" class="btn btn-primary btn-sm">Apply Leave</button>
+            </div>
+
+            <div class="leave-balance-snapshot mb-3">
+                <div class="leave-balance-snapshot-tile">
+                    <span>Vacation Leave Balance</span>
+                    <strong>{{ number_format($vacationBalance, 3) }}</strong>
+                    <small>days remaining</small>
+                </div>
+                <div class="leave-balance-snapshot-tile">
+                    <span>Sick Leave Balance</span>
+                    <strong>{{ number_format($sickBalance, 3) }}</strong>
+                    <small>days remaining</small>
+                </div>
+                <div class="leave-balance-snapshot-tile">
+                    <span>Monthly Accrual</span>
+                    <strong>{{ number_format($monthlyAccrual, 2) }}</strong>
+                    <small>days per month</small>
+                </div>
             </div>
 
             <div class="leave-credit-grid">
@@ -276,19 +297,19 @@
                     $annualDays = $row[1];
                     $isCtoBenefit = in_array(strtolower($label), ['credited time-off', 'credited time off'], true);
 
-                    // Override Vacation Leave and Sick Leave with ledger-based accumulated days
+                    // Override Vacation Leave and Sick Leave with the running day-based balance.
                     if (in_array($label, ['Vacation Leave', 'Sick Leave'])) {
                         $ledgerDaysData = $ledgerDays ?? [];
                         if ($label === 'Vacation Leave') {
-                            $remainingDays = $ledgerDaysData['vacation_days'] ?? $annualDays;
-                            $displayUnit = 'days accumulated';
+                            $remainingDays = $ledgerDaysData['vacation_balance'] ?? $annualDays;
+                            $displayUnit = 'days remaining';
                         } else {
-                            $remainingDays = $ledgerDaysData['sick_days'] ?? $annualDays;
-                            $displayUnit = 'days accumulated';
+                            $remainingDays = $ledgerDaysData['sick_balance'] ?? $annualDays;
+                            $displayUnit = 'days remaining';
                         }
                     } elseif (is_int($annualDays)) {
                         $usedHours = (int) ($benefitsByType->get($label)?->sum('credit_hours') ?? 0);
-                        $usedDays = intdiv($usedHours, $dayBasedCreditFactor);
+                        $usedDays = intdiv($usedHours, 10);
                         $remainingDays = max(0, (int) $annualDays - $usedDays);
                         $displayUnit = 'days accumulated';
                     } else {
@@ -301,7 +322,7 @@
                     <div class="leave-credit-label">{{ $label }}</div>
                     <div class="leave-credit-value">
                         @if(is_int($remainingDays) || is_float($remainingDays))
-                            <span class="leave-credit-number">{{ $remainingDays }}</span> <span class="leave-credit-unit">{{ $displayUnit ?? 'days annually' }}</span>
+                            <span class="leave-credit-number">{{ number_format($remainingDays, 3) }}</span> <span class="leave-credit-unit">{{ $displayUnit ?? 'days annually' }}</span>
                         @elseif($isCtoBenefit)
                             <span class="leave-credit-number">{{ $ctoTotalHours }}</span> <span class="leave-credit-unit">hours</span>
                         @else
@@ -449,6 +470,11 @@
     .drive-refresh-link { color: #92400e; text-decoration: underline; }
     .leave-overview-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
     .leave-section-eyebrow { margin: 0 0 0.25rem; color: #64748b; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .leave-balance-snapshot { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
+    .leave-balance-snapshot-tile { padding: 1rem; border: 1px solid #dbe4ee; border-radius: 0.75rem; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
+    .leave-balance-snapshot-tile span { display: block; margin-bottom: 0.4rem; color: #64748b; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .leave-balance-snapshot-tile strong { display: block; color: #0f172a; font-size: 1.75rem; font-weight: 800; line-height: 1; }
+    .leave-balance-snapshot-tile small { color: #64748b; font-size: 0.8rem; }
     .leave-credit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.75rem; }
     .leave-credit-value { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; color: #0f172a; font-size: 1.1rem; font-weight: 700; }
     .leave-credit-number { font-size: 1.5rem; font-weight: 800; color: #0f172a; line-height: 1; }

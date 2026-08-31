@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\EmployeeLeaveApplication;
 use App\Models\EmployeeLeaveLedgerSetting;
+use App\Services\LeaveBalanceCalculator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,17 +36,18 @@ class LeaveLedgerController extends Controller
         return view('leave-ledgers.index', compact('employees', 'search'));
     }
 
-    public function show(Employee $employee)
+    public function show(LeaveBalanceCalculator $leaveBalanceCalculator, Employee $employee)
     {
         $this->authorizeHr();
         $this->abortUnlessPermanent($employee);
 
         $employee->load(['departmentRecord', 'leaveBenefits']);
         $setting = EmployeeLeaveLedgerSetting::firstOrCreate(['emp_no' => $employee->emp_no]);
-        $ledger = $this->buildLedger($employee, $setting);
-        $balanceCard = $this->buildBalanceCard($employee, $ledger);
+        $ledger = $leaveBalanceCalculator->buildLedger($employee, $setting);
+        $balanceCard = $leaveBalanceCalculator->buildBalanceCard($employee, $ledger);
+        $dailyRows = $leaveBalanceCalculator->getDailyAccrualRows();
 
-        return view('leave-ledgers.show', compact('employee', 'setting', 'ledger', 'balanceCard'));
+        return view('leave-ledgers.show', compact('employee', 'setting', 'ledger', 'balanceCard', 'dailyRows'));
     }
 
     public function edit(Employee $employee)

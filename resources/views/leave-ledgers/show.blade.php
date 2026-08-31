@@ -24,6 +24,9 @@
         <button type="button" class="ledger-folder-tab" data-ledger-tab="leave-balance-card" role="tab" aria-selected="false">
             Leave Balance Card
         </button>
+        <button type="button" class="ledger-folder-tab" data-ledger-tab="leave-balance-daily" role="tab" aria-selected="false">
+            Leave Balance Daily
+        </button>
     </div>
 
     <div class="ledger-folder-panel active" id="ledger-sheet" role="tabpanel">
@@ -32,6 +35,10 @@
 
     <div class="ledger-folder-panel" id="leave-balance-card" role="tabpanel">
         @include('leave-ledgers.leave-balance-card')
+    </div>
+
+    <div class="ledger-folder-panel" id="leave-balance-daily" role="tabpanel">
+        @include('leave-ledgers.leave-balance-daily')
     </div>
 </div>
 @endsection
@@ -144,10 +151,65 @@
         color: #334155;
     }
 
+    .daily-balance-card {
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    .daily-balance-hero {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    }
+
+    .daily-balance-hero h3 {
+        margin-bottom: 0.35rem;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .daily-balance-hero p {
+        margin-bottom: 0;
+        color: #475569;
+        line-height: 1.55;
+    }
+
+    .daily-balance-calculator {
+        padding: 1rem;
+        border: 1px solid #dbe4ee;
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .daily-balance-output {
+        margin-top: 0.75rem;
+        padding: 0.85rem 1rem;
+        border-radius: 10px;
+        background: #0f172a;
+        color: #fff;
+    }
+
+    .daily-balance-output strong {
+        font-size: 1.45rem;
+    }
+
+    .daily-balance-table th {
+        background: #f8fafc;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+    }
+
     @media (max-width: 768px) {
         .ledger-meta-grid,
         .balance-card-meta,
-        .balance-card-values {
+        .balance-card-values,
+        .daily-balance-hero {
             grid-template-columns: 1fr;
         }
 

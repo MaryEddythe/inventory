@@ -247,14 +247,7 @@
         $benefits = $employee->leaveBenefits()->orderBy('start_date', 'desc')->get();
         $benefitsByType = $benefits->groupBy('credit_type');
 
-        $ctoCredits = $benefits->filter(function ($benefit) {
-            $type = strtolower(trim((string) $benefit->credit_type));
-
-            return $type === 'credited time-off'
-                || $type === 'credited time off'
-                || str_contains($type, 'cto');
-        });
-
+        $ctoCredits = $ctoHistory ?? collect();
         $ctoTotalHours = (int) $ctoCredits->sum('remaining_hours');
         $vacationBalance = (float) ($ledgerDays['vacation_balance'] ?? 0);
         $sickBalance = (float) ($ledgerDays['sick_balance'] ?? 0);

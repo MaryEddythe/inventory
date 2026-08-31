@@ -1,310 +1,235 @@
-@page { size: A4; margin: 0.5in; }
+/* ==========================================================================
+   CTO PRINT - REQUEST FOR WORK OFFSETTING / COMPENSATORY TIME-OFF
+   --------------------------------------------------------------------------
+   Styles for resources/views/leaves/cto-print.blade.php
 
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-}
+   HOW THIS FILE IS USED
+   ---------------------
+   The CTO print form is rendered to PDF with dompdf
+   (Pdf::loadView('leaves.cto-print', $data)). dompdf cannot reliably resolve
+   external stylesheets, so LeaveApplicationController reads this file with
+   File::get(public_path('leave-application-print.css')) and passes the
+   contents to the view as $leavePrintCss; the view injects them into a
+   <style> tag in the document <head>.
+
+   The CS Form 6 (leaves.print) document keeps its own full inline stylesheet
+   because it is rendered by a headless browser and does not use this file.
+
+   FORMAL GOVERNMENT DOCUMENT STYLE
+   --------------------------------
+   Styled after the standard CS Form series:
+   * serif body text (DejaVu Serif ships with dompdf; the document also lists
+     Century Schoolbook first for the masthead, section bars, card titles and
+     printed signature names, so it is picked up automatically if that family
+     is ever registered with dompdf - otherwise it falls back to DejaVu Serif),
+   * dark #111827 ink and hairline borders only where the form structure
+     needs them (sections, cards and data grids keep their rules),
+   * signature blocks are deliberately BORDERLESS: signature image (or blank
+     space) above a centered printed-name line, then the position - exactly
+     like CS Form 6, no enclosing box.
+   ========================================================================== */
+
+@page { margin: 28px 32px; }
 
 body {
-    font-family: "Century Schoolbook", "DejaVu Serif", serif;
+    font-family: "DejaVu Serif", serif;
     color: #111827;
-    font-size: 4.2px;
-    line-height: 0.95;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-/*
- * NOTES ON LAYOUT (dompdf 3.1)
- * ----------------------------
- * PHP HTML-to-PDF renderers such as dompdf are CSS 2.1-based and do NOT
- * implement flexbox (`display:flex` is silently ignored). dompdf also
- * IGNORES @page margins entirely, so the 1in page margins are built into
- * .sheet: width 6.27in (8.27 - 2x1in), height 9.69in (11.69 - 2x1in),
- * margin 1in top/left.
- *
- * Every section gets an explicit height so the boxes always sum to the
- * sheet. All dimensions are the original edge-to-edge design scaled by
- * k = 0.7584 (6.27in / 8.27in). The leftover height (9.69 - 8.73in) was
- * given to Section III as extra writing space (.row-tall / .sig-spacer).
- *
- * IMPORTANT dompdf quirk: a `height` declared on a <tr> is IGNORED (row
- * heights are always derived from the cells). To stretch a row, set the
- * height on its <td>/<th> cells instead.
- *
- * Section III is filled by giving its content rows explicit CELL heights
- * (.row-tall / .row-short) and pushing the certification/recommendation
- * signature blocks to the bottom of their cells with a fixed-height spacer
- * (.sig-spacer). The Regional Director signature is absolutely positioned
- * at the bottom of the section body.
- */
-.sheet {
-    width: 6.27in;
-    height: 9.69in;
-    margin: 1in 0 0 1in;
-    overflow: hidden;
-    position: relative;
-    page-break-inside: avoid;
-}
-
-.header {
-    height: 0.53in;
-    min-height: 0;
-}
-
-.employee-information-section {
-    height: 0.42in;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.leave-details-section {
-    height: 2.50in;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.action-on-application-section {
-    margin-bottom: 0;
-    height: 6.11in;
-    overflow: hidden;
-}
-
-.action-on-application-section .section-body {
-    position: relative;
-    height: 5.99in;
-}
-
-.action-on-application-section .rd-signature {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 4.55px;
-}
-
-/*
- * Section III row stretching: dompdf ignores `height` on <tr>, so the
- * content rows are stretched via their cells. The two tall cells end just
- * above the absolutely-positioned RD signature block so the bordered table
- * spans the full section body with no blank band in the middle.
- */
-.action-on-application-section td.row-tall {
-    height: 4.07in;
-}
-
-.action-on-application-section td.row-short {
-    height: 1.29in;
-}
-
-.action-on-application-section .sig-spacer {
-    height: 3.12in;
-}
-
-.action-on-application-section .blank-line {
-    min-height: 0.23in;
-}
-
-/* ===== HEADER ===== */
-.header {
-    text-align: center;
-    margin-bottom: 2.28px;
-    position: relative;
-}
-
-.header-logo {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 34.9px;
-    height: auto;
-}
-
-.header-republic {
-    font-size: 5.4px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.header-denr {
-    font-size: 5.1px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin-top: 1.14px;
-}
-
-.header-mgb {
     font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
+    line-height: 1.35;
+    position: relative;
+}
+
+/* ===== HEADER (letterhead) ===== */
+.header {
+    position: relative;
+    text-align: center;
+    border-bottom: 2px solid #111827;
+    padding: 0 58px 11px;
+    margin-bottom: 13px;
+}
+.header-logo { position: absolute; left: 0; top: 0; width: 45px; }
+.header-republic,
+.header-denr,
+.header-region { font-size: 8px; }
+.header-republic { text-transform: uppercase; letter-spacing: 0.06em; }
+.header-denr { text-transform: uppercase; }
+.header-mgb {
+    font-family: "century schoolbook", "DejaVu Serif", serif;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 2px 0;
     text-transform: uppercase;
-    margin-top: 1.14px;
+    letter-spacing: 0.03em;
 }
-
-.header-region {
-    font-size: 5.1px;
-    font-weight: 600;
-    margin-top: 1.14px;
-}
-
 .header-form-title {
-    font-size: 8.2px;
-    font-weight: 800;
-    margin-top: 3.03px;
-    border-top: 1.52px solid #111827;
-    border-bottom: 1.52px solid #111827;
-    padding: 1.52px 0;
-    letter-spacing: 0.04em;
+    font-family: "century schoolbook", "DejaVu Serif", serif;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
-
 .header-cs-form {
-    font-size: 5.31px;
-    font-weight: 700;
     position: absolute;
     right: 0;
     top: 0;
-    border: 0.76px solid #111827;
-    padding: 1.52px 3.03px;
-    line-height: 1.2;
+    text-align: right;
+    font-size: 8px;
+    border: 1px solid #111827;
+    padding: 2px 5px;
+    line-height: 1.4;
 }
 
-/* ===== SECTIONS ===== */
-.section {
-    border: 1.14px solid #111827;
-    margin-bottom: 1.14px;
-}
-
+/* ===== SECTIONS (boxed panels, like CS Form 6) ===== */
+.section { border: 1px solid #111827; margin: 0 8px 12px; }
 .section-title {
     background: #e5e7eb;
-    font-weight: 700;
-    padding: 0.76px 3.79px;
-    border-bottom: 1.14px solid #111827;
+    border-bottom: 1px solid #111827;
+    padding: 5px 7px;
+    font-family: "century schoolbook", "DejaVu Serif", serif;
+    font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    font-size: 4.2px;
 }
+.section-body { padding: 6px; }
 
-.section-body {
-    padding: 0.76px 2.28px;
+/* ===== CARDS (side-by-side data panels) ===== */
+.cards {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 8px 0;
 }
+.cards td { width: 50%; vertical-align: top; }
+.card { border: 1px solid #111827; padding: 8px 9px; min-height: 168px; }
+.overtime-card { border: 1px solid #111827; padding: 8px 9px; margin: 0 8px 14px; }
 
 /* ===== TABLES ===== */
-table.form-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+.form-table th { background: #f3f4f6; }
+/* Employee information column widths (moved from inline style attributes) */
+.form-table .w-15 { width: 15%; }
+.form-table .w-35 { width: 35%; }
+.form-table .w-10 { width: 10%; }
+.form-table .w-40 { width: 40%; }
 
-table.form-table td,
-table.form-table th {
-    border: 1.14px solid #111827;
-    padding: 0 1.52px;
-    vertical-align: top;
-    text-align: left;
-}
-
-table.form-table th {
-    background: #f3f4f6;
-    font-size: 3.95px;
-    font-weight: 700;
+h2 {
+    font-family: "century schoolbook", "DejaVu Serif", serif;
+    font-size: 10px;
+    text-align: center;
+    margin: 0 0 8px;
+    color: #111827;
     text-transform: uppercase;
     letter-spacing: 0.02em;
 }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid #111827; padding: 4px; text-align: left; }
+th { background: #e5e7eb; font-weight: bold; }
+.num { text-align: right; }
+.selected td { background: #fef3c7; font-weight: bold; }
+.detail-table td:first-child { width: 42%; background: #f8fafc; font-weight: bold; }
 
-table.form-table td {
-    font-size: 4.2px;
-    font-weight: 600;
+/* ===== BALANCE ===== */
+.balance { margin: 0 8px 16px; width: calc(100% - 16px); }
+.balance td { border: none; padding: 3px 6px; }
+.balance .total td { border-top: 1px solid #111827; font-weight: bold; }
+
+/* ===== SIGNATURE ROW (Applicant | HR | Division Chief) ===== */
+.signature-row {
+    width: calc(100% - 16px);
+    border-collapse: separate;
+    border-spacing: 12px 0;
+    margin: 18px 8px 0;
+    table-layout: fixed;
 }
-
-/* ===== CHECKBOX GRID ===== */
-.leave-details-section,
-.leave-details-section .form-table,
-.leave-details-section .form-table td,
-.leave-details-section .form-table th,
-.leave-details-section .checkbox-item,
-.leave-details-section .label-sm {
-    line-height: 1.05;
-}
-
-.leave-details-section .details-of-leave,
-.leave-details-section .details-of-leave .checkbox-item,
-.leave-details-section .details-of-leave .label-sm {
-    line-height: 1.1;
-}
-
-.checkbox-grid {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.checkbox-grid td {
-    width: 50%;
-    padding: 0 2px 0 0;
+.signature-row td {
+    width: 33.33%;
     vertical-align: top;
-    font-size: 5.2px;
-    line-height: 1;
+    border: none;
+    padding: 12px 0 0;
 }
 
-.box {
-    display: inline-block;
-    width: 4.55px;
-    height: 4.55px;
-    border: 0.76px solid #111827;
-    margin-right: 1.52px;
+/* ===== SIG BLOCK =====
+   CS Form signature block pattern (matches leaves/print.blade.php):
+   signature image (or blank space) above the printed-name line. */
+.sig-block {
     text-align: center;
-    line-height: 3.79px;
-    font-size: 3.64px;
-    font-weight: 700;
+    min-height: 92px;
+    padding: 0 4px;
 }
-
-.checkbox-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 2px;
-    margin: 0;
-}
-
-/* ===== SIGNATURES ===== */
-.signature-img {
-    max-width: 75.84px;
-    max-height: 16.68px;
+.sig-img {
+    height: 40px;
+    max-width: 125px;
+    display: block;
     object-fit: contain;
-    margin-bottom: 0;
+    margin: 5px auto;
+}
+.sig-space { height: 50px; }
+.sig-line {
+    width: 78%;
+    margin: 4px auto 0;
+    border-top: 1px solid #111827;
+}
+.sig-name {
+    font-family: "century schoolbook", "DejaVu Serif", serif;
+    margin-top: 4px;
+    font-weight: bold;
+}
+.sig-role {
+    margin-top: 2px;
+    font-size: 8px;
+    color: #374151;
+}
+.sig-caption {
+    margin-top: 2px;
+    font-size: 7.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #374151;
 }
 
-.signature-line {
-    border-top: 1.14px solid #111827;
-    margin-top: 0.76px;
-    padding-top: 1px;
+/* ===== SIGNATURES =====
+   Standard CS Form signature block - NO enclosing box:
+   signature image (or blank space) above the centered printed-name line.
+   Anchored to the BOTTOM CENTER of the page with absolute positioning:
+   dompdf resolves `top:auto` + fixed `bottom` to sit the block just above
+   the bottom @page margin, stretched full width (left:0/right:0) and
+   horizontally centered by text-align. */
+.rd-signature {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 24px;
+    text-align: center;
+    width: auto;
+    padding: 0 4px;
 }
-
-.signature-name {
-    font-family: "Century Schoolbook", "DejaVu Serif", serif;
-    font-weight: 700;
+.rd-signature-space { height: 50px; }
+.rd-signature-img {
+    height: 40px;
+    max-width: 125px;
+    display: block;
+    object-fit: contain;
+    margin: 5px auto;
+}
+.rd-signature-line {
+    width: 75%;
+    margin: 6px auto 0;
+    border-top: 1px solid #111827;
+}
+.rd-signature-name {
+    font-family: "century schoolbook", "DejaVu Serif", serif;
+    margin-top: 4px;
+    font-weight: bold;
+}
+.rd-signature-position { margin-top: 3px; font-size: 8px; }
+.rd-signature-caption {
+    margin-top: 2px;
+    font-size: 7.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #374151;
 }
 
 /* ===== MISC ===== */
-.label-sm {
-    font-size: 3.4px;
-    font-weight: 700;
-    color: #374151;
-    text-transform: uppercase;
-    letter-spacing: 0.01em;
-}
-
-.blank-line {
-    border-bottom: 1.14px solid #111827;
-    min-height: 3.79px;
-    margin-top: 0.76px;
-}
-
-.field-value {
-    font-size: 4.1px;
-    font-weight: 600;
-    border-bottom: 1.14px solid #111827;
-    padding: 0.76px 0 0.76px 0;
-    min-height: 4.55px;
-}
+.muted { color: #64748b; font-style: italic; }

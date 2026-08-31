@@ -36,42 +36,33 @@
         ?? optional($employee?->division)->description
         ?? '—';
     $dateApplied = $leaveApplication->created_at?->format('F d, Y') ?? '—';
-    $position = $employee?->position ?? '—';
+
+    // Position: take it from the legacy employees table's "Role" column first
+    // (it holds the civil-service position title), then from the Role table
+    // through the employee's linked user account, then the plain position
+    // attribute, and finally a dash.
+    $position = collect([
+        $employee?->Role,
+        $employee?->user?->role?->name,
+        $employee?->position,
+    ])
+        ->map(fn ($value) => is_string($value) ? trim($value) : '')
+        ->reject(fn ($value) => $value === '')
+        ->first() ?? '—';
+
     $salary = '—';
+    $applicantName = $employee?->full_name ?? '______________';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>CTO Application</title>
+    {{-- All styling lives in public/leave-application-print.css. The controller
+         reads that file and injects it below as $leavePrintCss because dompdf
+         cannot reliably fetch external stylesheets. --}}
     <style>
-        @page { margin: 28px 32px; }
-        body { font-family: DejaVu Sans, sans-serif; color: #172033; font-size: 9px; }
-        .header { position: relative; text-align: center; border-bottom: 3px solid #172033; padding: 0 58px 11px; margin-bottom: 13px; }
-        .header-logo { position: absolute; left: 0; top: 0; width: 45px; }
-        .header-cs-form { position: absolute; right: 0; top: 0; text-align: right; font-size: 8px; }
-        .header-republic, .header-denr, .header-region { font-size: 8px; }
-        .header-mgb { font-size: 12px; font-weight: bold; margin: 2px 0; }
-        .header-form-title { font-size: 12px; font-weight: bold; margin-top: 8px; }
-        .cards, .signatories { width: 100%; border-collapse: separate; border-spacing: 8px 0; }
-        .cards td { width: 50%; vertical-align: top; } .signatories td { width: 33.33%; vertical-align: top; }
-        .card { border: 1px solid #64748b; padding: 9px; min-height: 168px; }
-        .section { border: 1px solid #64748b; margin: 0 8px 12px; }
-        .section-title { background: #e2e8f0; padding: 5px 7px; font-weight: bold; }
-        .section-body { padding: 6px; }
-        .form-table th { background: #f1f5f9; }
-        .overtime-card { border: 1px solid #64748b; padding: 9px; margin: 10px 8px 14px; }
-        h2 { font-size: 10px; text-align: center; margin: 0 0 8px; color: #0f172a; }
-        table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #94a3b8; padding: 4px; text-align: left; }
-        th { background: #e2e8f0; font-weight: bold; } .num { text-align: right; }
-        .selected td { background: #fef3c7; font-weight: bold; }
-        .detail-table td:first-child { width: 42%; background: #f8fafc; font-weight: bold; }
-        .balance { margin: 0 8px 16px; width: calc(100% - 16px); }
-        .balance td { border: none; padding: 3px 6px; } .balance .total td { border-top: 1px solid #172033; font-weight: bold; }
-        .signature-card { text-align: center; min-height: 105px; padding: 7px; }
-        .signature { height: 40px; max-width: 125px; display: block; object-fit: contain; margin: 5px auto; }
-        .signature-space { height: 50px; } .name { border-top: 1px solid #172033; padding-top: 4px; font-weight: bold; }
-        .position { margin-top: 3px; font-size: 8px; } .muted { color: #64748b; font-style: italic; }
+        {!! $leavePrintCss ?? '' !!}
     </style>
 </head>
 <body>
@@ -91,9 +82,9 @@
         <div class="section-body">
             <table class="form-table">
                 <tr>
-                    <th style="width:15%;">1. Office/Department</th><td style="width:35%;">{{ $divisionName }}</td>
-                    <th style="width:10%;">2. Name</th>
-                    <td style="width:40%;"><span class="muted">(Last)</span> <strong>{{ $employee?->last_name ?? '—' }}</strong>&nbsp; <span class="muted">(First)</span> <strong>{{ $employee?->first_name ?? '—' }}</strong>&nbsp; <span class="muted">(Middle)</span> <strong>{{ $employee?->middle_name ?? ($employee?->middlename ?? '—') }}</strong></td>
+                    <th class="w-15">1. Office/Department</th><td class="w-35">{{ $divisionName }}</td>
+                    <th class="w-10">2. Name</th>
+                    <td class="w-40"><span class="muted">(Last)</span> <strong>{{ $employee?->last_name ?? '—' }}</strong>&nbsp; <span class="muted">(First)</span> <strong>{{ $employee?->first_name ?? '—' }}</strong>&nbsp; <span class="muted">(Middle)</span> <strong>{{ $employee?->middle_name ?? ($employee?->middlename ?? '—') }}</strong></td>
                 </tr>
                 <tr><th>3. Date of Filing</th><td>{{ $dateApplied }}</td><th>4. Position</th><td>{{ $position }}</td></tr>
                 <tr><th>5. Salary</th><td colspan="3">{{ $salary }}</td></tr>
@@ -118,7 +109,6 @@
                     @endforelse
                 </tbody>
             </table>
-            <div class="muted" style="margin-top:6px;">Highlighted row: CTO credit used for this application.</div>
         </div></td>
         <td><div class="card">
             <h2>COMPENSATORY DAY / TIME OFF</h2>
@@ -145,10 +135,51 @@
         <tr class="total"><td>COC Balance End</td><td class="num">{{ $endingBalance }} hours</td></tr>
     </table>
 
-    <table class="signatories"><tr>
-        <td><div class="signature-card">@if($hrSignaturePath)<img class="signature" src="{{ $hrSignaturePath }}">@else<div class="signature-space"></div>@endif<div class="name">{{ $hr?->name ?? '________________' }}</div><div class="position">Administrative V</div></div></td>
-        <td><div class="signature-card">@if($divisionChiefSignaturePath)<img class="signature" src="{{ $divisionChiefSignaturePath }}">@else<div class="signature-space"></div>@endif<div class="name">{{ $divisionChief?->name ?? '________________' }}</div><div class="position">{{ $divisionChief?->role?->name ?? 'Division Chief' }}</div></div></td>
-        <td><div class="signature-card">@if($regionalDirectorSignaturePath)<img class="signature" src="{{ $regionalDirectorSignaturePath }}">@else<div class="signature-space"></div>@endif<div class="name">{{ $approver?->name ?? '________________' }}</div><div class="position">{{ $approver?->role?->name ?? 'Position' }}</div></div></td>
+    <table class="signature-row"><tr>
+        <td><div class="sig-block">
+            @if($applicantSignaturePath)
+                <img class="sig-img" src="{{ $applicantSignaturePath }}" alt="Applicant Signature">
+            @else
+                <div class="sig-space"></div>
+            @endif
+            <div class="sig-line"></div>
+            <div class="sig-name">{{ $applicantName }}</div>
+            <div class="sig-caption">(Signature of Applicant)</div>
+        </div></td>
+        <td><div class="sig-block">
+            @if($hrSignaturePath)
+                <img class="sig-img" src="{{ $hrSignaturePath }}" alt="HR Signature">
+            @else
+                <div class="sig-space"></div>
+            @endif
+            <div class="sig-line"></div>
+            <div class="sig-name">{{ $hr?->name ?? '______________' }}</div>
+            <div class="sig-role">Administrative V</div>
+            <div class="sig-caption">Authorized Officer</div>
+        </div></td>
+        <td><div class="sig-block">
+            @if($divisionChiefSignaturePath)
+                <img class="sig-img" src="{{ $divisionChiefSignaturePath }}" alt="Division Chief Signature">
+            @else
+                <div class="sig-space"></div>
+            @endif
+            <div class="sig-line"></div>
+            <div class="sig-name">{{ $divisionChief?->name ?? '______________' }}</div>
+            <div class="sig-role">{{ $divisionChief?->role?->name ?? 'Division Chief' }}</div>
+            <div class="sig-caption">Authorized Officer</div>
+        </div></td>
     </tr></table>
+
+    <div class="rd-signature">
+        @if($regionalDirectorSignaturePath)
+            <img class="rd-signature-img" src="{{ $regionalDirectorSignaturePath }}" alt="Regional Director Signature">
+        @else
+            <div class="rd-signature-space"></div>
+        @endif
+        <div class="rd-signature-line"></div>
+        <div class="rd-signature-name">Cecilia Ochavo-Saycon</div>
+        <div class="rd-signature-position">Regional Director</div>
+        <div class="rd-signature-caption">Authorized Officer</div>
+    </div>
 </body>
 </html>

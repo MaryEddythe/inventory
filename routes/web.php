@@ -206,3 +206,4 @@ Route::middleware('auth')->group(function () {
     Route::post('/employees/{employee}/upload', [EmployeeController::class, 'uploadFile'])
         ->name('employees.upload');
 });
+Route::get('employee-files', [EmployeeFileController::class, 'index']);

@@ -1,7 +1,4 @@
-@page {
-    size: A4;
-    margin: 0.04in 0.04in 0.04in 0.04in;
-}
+@page { size: A4; margin: 0.5in; }
 
 html, body {
     margin: 0;
@@ -12,7 +9,7 @@ html, body {
 body {
     font-family: "Century Schoolbook", "DejaVu Serif", serif;
     color: #111827;
-    font-size: 6.2px;
+    font-size: 4.2px;
     line-height: 0.95;
 }
 
@@ -24,18 +21,19 @@ body {
  * NOTES ON LAYOUT (dompdf 3.1)
  * ----------------------------
  * PHP HTML-to-PDF renderers such as dompdf are CSS 2.1-based and do NOT
- * implement flexbox (`display:flex` is silently ignored).
+ * implement flexbox (`display:flex` is silently ignored). dompdf also
+ * IGNORES @page margins entirely, so the 1in page margins are built into
+ * .sheet: width 6.27in (8.27 - 2x1in), height 9.69in (11.69 - 2x1in),
+ * margin 1in top/left.
  *
- * Every section gets an explicit height so the boxes always sum to one A4
- * sheet (11.69in). Page 1 = the whole form; verified by measuring frame
- * geometry through dompdf's `end_page_render` callback.
+ * Every section gets an explicit height so the boxes always sum to the
+ * sheet. All dimensions are the original edge-to-edge design scaled by
+ * k = 0.7584 (6.27in / 8.27in). The leftover height (9.69 - 8.73in) was
+ * given to Section III as extra writing space (.row-tall / .sig-spacer).
  *
- * IMPORTANT dompdf quirk: a `height` declared on a `<tr>` is IGNORED (row
- * heights are always derived from the cells, see the Table/TableCell
- * reflower classes).
- * To stretch a row, set the height on its <td>/<th> cells instead. A table
- * level height does not help either - the extra space is not distributed to
- * rows (Cellmap::set_frame_heights is commented out in dompdf 3.1).
+ * IMPORTANT dompdf quirk: a `height` declared on a <tr> is IGNORED (row
+ * heights are always derived from the cells). To stretch a row, set the
+ * height on its <td>/<th> cells instead.
  *
  * Section III is filled by giving its content rows explicit CELL heights
  * (.row-tall / .row-short) and pushing the certification/recommendation
@@ -44,46 +42,47 @@ body {
  * at the bottom of the section body.
  */
 .sheet {
-    width: 100%;
-    height: 11.61in;
+    width: 6.27in;
+    height: 9.69in;
+    margin: 1in 0 0 1in;
     overflow: hidden;
     position: relative;
     page-break-inside: avoid;
 }
 
 .header {
-    height: 0.70in;
+    height: 0.53in;
     min-height: 0;
 }
 
 .employee-information-section {
-    height: 0.55in;
+    height: 0.42in;
     min-height: 0;
     overflow: hidden;
 }
 
 .leave-details-section {
-    height: 3.30in;
+    height: 2.50in;
     min-height: 0;
     overflow: hidden;
 }
 
 .action-on-application-section {
     margin-bottom: 0;
-    height: 6.90in;
+    height: 6.11in;
     overflow: hidden;
 }
 
 .action-on-application-section .section-body {
     position: relative;
-    height: 6.74in;
+    height: 5.99in;
 }
 
 .action-on-application-section .rd-signature {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 6px;
+    bottom: 4.55px;
 }
 
 /*
@@ -93,25 +92,25 @@ body {
  * spans the full section body with no blank band in the middle.
  */
 .action-on-application-section td.row-tall {
-    height: 4.10in;
+    height: 4.07in;
 }
 
 .action-on-application-section td.row-short {
-    height: 1.70in;
+    height: 1.29in;
 }
 
 .action-on-application-section .sig-spacer {
-    height: 2.85in;
+    height: 3.12in;
 }
 
 .action-on-application-section .blank-line {
-    min-height: 0.30in;
+    min-height: 0.23in;
 }
 
 /* ===== HEADER ===== */
 .header {
     text-align: center;
-    margin-bottom: 3px;
+    margin-bottom: 2.28px;
     position: relative;
 }
 
@@ -119,78 +118,78 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    width: 46px;
+    width: 34.9px;
     height: auto;
 }
 
 .header-republic {
-    font-size: 8px;
+    font-size: 5.4px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .header-denr {
-    font-size: 7.5px;
+    font-size: 5.1px;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    margin-top: 1.5px;
+    margin-top: 1.14px;
 }
 
 .header-mgb {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    margin-top: 1.5px;
+    margin-top: 1.14px;
 }
 
 .header-region {
-    font-size: 7.5px;
+    font-size: 5.1px;
     font-weight: 600;
-    margin-top: 1.5px;
+    margin-top: 1.14px;
 }
 
 .header-form-title {
-    font-size: 12px;
+    font-size: 8.2px;
     font-weight: 800;
-    margin-top: 4px;
-    border-top: 2px solid #111827;
-    border-bottom: 2px solid #111827;
-    padding: 2px 0;
+    margin-top: 3.03px;
+    border-top: 1.52px solid #111827;
+    border-bottom: 1.52px solid #111827;
+    padding: 1.52px 0;
     letter-spacing: 0.04em;
 }
 
 .header-cs-form {
-    font-size: 7px;
+    font-size: 5.31px;
     font-weight: 700;
     position: absolute;
     right: 0;
     top: 0;
-    border: 1px solid #111827;
-    padding: 2px 4px;
+    border: 0.76px solid #111827;
+    padding: 1.52px 3.03px;
     line-height: 1.2;
 }
 
 /* ===== SECTIONS ===== */
 .section {
-    border: 1.5px solid #111827;
-    margin-bottom: 1.5px;
+    border: 1.14px solid #111827;
+    margin-bottom: 1.14px;
 }
 
 .section-title {
     background: #e5e7eb;
     font-weight: 700;
-    padding: 1px 5px;
-    border-bottom: 1.5px solid #111827;
+    padding: 0.76px 3.79px;
+    border-bottom: 1.14px solid #111827;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    font-size: 6.2px;
+    font-size: 4.2px;
 }
 
 .section-body {
-    padding: 1px 3px;
+    padding: 0.76px 2.28px;
 }
 
 /* ===== TABLES ===== */
@@ -201,22 +200,22 @@ table.form-table {
 
 table.form-table td,
 table.form-table th {
-    border: 1.5px solid #111827;
-    padding: 0 2px;
+    border: 1.14px solid #111827;
+    padding: 0 1.52px;
     vertical-align: top;
     text-align: left;
 }
 
 table.form-table th {
     background: #f3f4f6;
-    font-size: 5.8px;
+    font-size: 3.95px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.02em;
 }
 
 table.form-table td {
-    font-size: 6.2px;
+    font-size: 4.2px;
     font-weight: 600;
 }
 
@@ -251,13 +250,13 @@ table.form-table td {
 
 .box {
     display: inline-block;
-    width: 6px;
-    height: 6px;
-    border: 1px solid #111827;
-    margin-right: 2px;
+    width: 4.55px;
+    height: 4.55px;
+    border: 0.76px solid #111827;
+    margin-right: 1.52px;
     text-align: center;
-    line-height: 5px;
-    font-size: 4.8px;
+    line-height: 3.79px;
+    font-size: 3.64px;
     font-weight: 700;
 }
 
@@ -270,15 +269,15 @@ table.form-table td {
 
 /* ===== SIGNATURES ===== */
 .signature-img {
-    max-width: 100px;
-    max-height: 22px;
+    max-width: 75.84px;
+    max-height: 16.68px;
     object-fit: contain;
     margin-bottom: 0;
 }
 
 .signature-line {
-    border-top: 1.5px solid #111827;
-    margin-top: 1px;
+    border-top: 1.14px solid #111827;
+    margin-top: 0.76px;
     padding-top: 1px;
 }
 
@@ -289,7 +288,7 @@ table.form-table td {
 
 /* ===== MISC ===== */
 .label-sm {
-    font-size: 5px;
+    font-size: 3.4px;
     font-weight: 700;
     color: #374151;
     text-transform: uppercase;
@@ -297,15 +296,15 @@ table.form-table td {
 }
 
 .blank-line {
-    border-bottom: 1.5px solid #111827;
-    min-height: 5px;
-    margin-top: 1px;
+    border-bottom: 1.14px solid #111827;
+    min-height: 3.79px;
+    margin-top: 0.76px;
 }
 
 .field-value {
-    font-size: 6px;
+    font-size: 4.1px;
     font-weight: 600;
-    border-bottom: 1.5px solid #111827;
-    padding: 1px 0 1px 0;
-    min-height: 6px;
+    border-bottom: 1.14px solid #111827;
+    padding: 0.76px 0 0.76px 0;
+    min-height: 4.55px;
 }

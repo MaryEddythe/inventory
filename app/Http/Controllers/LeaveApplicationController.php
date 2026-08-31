@@ -17,6 +17,7 @@ use App\States\LeaveApplication\PendingDivisionChief;
 use App\States\LeaveApplication\PendingHr;
 use App\States\LeaveApplication\PendingRegionalDirector;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Symfony\Component\Process\Process;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -143,7 +144,8 @@ class LeaveApplicationController extends Controller
             $view = $this->canonicalLeaveType((string) $leaveApplication->leave_type) === 'Credited Time-Off'
                 ? 'leaves.cto-print'
                 : 'leaves.print';
-            $pdf = Pdf::loadView($view, [
+
+            $data = [
                 'leaveApplication' => $leaveApplication,
                 'employee' => $leaveApplication->employee,
                 'leavePrintCss' => File::exists(public_path('leave-application-print.css'))
@@ -153,9 +155,40 @@ class LeaveApplicationController extends Controller
                 'hrSignaturePath' => $this->publicDiskPath($leaveApplication->hr_signature_path),
                 'divisionChiefSignaturePath' => $this->publicDiskPath($leaveApplication->division_chief_signature_path),
                 'regionalDirectorSignaturePath' => $this->publicDiskPath($leaveApplication->regional_director_signature_path),
-            ])->setPaper('a4', 'portrait');
+            ];
+            $filename = $this->leaveApplicationFilename($leaveApplication);
 
-            return $pdf->stream($this->leaveApplicationFilename($leaveApplication));
+            // CS Form 6 is rendered through headless Chromium/Edge — a real CSS
+            // engine (flexbox, @page margins, 1.5 line spacing). dompdf remains
+            // only for the CTO form.
+            if ($view === 'leaves.print') {
+                $html = view($view, $data)->render();
+
+                $pdf = $this->htmlToPdfViaHeadlessBrowser($html);
+
+                if ($pdf !== null) {
+                    return response($pdf, 200, [
+                        'Content-Type' => 'application/pdf',
+                        'Content-Disposition' => 'inline; filename="' . $filename . '"',
+                    ]);
+                }
+
+                // No headless browser available: serve the print-ready HTML and
+                // let the browser's Print > Save as PDF produce the same layout.
+                $html = str_replace(
+                    '</body>',
+                    '<script>window.addEventListener("load", function () { window.print(); });</script></body>',
+                    $html
+                );
+
+                return response($html, 200, [
+                    'Content-Type' => 'text/html; charset=UTF-8',
+                ]);
+            }
+
+            $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');
+
+            return $pdf->stream($filename);
         } catch (\Exception $e) {
             abort(500, 'Failed to generate PDF: ' . $e->getMessage());
         }
@@ -742,6 +775,92 @@ class LeaveApplicationController extends Controller
         return Storage::disk('public')->exists($path)
             ? Storage::disk('public')->path($path)
             : null;
+    }
+
+    /**
+     * Convert print HTML to PDF using headless Chromium/Edge (a real CSS
+     * engine). Returns null when no browser binary is available or the
+     * conversion fails, so callers can fall back to printable HTML.
+     */
+    protected function htmlToPdfViaHeadlessBrowser(string $html): ?string
+    {
+        $binary = $this->locateChromiumBinary();
+
+        if ($binary === null) {
+            return null;
+        }
+
+        $token = uniqid('', false);
+        $htmlPath = sys_get_temp_dir() . '/leave_print_' . $token . '.html';
+        $pdfPath = sys_get_temp_dir() . '/leave_print_' . $token . '.pdf';
+        $profilePath = sys_get_temp_dir() . '/leave_print_' . $token;
+
+        try {
+            file_put_contents($htmlPath, $html);
+
+            // A dedicated user data dir is required: without it the launch is
+            // delegated to an already-running browser instance and the
+            // headless flags are silently dropped.
+            $process = new Process(array_filter([
+                $binary,
+                '--headless',
+                '--disable-gpu',
+                '--no-first-run',
+                '--disable-extensions',
+                '--allow-file-access-from-files',
+                '--run-all-compositor-stages-before-draw',
+                '--virtual-time-budget=10000',
+                '--no-pdf-header-footer',
+                '--print-to-pdf-no-header',
+                '--user-data-dir=' . $profilePath,
+                '--print-to-pdf=' . $pdfPath,
+                'file:///' . str_replace('\\', '/', $htmlPath),
+            ]));
+
+            $process->setTimeout(120);
+            $process->run();
+
+            if (! is_file($pdfPath) || filesize($pdfPath) === 0) {
+                return null;
+            }
+
+            $pdf = file_get_contents($pdfPath);
+
+            return $pdf === false || $pdf === '' ? null : $pdf;
+        } catch (\Throwable $exception) {
+            return null;
+        } finally {
+            @unlink($htmlPath);
+            @unlink($pdfPath);
+            @rmdir($profilePath);
+        }
+    }
+
+    /**
+     * Locate a Chromium-based browser binary for PDF printing.
+     * Override via the PDF_BROWSER_BINARY env var.
+     */
+    protected function locateChromiumBinary(): ?string
+    {
+        $candidates = [
+            env('PDF_BROWSER_BINARY'),
+            'C:\Program Files\Google\Chrome\Application\chrome.exe',
+            'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+            'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
+            'C:\Program Files\Microsoft\Edge\Application\msedge.exe',
+            '/usr/bin/google-chrome',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/chromium',
+            '/snap/bin/chromium',
+        ];
+
+        foreach ($candidates as $candidate) {
+            if ($candidate && is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     protected function canViewLeaveApplicationAsApprover(User $user, EmployeeLeaveApplication $leaveApplication): bool

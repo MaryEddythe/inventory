@@ -13,6 +13,7 @@ use App\Http\Controllers\SidebarAccessController;
 use Laravel\Fortify\Http\Controllers\ConfirmablePasswordController;
 use Laravel\Fortify\Http\Controllers\ConfirmedPasswordStatusController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmployeeFileController;
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

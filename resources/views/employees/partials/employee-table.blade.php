@@ -53,29 +53,24 @@
                             @endif
                         </td>
                         <td>
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('employees.show', $emp) }}" class="btn btn-link p-0 text-decoration-none" title="View">
-                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition" aria-hidden="true">
-                                        <i class="bi bi-eye" style="font-size: 1rem;"></i>
-                                    </span>
+                            <div class="d-flex gap-1">
+                                <a href="{{ route('employees.show', $emp) }}" class="btn btn-outline-primary btn-sm" title="View" aria-label="View employee">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </a>
-                                <a href="{{ route('employees.edit', $emp) }}" class="btn btn-link p-0 text-decoration-none" title="Edit">
-                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition" aria-hidden="true">
-                                        <i class="bi bi-pencil-square" style="font-size: 1rem;"></i>
-                                    </span>
+                                <a href="{{ route('employees.edit', $emp) }}" class="btn btn-outline-secondary btn-sm" title="Edit" aria-label="Edit employee">
+                                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
                                 </a>
 
-                                <form method="POST" action="{{ route('employees.destroy', $emp) }}" style="display: inline;" class="employee-delete-form">
+                                <form method="POST" action="{{ route('employees.destroy', $emp) }}" class="d-inline employee-delete-form">
                                     @csrf @method('DELETE')
                                     <button
-                                        class="btn btn-link p-0 text-decoration-none text-danger employee-delete-btn"
+                                        class="btn btn-outline-danger btn-sm employee-delete-btn"
                                         type="button"
                                         title="Delete"
+                                        aria-label="Delete employee"
                                         data-employee-name="{{ $emp->full_name }}"
                                     >
-                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition" aria-hidden="true">
-                                            <i class="bi bi-trash" style="font-size: 1rem;"></i>
-                                        </span>
+                                        <i class="bi bi-trash" aria-hidden="true"></i>
                                     </button>
                                 </form>
                             </div>

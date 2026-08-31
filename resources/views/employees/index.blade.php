@@ -74,14 +74,13 @@
     .badge-division-ORD    { background-color: #fd7e14; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
     .badge-division-FAD    { background-color: #dc3545; color: #fff; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
     .badge-division-COA    { background-color: #ffc107; color: #000; font-size: 0.75rem; padding: 0.35em 0.65em; border-radius: 0.375rem; }
+
 </style>
 @endpush
 
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Live (AJAX) search: debounce and swap only the results region so the
-        // input keeps focus — no full page reloads while typing.
         const searchInput = document.querySelector('input[name="search"]');
         const resultsWrap = document.getElementById('employeesResultsWrap');
 

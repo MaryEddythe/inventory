@@ -17,6 +17,15 @@
     $dateApplied = $leaveApplication->created_at?->format('F d, Y') ?? 'N/A';
     $timeApplied = $leaveApplication->created_at?->format('h:i A') ?? 'N/A';
     $reason = $leaveApplication->reason ?: '—';
+    $leaveCredits = $leaveCredits ?? [
+        'as_of' => $dateApplied,
+        'vacation_earned' => 0,
+        'sick_earned' => 0,
+        'vacation_less' => 0,
+        'sick_less' => 0,
+        'vacation_balance' => 0,
+        'sick_balance' => 0,
+    ];
 
     $pageTitle = 'CS Form 6 - Application for Leave';
 
@@ -267,7 +276,7 @@
         <section class="panel">
             <div class="panel-title">I. Employee Information</div>
             <div class="grid grid-4" style="grid-template-columns: 17% 33% 12% 38%;">
-                <div class="cell head">1. t</div>
+                <div class="cell head">1. Division</div>
                 <div class="cell">{{ $divisionName }}</div>
                 <div class="cell head">2. Name</div>
                 <div class="cell">
@@ -359,7 +368,7 @@
                 <div class="cell head">7.B Recommendation</div>
 
                 <div class="cell tall" style="display: flex; flex-direction: column;">
-                    <div class="label-sm">As of _______________________</div>
+                    <div class="label-sm">As of {{ $leaveCredits['as_of'] }}</div>
                     <table class="credits">
                         <tr>
                             <td class="lbl">&nbsp;</td>
@@ -368,18 +377,18 @@
                         </tr>
                         <tr>
                             <td class="lbl">Total Earned</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
+                            <td>{{ number_format($leaveCredits['vacation_earned'], 2) }}</td>
+                            <td>{{ number_format($leaveCredits['sick_earned'], 2) }}</td>
                         </tr>
                         <tr>
                             <td class="lbl">Less this application</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
+                            <td>{{ $leaveCredits['vacation_less'] > 0 ? '-' : '' }}{{ number_format($leaveCredits['vacation_less'], 2) }}</td>
+                            <td>{{ $leaveCredits['sick_less'] > 0 ? '-' : '' }}{{ number_format($leaveCredits['sick_less'], 2) }}</td>
                         </tr>
                         <tr>
                             <td class="lbl">Balance</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
+                            <td>{{ number_format($leaveCredits['vacation_balance'], 2) }}</td>
+                            <td>{{ number_format($leaveCredits['sick_balance'], 2) }}</td>
                         </tr>
                     </table>
                     <div class="sig-block">

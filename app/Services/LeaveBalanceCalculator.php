@@ -119,6 +119,76 @@ class LeaveBalanceCalculator
         return compact('setting', 'ledger', 'balanceCard');
     }
 
+    /**
+     * Build the leave-credit figures printed on an application form.
+     * The current application is shown separately as a pending deduction.
+     */
+    public function certificationForApplication(EmployeeLeaveApplication $application): array
+    {
+        $employee = $application->employee;
+        $asOf = $application->created_at?->copy()->startOfDay() ?? now()->startOfDay();
+
+        if (! $employee) {
+            return [
+                'as_of' => $asOf->format('F d, Y'),
+                'vacation_earned' => 0,
+                'sick_earned' => 0,
+                'vacation_less' => 0,
+                'sick_less' => 0,
+                'vacation_balance' => 0,
+                'sick_balance' => 0,
+            ];
+        }
+
+        $setting = EmployeeLeaveLedgerSetting::firstOrCreate(['emp_no' => $employee->emp_no]);
+        $vacationBalance = (float) $setting->opening_vacation_balance;
+        $sickBalance = (float) $setting->opening_sick_balance;
+
+        $approvedApplications = EmployeeLeaveApplication::query()
+            ->where('employee_id', $employee->emp_no)
+            ->whereNotNull('regional_director_signed_at')
+            ->whereDate('date_from', '<=', $asOf)
+            ->whereKeyNot($application->getKey())
+            ->get();
+
+        foreach ($approvedApplications as $approvedApplication) {
+            $days = $this->calendarDays($approvedApplication);
+            $leaveType = $this->canonicalLeaveType((string) $approvedApplication->leave_type);
+
+            if ($leaveType === 'Vacation Leave') {
+                $vacationBalance -= $days * self::MONTHLY_ACCRUAL_DAYS;
+            } elseif ($leaveType === 'Sick Leave') {
+                $sickBalance -= $days * self::MONTHLY_ACCRUAL_DAYS;
+            }
+        }
+
+        for ($month = $asOf->copy()->startOfYear(); $month->lte($asOf); $month->addMonth()) {
+            if ($month->copy()->endOfMonth()->lte($asOf)) {
+                $vacationBalance += self::MONTHLY_ACCRUAL_DAYS;
+                $sickBalance += self::MONTHLY_ACCRUAL_DAYS;
+            }
+        }
+
+        $requestedDays = $this->calendarDays($application);
+        $leaveType = $this->canonicalLeaveType((string) $application->leave_type);
+        $vacationLess = $leaveType === 'Vacation Leave'
+            ? $requestedDays * self::MONTHLY_ACCRUAL_DAYS
+            : 0;
+        $sickLess = $leaveType === 'Sick Leave'
+            ? $requestedDays * self::MONTHLY_ACCRUAL_DAYS
+            : 0;
+
+        return [
+            'as_of' => $asOf->format('F d, Y'),
+            'vacation_earned' => round($vacationBalance, 3),
+            'sick_earned' => round($sickBalance, 3),
+            'vacation_less' => round($vacationLess, 3),
+            'sick_less' => round($sickLess, 3),
+            'vacation_balance' => round($vacationBalance - $vacationLess, 3),
+            'sick_balance' => round($sickBalance - $sickLess, 3),
+        ];
+    }
+
     public function getDailyAccrualRows(): array
     {
         return [
@@ -249,6 +319,25 @@ class LeaveBalanceCalculator
     protected function monthActionText(array $actions): ?string
     {
         return empty($actions) ? null : implode('; ', $actions);
+    }
+
+    protected function calendarDays(EmployeeLeaveApplication $application): int
+    {
+        $start = Carbon::parse($application->date_from);
+        $end = $application->date_to ? Carbon::parse($application->date_to) : $start;
+
+        return ((int) $start->diffInDays($end)) + 1;
+    }
+
+    protected function canonicalLeaveType(string $leaveType): string
+    {
+        $type = strtolower(trim($leaveType));
+
+        return match (true) {
+            $type === 'vacation leave' => 'Vacation Leave',
+            $type === 'sick leave' => 'Sick Leave',
+            default => trim($leaveType),
+        };
     }
 
     protected function ctoApplicationHours(string $duration): int

@@ -149,6 +149,8 @@ class LeaveApplicationController extends Controller
             $data = [
                 'leaveApplication' => $leaveApplication,
                 'employee' => $leaveApplication->employee,
+                'leaveCredits' => app(LeaveBalanceCalculator::class)
+                    ->certificationForApplication($leaveApplication),
                 'leavePrintCss' => File::exists(public_path('leave-application-print.css'))
                     ? File::get(public_path('leave-application-print.css'))
                     : '',

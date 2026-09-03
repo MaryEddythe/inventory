@@ -3,6 +3,10 @@
 
 @section('content')
 <div class="bg-white rounded-4 shadow-sm p-4">
+    @php
+        $canEditAttendance = auth()->user()?->isSuperAdmin();
+    @endphp
+
     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-start mb-4">
         <div>
             <h1 class="h4 fw-bold mb-1">Attendance Monitor</h1>
@@ -71,7 +75,7 @@
         </div>
         <div class="card-body">
             <div class="text-muted small mb-2">
-                Regular: 7:00 AM to 7:00 PM. Holiday: 8:00 AM to 5:00 PM. In both cases, 8:01 AM onward is late.
+                Regular: 7:00 AM to 7:00 PM. Holiday week: 8:00 AM to 5:00 PM for Monday through Thursday when Friday is a holiday. A Monday through Thursday holiday keeps regular hours.
             </div>
             @if($selectedHoliday)
                 <div class="alert alert-info mb-0">
@@ -79,6 +83,10 @@
                     @if($selectedHoliday->notes)
                         <div class="small mt-1">{{ $selectedHoliday->notes }}</div>
                     @endif
+                </div>
+            @elseif($selectedScheduleType === 'holiday')
+                <div class="alert alert-info mb-0">
+                    A Friday holiday is set for this week. Monday through Thursday use the holiday schedule: 8:00 AM to 5:00 PM.
                 </div>
             @else
                 <div class="alert alert-light border mb-0">
@@ -254,13 +262,30 @@
                             <th>Check-in</th>
                             <th>Check-out</th>
                             <th>Expected Logout</th>
+                            <th>Undertime</th>
                             <th>Minutes Late</th>
                             <th>Notes</th>
+                            @if($canEditAttendance)
+                                <th class="text-end">Action</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($recordsForDate as $record)
-                            <tr>
+                            <tr @if($canEditAttendance)
+                                    class="attendance-record-row"
+                                    role="button"
+                                    tabindex="0"
+                                    data-attendance-record-edit="true"
+                                    data-update-url="{{ route('attendance.records.update', $record) }}"
+                                    data-record-id="{{ $record->id }}"
+                                    data-employee-name="{{ e($record->employee?->full_name ?? $record->employee_id) }}"
+                                    data-attendance-date="{{ $record->attendance_date->toDateString() }}"
+                                    data-check-in="{{ $record->check_in_at?->format('H:i') }}"
+                                    data-check-out="{{ $record->check_out_at?->format('H:i') }}"
+                                    data-minutes-late="{{ $record->minutes_late ?? '' }}"
+                                    data-notes="{{ e($record->notes ?? '') }}"
+                                @endif>
                                 <td class="fw-semibold">{{ $record->employee?->full_name ?? $record->employee_id }}</td>
                                 <td>{{ $record->employee?->Role ?? 'N/A' }}</td>
                                 <td>{{ data_get($schedules, $record->schedule_type . '.label', ucfirst($record->schedule_type)) }}</td>
@@ -272,6 +297,9 @@
                                 <td>{{ $record->check_in_at?->format('h:i A') ?? 'N/A' }}</td>
                                 <td>{{ $record->check_out_at?->format('h:i A') ?? 'N/A' }}</td>
                                 <td>
+                                    @php
+                                        $expectedLogout = null;
+                                    @endphp
                                     @if($record->check_in_at)
                                         @php
                                             $schedule = $schedules[$record->schedule_type] ?? $schedules[config('attendance.default_schedule', 'regular')];
@@ -282,11 +310,35 @@
                                         N/A
                                     @endif
                                 </td>
+                                <td>
+                                    @if($expectedLogout && $record->check_out_at && $record->check_out_at->lt($expectedLogout))
+                                        {{ $record->check_out_at->diffInMinutes($expectedLogout) }} min
+                                    @else
+                                        —
+                                    @endif
+                                </td>
                                 <td>{{ $record->minutes_late !== null ? $record->minutes_late : '—' }}</td>
                                 <td>{{ $record->notes ?: '—' }}</td>
+                                @if($canEditAttendance)
+                                    <td class="text-end">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-attendance-record-edit="true"
+                                                data-update-url="{{ route('attendance.records.update', $record) }}"
+                                                data-record-id="{{ $record->id }}"
+                                                data-employee-name="{{ e($record->employee?->full_name ?? $record->employee_id) }}"
+                                                data-attendance-date="{{ $record->attendance_date->toDateString() }}"
+                                                data-check-in="{{ $record->check_in_at?->format('H:i') }}"
+                                                data-check-out="{{ $record->check_out_at?->format('H:i') }}"
+                                                data-minutes-late="{{ $record->minutes_late ?? '' }}"
+                                                data-notes="{{ e($record->notes ?? '') }}">
+                                            Edit
+                                        </button>
+                                    </td>
+                                @endif
                             </tr>
                         @empty
-                            <tr><td colspan="9" class="text-center text-muted py-4">No attendance records found for this date.</td></tr>
+                            <tr><td colspan="{{ $canEditAttendance ? 11 : 10 }}" class="text-center text-muted py-4">No attendance records found for this date.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -367,6 +419,14 @@
     </div>
 
     <style>
+        .attendance-record-row {
+            cursor: pointer;
+        }
+
+        .attendance-record-row:hover {
+            background-color: rgba(13, 110, 253, 0.04);
+        }
+
         .monthly-tracker-chevron,
         .records-chevron {
             transition: transform 0.2s ease;
@@ -380,5 +440,6 @@
 
 @push('modals')
     @include('attendance.partials.holiday-modal')
+    @include('attendance.partials.record-edit-modal')
 @endpush
 @endsection

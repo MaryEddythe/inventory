@@ -34,6 +34,8 @@ return [
     | - regular: 7:00 AM to 7:00 PM
     | - holiday: 8:00 AM to 5:00 PM
     |
+    | A Friday holiday sets Monday through Thursday of that same week to the
+    | holiday schedule. Holidays on Monday through Thursday keep regular hours.
     | Both setups treat 8:01 AM onward as late for the morning check-in.
     | The expected logout time is computed from the actual check-in time.
     */

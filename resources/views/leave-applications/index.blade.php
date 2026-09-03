@@ -60,27 +60,39 @@
                                             </td>
                                             <td>{{ $application->created_at?->format('M d, Y h:i A') }}</td>
                                             <td class="text-end">
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-sm btn-primary"
-                                                    @if(! $savedSignatureUrl) disabled title="Upload your signature in your profile first" @endif
-                                                    data-leave-id="{{ $application->id }}"
-                                                    data-employee-name="{{ $application->employee?->full_name ?? 'N/A' }}"
-                                                    data-employee-id="{{ $application->employee?->employee_id ?? 'N/A' }}"
-                                                    data-leave-type="{{ $application->leave_type }}"
-                                                    data-date-from="{{ $application->date_from?->format('M d, Y') ?? 'N/A' }}"
-                                                    data-date-to="{{ $application->date_to?->format('M d, Y') ?? 'Open ended' }}"
-                                                    data-date-applied="{{ $application->created_at?->format('M d, Y h:i A') }}"
-                                                    data-sign-url="{{ match ((string) $application->status) {
-                                                        'pending_hr' => route('leave-applications.sign-hr', $application),
-                                                        'pending_division_chief' => route('leave-applications.sign-division-chief', $application),
-                                                        'pending_regional_director' => route('leave-applications.sign-regional-director', $application),
-                                                        default => '#',
-                                                    } }}"
-                                                    onclick="openHrSignModal(this)"
-                                                >
-                                                    Sign
-                                                </button>
+                                                <div class="d-inline-flex align-items-center gap-2">
+                                                    <a
+                                                        href="{{ route('leave-applications.view', $application) }}"
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        title="Preview leave application PDF"
+                                                        aria-label="Preview leave application PDF"
+                                                    >
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-primary"
+                                                        @if(! $savedSignatureUrl) disabled title="Upload your signature in your profile first" @endif
+                                                        data-leave-id="{{ $application->id }}"
+                                                        data-employee-name="{{ $application->employee?->full_name ?? 'N/A' }}"
+                                                        data-employee-id="{{ $application->employee?->employee_id ?? 'N/A' }}"
+                                                        data-leave-type="{{ $application->leave_type }}"
+                                                        data-date-from="{{ $application->date_from?->format('M d, Y') ?? 'N/A' }}"
+                                                        data-date-to="{{ $application->date_to?->format('M d, Y') ?? 'Open ended' }}"
+                                                        data-date-applied="{{ $application->created_at?->format('M d, Y h:i A') }}"
+                                                        data-sign-url="{{ match ((string) $application->status) {
+                                                            'pending_hr' => route('leave-applications.sign-hr', $application),
+                                                            'pending_division_chief' => route('leave-applications.sign-division-chief', $application),
+                                                            'pending_regional_director' => route('leave-applications.sign-regional-director', $application),
+                                                            default => '#',
+                                                        } }}"
+                                                        onclick="openHrSignModal(this)"
+                                                    >
+                                                        Sign
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach

@@ -8,7 +8,7 @@
     $employeeName = $employee?->full_name ?? 'N/A';
     $employeeId = $employee?->employee_id ?? 'N/A';
     $divisionName = optional($employee->departmentRecord)->department ?? optional($employee->departmentRecord)->description ?? optional($employee->division)->name ?? optional($employee->division)->code ?? 'N/A';
-    $position = $employee?->position ?? 'N/A';
+    $position = $employee?->Role ?: ($employee?->position ?? 'N/A');
     $salary = '—';
 
     $leaveType = $leaveApplication->leave_type ?? 'N/A';

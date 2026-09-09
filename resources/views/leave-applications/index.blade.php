@@ -17,7 +17,7 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
         <div class="page-title">Leave Applications</div>
-        <div class="page-subtitle">{{ $employee->full_name }} | {{ $employee->employee_id }}</div>
+        <div class="page-subtitle">{{ $employee->full_name }}</div>
     </div>
 </div>
 
@@ -40,6 +40,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Leave Application</th>
+                                        <th>Position</th>
                                         <th>Type of Leave</th>
                                         <th>Start and End Date</th>
                                         <th>Date Applied</th>
@@ -51,8 +52,8 @@
                                         <tr>
                                             <td>
                                                 <div class="fw-semibold">{{ $application->employee?->full_name ?? 'N/A' }}</div>
-                                                <small class="text-muted">{{ $application->employee?->employee_id ?? 'N/A' }}</small>
                                             </td>
+                                            <td>{{ $application->employee?->Role ?: 'N/A' }}</td>
                                             <td>{{ $application->leave_type }}</td>
                                             <td>
                                                 <div>{{ $application->date_from?->format('M d, Y') ?? 'N/A' }}</div>
@@ -60,27 +61,39 @@
                                             </td>
                                             <td>{{ $application->created_at?->format('M d, Y h:i A') }}</td>
                                             <td class="text-end">
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-sm btn-primary"
-                                                    @if(! $savedSignatureUrl) disabled title="Upload your signature in your profile first" @endif
-                                                    data-leave-id="{{ $application->id }}"
-                                                    data-employee-name="{{ $application->employee?->full_name ?? 'N/A' }}"
-                                                    data-employee-id="{{ $application->employee?->employee_id ?? 'N/A' }}"
-                                                    data-leave-type="{{ $application->leave_type }}"
-                                                    data-date-from="{{ $application->date_from?->format('M d, Y') ?? 'N/A' }}"
-                                                    data-date-to="{{ $application->date_to?->format('M d, Y') ?? 'Open ended' }}"
-                                                    data-date-applied="{{ $application->created_at?->format('M d, Y h:i A') }}"
-                                                    data-sign-url="{{ match ((string) $application->status) {
-                                                        'pending_hr' => route('leave-applications.sign-hr', $application),
-                                                        'pending_division_chief' => route('leave-applications.sign-division-chief', $application),
-                                                        'pending_regional_director' => route('leave-applications.sign-regional-director', $application),
-                                                        default => '#',
-                                                    } }}"
-                                                    onclick="openHrSignModal(this)"
-                                                >
-                                                    Sign
-                                                </button>
+                                                <div class="d-inline-flex align-items-center gap-2">
+                                                    <a
+                                                        href="{{ route('leave-applications.view', $application) }}"
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        title="Preview leave application PDF"
+                                                        aria-label="Preview leave application PDF"
+                                                    >
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-primary"
+                                                        @if(! $savedSignatureUrl) disabled title="Upload your signature in your profile first" @endif
+                                                        data-leave-id="{{ $application->id }}"
+                                                        data-employee-name="{{ $application->employee?->full_name ?? 'N/A' }}"
+                                                        data-employee-id="{{ $application->employee?->employee_id ?? 'N/A' }}"
+                                                        data-leave-type="{{ $application->leave_type }}"
+                                                        data-date-from="{{ $application->date_from?->format('M d, Y') ?? 'N/A' }}"
+                                                        data-date-to="{{ $application->date_to?->format('M d, Y') ?? 'Open ended' }}"
+                                                        data-date-applied="{{ $application->created_at?->format('M d, Y h:i A') }}"
+                                                        data-sign-url="{{ match ((string) $application->status) {
+                                                            'pending_hr' => route('leave-applications.sign-hr', $application),
+                                                            'pending_division_chief' => route('leave-applications.sign-division-chief', $application),
+                                                            'pending_regional_director' => route('leave-applications.sign-regional-director', $application),
+                                                            default => '#',
+                                                        } }}"
+                                                        onclick="openHrSignModal(this)"
+                                                    >
+                                                        Sign
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -108,6 +121,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Employee</th>
+                                        <th>Position</th>
                                         <th>Leave Type</th>
                                         <th>Date Range</th>
                                         <th>Status</th>
@@ -127,8 +141,8 @@
                                 <tr>
                                     <td>
                                         <div class="fw-semibold">{{ $application->employee?->full_name ?? 'N/A' }}</div>
-                                        <small class="text-muted">{{ $application->employee?->employee_id ?? 'N/A' }}</small>
                                     </td>
+                                    <td>{{ $application->employee?->Role ?: 'N/A' }}</td>
                                     <td>{{ $application->leave_type }}</td>
                                     <td>
                                         <div>{{ $application->date_from?->format('M d, Y') }}</div>
@@ -154,7 +168,7 @@
                                 </tr>
                                 @if($application->reason)
                                     <tr class="table-light">
-                                        <td colspan="6">
+                                        <td colspan="7">
                                             <div class="small text-muted fw-semibold mb-1">Reason</div>
                                             <div>{{ $application->reason }}</div>
                                         </td>
@@ -162,7 +176,7 @@
                                 @endif
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-5">
+                                    <td colspan="7" class="text-center text-muted py-5">
                                         No leave applications yet.
                                     </td>
                                 </tr>
@@ -198,10 +212,6 @@
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-semibold">Employee</label>
                         <input type="text" class="form-control" id="hrLeaveEmployeeName" disabled>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label fw-semibold">Employee ID</label>
-                        <input type="text" class="form-control" id="hrLeaveEmployeeId" disabled>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold">Leave Type</label>

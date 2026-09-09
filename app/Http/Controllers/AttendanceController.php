@@ -70,6 +70,10 @@ class AttendanceController extends Controller
             ->orderBy('employee_id')
             ->get();
 
+        // A holiday can be added after attendance was recorded, so derive the
+        // displayed schedule from the selected date instead of stale row data.
+        $recordsForDate->each(fn (AttendanceRecord $record) => $record->setAttribute('schedule_type', $selectedScheduleType));
+
         $lateCounts = $recordsForMonth
             ->where('status', 'late')
             ->groupBy('employee_id')
@@ -223,6 +227,48 @@ class AttendanceController extends Controller
         });
 
         return back()->with('status', 'Attendance record saved for ' . ($record->employee?->full_name ?? $record->employee_id) . '.');
+    }
+
+    public function updateRecord(Request $request, AttendanceRecord $attendanceRecord)
+    {
+        abort_unless($request->user()?->isSuperAdmin(), 403);
+
+        $validated = $request->validate([
+            'check_in_at' => ['nullable', 'date_format:H:i'],
+            'check_out_at' => ['nullable', 'date_format:H:i'],
+        ]);
+
+        $record = DB::transaction(function () use ($attendanceRecord, $validated) {
+            $scheduleType = $this->scheduleTypeForDate($attendanceRecord->attendance_date->toDateString());
+            $checkInAt = $this->dateTimeForAttendance($attendanceRecord->attendance_date->toDateString(), $validated['check_in_at'] ?? null);
+            $checkOutAt = $this->dateTimeForAttendance($attendanceRecord->attendance_date->toDateString(), $validated['check_out_at'] ?? null);
+            $minutesLate = null;
+            $status = $attendanceRecord->status;
+
+            if (filled($checkInAt)) {
+                $lateCutoff = Carbon::parse($attendanceRecord->attendance_date->toDateString() . ' ' . $this->scheduleLateCutoffTime($scheduleType));
+                $checkInTime = Carbon::parse($checkInAt);
+
+                $status = $checkInTime->gt($lateCutoff) ? 'late' : 'present';
+                $minutesLate = $status === 'late'
+                    ? max(1, abs($checkInTime->diffInMinutes($lateCutoff, false)))
+                    : 0;
+            } elseif (in_array($status, ['present', 'late'], true)) {
+                $status = 'absent';
+            }
+
+            $attendanceRecord->forceFill([
+                'schedule_type' => $scheduleType,
+                'status' => $status,
+                'check_in_at' => $checkInAt,
+                'check_out_at' => $checkOutAt,
+                'minutes_late' => $minutesLate,
+            ])->save();
+
+            return $attendanceRecord->refresh()->loadMissing('employee');
+        });
+
+        return back()->with('status', 'Attendance record updated for ' . ($record->employee?->full_name ?? $record->employee_id) . '.');
     }
 
     public function storeHoliday(Request $request)
@@ -397,11 +443,33 @@ class AttendanceController extends Controller
 
     protected function scheduleTypeForDate(string $date): string
     {
+        $carbonDate = Carbon::parse($date);
         $customHoliday = AttendanceHoliday::query()->whereDate('holiday_date', $date)->exists();
+        $officialHoliday = $this->philippineHolidayService->holidayForDate($date) !== null;
+        $friday = $carbonDate->copy()->startOfWeek(Carbon::MONDAY)->addDays(4);
+        $customFridayHoliday = AttendanceHoliday::query()->whereDate('holiday_date', $friday->toDateString())->exists();
+        $officialFridayHoliday = $this->philippineHolidayService->holidayForDate($friday) !== null;
 
-        return $customHoliday || $this->philippineHolidayService->holidayForDate($date)
-            ? 'holiday'
-            : config('attendance.default_schedule', 'regular');
+        return $this->resolveScheduleTypeForDate(
+            $carbonDate,
+            $customHoliday || $officialHoliday,
+            $customFridayHoliday || $officialFridayHoliday
+        );
+    }
+
+    protected function resolveScheduleTypeForDate(Carbon $date, bool $isHoliday, bool $isFridayHoliday = false): string
+    {
+        if ($date->isMonday() || $date->isTuesday() || $date->isWednesday() || $date->isThursday()) {
+            return $isFridayHoliday
+                ? 'holiday'
+                : config('attendance.default_schedule', 'regular');
+        }
+
+        if (! $isHoliday || ! $date->isFriday()) {
+            return config('attendance.default_schedule', 'regular');
+        }
+
+        return 'holiday';
     }
 
     protected function dateTimeForAttendance(string $date, ?string $time): ?string
@@ -415,12 +483,16 @@ class AttendanceController extends Controller
 
     protected function refreshScheduleForDate(string $date): void
     {
-        $scheduleType = $this->scheduleTypeForDate($date);
+        $weekStart = Carbon::parse($date)->startOfWeek(Carbon::MONDAY);
 
-        AttendanceRecord::query()
-            ->whereDate('attendance_date', $date)
-            ->update([
-                'schedule_type' => $scheduleType,
-            ]);
+        foreach (range(0, 4) as $dayOffset) {
+            $officeDate = $weekStart->copy()->addDays($dayOffset);
+
+            AttendanceRecord::query()
+                ->whereDate('attendance_date', $officeDate->toDateString())
+                ->update([
+                    'schedule_type' => $this->scheduleTypeForDate($officeDate->toDateString()),
+                ]);
+        }
     }
 }

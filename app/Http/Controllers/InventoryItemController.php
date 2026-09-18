@@ -699,8 +699,13 @@ class InventoryItemController extends Controller
         $rpcspValue = InventoryItem::active()->where('unit_price', '<=', 49999)->whereNotNull('unit_price')->sum('unit_price');
         $rpcspCount = InventoryItem::active()->where('unit_price', '<=', 49999)->whereNotNull('unit_price')->count();
 
-        $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo', 'rpcspValue', 'rpcspCount'))
-            ->setPaper('landscape');
+        $pdf = Pdf::loadView($view, compact('items', 'tab', 'css', 'mgbLogo', 'bpLogo', 'rpcspValue', 'rpcspCount'));
+
+        if (in_array($subtype, ['rpcsp', 'ppe'], true)) {
+            $pdf->setPaper([0, 0, 936, 612]);
+        } else {
+            $pdf->setPaper('a4', 'landscape');
+        }
 
         return $pdf->download($subtype . '.pdf');
     }
@@ -753,11 +758,13 @@ class InventoryItemController extends Controller
 
             $filename = 'ipm_inventory.csv';
         } else {
-            if ($subtype === 'rpcsp') {
+            if (in_array($subtype, ['rpcsp', 'ppe'], true)) {
                 $headers = [
-                    'No', 'Division', 'Enduser', 'Classification', 'Description',
-                    'Serial Number', 'Property Number', 'Unit Price', 'CO/MOOE',
-                    'Date Acquired', 'Remarks', 'Status', 'NOTE'
+                    'OFFICE', 'ARTICLE', 'EXPENSE CLASSIFICATION', 'MAIN SPECIFICATIONS',
+                    'SERIAL NUMBER', 'UNIT CLASSIFICATION', 'BRAND', 'MODEL',
+                    'ACQUISITION COST', 'ACQUISITION DATE', 'PROPERTY NUMBER', '', 'PAR',
+                    'DIVISION', 'SECTION', 'USER CATEGORY', '', 'ACTUAL USER',
+                    'DIVISION', 'SECTION', 'USER CATEGORY', '', 'REMARKS',
                 ];
             } else {
                 $headers = [
@@ -770,22 +777,8 @@ class InventoryItemController extends Controller
             $csv->insertOne($headers);
 
             foreach ($items as $item) {
-                if ($subtype === 'rpcsp') {
-                    $row = [
-                        $item->no,
-                        $item->division,
-                        $item->enduser,
-                        $item->classification,
-                        $item->description,
-                        $item->serial_number ?? 'N/A',
-                        $item->property_number,
-                        number_format($item->unit_price, 2),
-                        $item->co_mooe,
-                        $item->date_acquired->format('M d, Y'),
-                        $item->remarks ?? 'N/A',
-                        $item->status,
-                        'RPCSP Export'
-                    ];
+                if (in_array($subtype, ['rpcsp', 'ppe'], true)) {
+                    $row = $this->propertyReportRow($item);
                 } else {
                     $row = [
                         $item->no,
@@ -805,7 +798,9 @@ class InventoryItemController extends Controller
                 $csv->insertOne($row);
             }
 
-            $filename = $subtype === 'rpcsp' ? 'rpcsp_inventory.csv' : 'inventory.csv';
+            $filename = in_array($subtype, ['rpcsp', 'ppe'], true)
+                ? $subtype . '_inventory.csv'
+                : 'inventory.csv';
         }
 
         return response($csv->getContent(), 200)
@@ -815,6 +810,25 @@ class InventoryItemController extends Controller
 
     return back()->with('error', 'Invalid export type');
 }
+
+    /** Return one row in the agreed RPCSP/PPE exchange format. */
+    private function propertyReportRow(InventoryItem $item): array
+    {
+        $expenseClassification = strtoupper((string) $item->co_mooe) === 'CO'
+            ? 'Capital Outlay - CO'
+            : (strtoupper((string) $item->co_mooe) === 'MOOE'
+                ? 'Maintenance and Other Operating Expenses - MOOE'
+                : (string) $item->co_mooe);
+
+        return [
+            'MGB-R6', $item->classification ?? '', $expenseClassification,
+            $item->description ?? '', $item->serial_number ?? '', 'Hardware', '', '',
+            $item->unit_price === null ? '' : number_format((float) $item->unit_price, 2, '.', ''),
+            $item->date_acquired?->format('d-M-y') ?? '', $item->property_number ?? '', '', '',
+            $item->division ?? '', '', '', '', $item->enduser ?? '', $item->division ?? '',
+            '', '', '', $item->remarks ?? '',
+        ];
+    }
 
     public function exportCategoryPdf(Request $request, string $category)
     {

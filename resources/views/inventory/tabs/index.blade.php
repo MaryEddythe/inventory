@@ -63,7 +63,17 @@
                         </ul>
                     </li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item export-option" href="#" data-type="csv"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</a></li>
+                    <li class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between" href="#">
+                            <span><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Export as CSV</span>
+                            <i class="bi bi-chevron-right ms-3 small"></i>
+                        </a>
+                        <ul class="dropdown-menu submenu">
+                            <li><a class="dropdown-item export-option" href="#" data-type="csv" data-subtype="inventory">Inventory</a></li>
+                            <li><a class="dropdown-item export-option" href="#" data-type="csv" data-subtype="rpcsp">RPCSP</a></li>
+                            <li><a class="dropdown-item export-option" href="#" data-type="csv" data-subtype="ppe">PPE</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
             
@@ -262,27 +272,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Handle submenu toggle
-    const pdfMenuItem = document.querySelector('.dropdown-submenu .dropdown-toggle');
-    const submenu = document.querySelector('.dropdown-submenu .submenu');
+    document.querySelectorAll('.dropdown-submenu').forEach(menu => {
+        const menuItem = menu.querySelector('.dropdown-toggle');
+        const submenu = menu.querySelector('.submenu');
+        if (!menuItem || !submenu) return;
 
-    if (pdfMenuItem && submenu) {
-        // Ensure submenu is positioned/visible correctly when the parent dropdown is opened.
-        pdfMenuItem.addEventListener('click', function(e) {
+        menuItem.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-
-            // If Bootstrap dropdown closes on click, re-open the parent dropdown
-            // by toggling the submenu visibility explicitly.
             submenu.classList.toggle('show');
         });
 
-        // Close submenu when clicking outside
         document.addEventListener('click', function(e) {
-            if (!pdfMenuItem.contains(e.target) && !submenu.contains(e.target)) {
-                submenu.classList.remove('show');
-            }
+            if (!menu.contains(e.target)) submenu.classList.remove('show');
         });
-    }
+    });
 
 
     document.querySelectorAll('.export-option').forEach(option => {

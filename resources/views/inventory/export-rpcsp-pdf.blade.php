@@ -49,6 +49,21 @@
         }
 
         {{ $css }}
+
+        .property-report-table {
+            table-layout: fixed;
+        }
+
+        .property-report-table th,
+        .property-report-table td {
+            padding: 1px 2px !important;
+            font-size: 5.5pt !important;
+            line-height: 1.05;
+        }
+
+        .property-report-table th {
+            font-size: 6pt !important;
+        }
     </style>
 </head>
 <body>
@@ -105,19 +120,19 @@
 
     {{-- ===== RPCSP TABLE ===== --}}
     <div style="margin: 8px 0;">
-        <table class="pdf-table pdf-table-striped property-report-table" style="font-size: 4px; table-layout: fixed;">
+        <table class="pdf-table pdf-table-striped property-report-table" style="font-size: 5.5pt; table-layout: fixed;">
             <colgroup>
-                <col style="width: 4%">
-                <col style="width: 4%">
+                <col style="width: 3%">
+                <col style="width: 3%">
                 <col style="width: 6%">
-                <col style="width: 11%">
+                <col style="width: 13%">
                 <col style="width: 7%">
                 <col style="width: 5%">
                 <col style="width: 4%">
                 <col style="width: 4%">
                 <col style="width: 6%">
                 <col style="width: 6%">
-                <col style="width: 7%">
+                <col style="width: 8%">
                 <col style="width: 3%">
                 <col style="width: 4%">
                 <col style="width: 3%">

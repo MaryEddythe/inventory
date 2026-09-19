@@ -51,6 +51,17 @@
         }
         
         {{ $css }}
+
+        .inventory-report-table th,
+        .inventory-report-table td {
+            padding: 2px !important;
+            font-size: 6pt !important;
+            line-height: 1.05;
+        }
+
+        .inventory-report-table th {
+            font-size: 6.5pt !important;
+        }
     </style>
 </head>
 <body>
@@ -74,7 +85,22 @@
 
     <!-- Detailed Inventory -->
     <div class="pdf-mt-3" style="margin: 8px 0;">
-        <table class="pdf-table pdf-table-striped" style="font-size: 10px;">
+        <table class="pdf-table pdf-table-striped inventory-report-table" style="font-size: 6pt;">
+            <colgroup>
+                <col style="width: 3%">
+                <col style="width: 7%">
+                <col style="width: 7%">
+                <col style="width: 7%">
+                <col style="width: 18%">
+                <col style="width: 7%">
+                <col style="width: 7%">
+                <col style="width: 8%">
+                <col style="width: 5%">
+                <col style="width: 7%">
+                <col style="width: 10%">
+                <col style="width: 5%">
+                <col style="width: 9%">
+            </colgroup>
             <thead>
                 <tr>
                     <th colspan="13" class="pdf-bg-dark" style="padding: 4px; background-color: #333; color: white;">DETAILED INVENTORY LISTING</th>

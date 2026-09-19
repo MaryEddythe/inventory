@@ -105,161 +105,73 @@
 
     {{-- ===== RPCSP TABLE ===== --}}
     <div style="margin: 8px 0;">
-        <table class="pdf-table pdf-table-striped" style="font-size: 10px;">
+        <table class="pdf-table pdf-table-striped" style="font-size: 5px; table-layout: fixed;">
             <thead>
-                {{-- Dark banner — matches PPE style --}}
                 <tr>
-                    <th colspan="12" class="pdf-bg-dark" style="padding: 4px; background-color: #2c3e50; color: white;">
-                        DETAILED LISTING — SEMI-EXPENDABLE PROPERTY
-                    </th>
-                </tr>
-
-                {{-- Column headers --}}
-                <tr style="background-color: #f0f0f0;">
-                    <th class="rpcsp-article-col"     rowspan="2" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">ARTICLE</th>
-                    <th class="rpcsp-description-col" rowspan="2" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">DESCRIPTION</th>
-                    <th class="rpcsp-property-col"    rowspan="2" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">PROPERTY<br>NUMBER</th>
-                    <th class="rpcsp-uom-col"         rowspan="2" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">UNIT OF<br>MEASURE</th>
-                    <th colspan="2"                               style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">BALANCE PER</th>
-                    <th class="rpcsp-onhand-col"      rowspan="2" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">ON HAND<br>PER COUNT<br>(Quantity)</th>
-                    <th class="rpcsp-total-value-col" rowspan="2" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">TOTAL<br>VALUE</th>
-                    <th class="rpcsp-date-col"        rowspan="2" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">DATE<br>ACQUIRED</th>
-                    <th colspan="2"                               style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">SHORTAGE/<br>OVERAGE</th>
-                    <th class="rpcsp-remarks-col"     rowspan="2" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">REMARKS</th>
+                    <th colspan="20" class="pdf-bg-dark" style="padding: 4px; background-color: #333; color: white;">DETAILED INVENTORY LISTING</th>
                 </tr>
                 <tr style="background-color: #f0f0f0;">
-                    <th class="rpcsp-unit-value-col"     style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">UNIT VALUE</th>
-                    <th class="rpcsp-card-col"           style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">CARD<br>(Quantity)</th>
-                    <th class="rpcsp-shortage-qty-col"   style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">Quantity</th>
-                    <th class="rpcsp-shortage-value-col" style="padding: 4px; border: 1px solid #ccc; text-align: center; background-color: #f0f0f0;">Value</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">OFFICE</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">ARTICLE</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">EXPENSE<br>CLASSIFICATION</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">MAIN<br>SPECIFICATIONS</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">SERIAL NUMBER</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">UNIT<br>CLASSIFICATION</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">BRAND</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">MODEL</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">ACQUISITION COST</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">ACQUISITION DATE</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">PROPERTY NUMBER</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">PAR</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">DIVISION</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">SECTION</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">USER CATEGORY</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">ACTUAL USER</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">DIVISION</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">SECTION</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">USER CATEGORY</th>
+                    <th style="padding: 3px; border: 1px solid #ccc;">REMARKS</th>
                 </tr>
             </thead>
-
             <tbody>
                 @php
-                    $totalItems = $items->count();
-                    $filteredItems = $items->filter(function ($item) {
-                        $isActive = isset($item->x) && strtolower((string) $item->x) === 'active';
-                        return $isActive
-                            && $item->unit_price <= 49999
-                            && !is_null($item->unit_price);
+                    $propertyItems = $items->filter(function ($item) {
+                        return $item->unit_price !== null && (float) $item->unit_price <= 49999;
                     });
-
-$classificationItems = $filteredItems->groupBy('division');
-
-
-                    $totalGrandValue = 0;
-                    $totalUnitValue  = 0;
-                    $itemCount       = 0;
                 @endphp
-
-                @if ($filteredItems->count() > 0)
-
-                    @foreach ($classificationItems as $classification => $groupedItems)
-
-                        {{-- Classification banner — matches PPE division banner --}}
-                        <tr>
-                            <td colspan="12" style="background: #efefef; padding: 4px; font-weight: bold; border: 1px solid #ccc;">
-                                Classification: {{ strtoupper($classification) === 'DESKTOP' ? 'COMPUTER' : strtoupper($classification ?? 'N/A') }}
-                            </td>
-                        </tr>
-
-                        @foreach ($groupedItems as $item)
-                            @php
-                                $uom  = 'unit';
-                                $desc = strtolower($item->description ?? '');
-
-                                if (str_contains($desc, 'desktop') || str_contains($desc, 'set')) {
-                                    $uom = 'set';
-                                } elseif (str_contains($desc, 'monitor')  ||
-                                          str_contains($desc, 'printer')  ||
-                                          str_contains($desc, 'scanner')  ||
-                                          str_contains($desc, 'laptop')   ||
-                                          str_contains($desc, 'tablet')   ||
-                                          str_contains($desc, 'phone')) {
-                                    $uom = 'pc';
-                                } elseif (str_contains($desc, 'pair')) {
-                                    $uom = 'pair';
-                                }
-
-                                $remarks = '';
-                                if ($item->enduser && $item->division) {
-                                    $remarks = $item->enduser . ' / ' . $item->division;
-                                } elseif ($item->enduser) {
-                                    $remarks = $item->enduser;
-                                } elseif ($item->division) {
-                                    $remarks = $item->division;
-                                }
-
-                                $article = strtoupper($classification);
-                                if ($article === 'DESKTOP') {
-                                    $article = 'COMPUTER';
-                                }
-
-                                $totalValue      = (float) $item->unit_price;
-                                $totalGrandValue += $totalValue;
-                                $totalUnitValue  += (float) $item->unit_price;
-                                $itemCount++;
-                            @endphp
-
-                            <tr style="border-bottom: 1px solid #ccc;">
-                                <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">{{ $article }}</td>
-                                <td style="padding: 3px; border: 1px solid #ccc;">{{ ucwords($item->description) }}</td>
-                                <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">{{ $item->property_number ?? 'N/A' }}</td>
-                                <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">{{ $uom }}</td>
-                                <td class="pdf-text-right"  style="padding: 3px; border: 1px solid #ccc;">{{ number_format($item->unit_price, 2) }}</td>
-                                <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">1</td>
-                                <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;">1</td>
-                                <td class="pdf-text-right"  style="padding: 3px; border: 1px solid #ccc;">{{ number_format($totalValue, 2) }}</td>
-                                <td class="pdf-text-center pdf-nowrap" style="padding: 3px; border: 1px solid #ccc; white-space: nowrap;">
-                                    {{ $item->date_acquired ? $item->date_acquired->format('m/d/Y') : 'N/A' }}
-                                </td>
-                                <td class="pdf-text-center" style="padding: 3px; border: 1px solid #ccc;"></td>
-                                <td class="pdf-text-right"  style="padding: 3px; border: 1px solid #ccc;"></td>
-                                <td style="padding: 3px; border: 1px solid #ccc;">{{ $remarks }}</td>
-                            </tr>
-
-                        @endforeach
-                    @endforeach
-
-                    {{-- Grand total row — matches PPE pdf-bg-gray style --}}
+                @forelse ($propertyItems as $item)
                     @php
-                        $totalUnitValue  = $filteredItems->sum('unit_price');
-                        $totalGrandValue = $filteredItems->sum('unit_price');
+                        $expenseClassification = strtoupper((string) $item->co_mooe) === 'CO'
+                            ? 'Capital Outlay - CO'
+                            : (strtoupper((string) $item->co_mooe) === 'MOOE'
+                                ? 'Maintenance and Other Operating Expenses - MOOE'
+                                : (string) $item->co_mooe);
                     @endphp
-                    <tr class="pdf-bg-gray pdf-font-bold">
-                        <td colspan="4" class="pdf-text-right" style="padding: 4px; border: 1px solid #ccc; font-weight: bold;">
-                            SUBTOTAL UNIT VALUE:
-                        </td>
-                        <td class="pdf-text-right" style="padding: 4px; border: 1px solid #ccc; font-weight: bold;">
-                            {{ number_format($totalUnitValue, 2) }}
-                        </td>
-                        <td colspan="2" class="pdf-text-right" style="padding: 4px; border: 1px solid #ccc; font-weight: bold;">
-                            GRAND TOTAL:
-                        </td>
-                        <td class="pdf-text-right" style="padding: 4px; border: 1px solid #ccc; font-weight: bold;">
-                            {{ number_format($totalGrandValue, 2) }}
-                        </td>
-                        <td colspan="4" style="border: 1px solid #ccc;"></td>
+                    <tr style="border-bottom: 1px solid #ccc;">
+                        <td style="padding: 3px; border: 1px solid #ccc;">MGB-R6</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->classification ?? '' }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $expenseClassification }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->description ?? '' }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->serial_number ?? '' }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">Hardware</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;"></td>
+                        <td style="padding: 3px; border: 1px solid #ccc;"></td>
+                        <td class="pdf-text-right" style="padding: 3px; border: 1px solid #ccc;">{{ $item->unit_price === null ? '' : number_format((float) $item->unit_price, 2) }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->date_acquired ? $item->date_acquired->format('d-M-y') : '' }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->property_number ?? '' }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;"></td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->division ?? '' }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;"></td>
+                        <td style="padding: 3px; border: 1px solid #ccc;"></td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->enduser ?? '' }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->division ?? '' }}</td>
+                        <td style="padding: 3px; border: 1px solid #ccc;"></td>
+                        <td style="padding: 3px; border: 1px solid #ccc;"></td>
+                        <td style="padding: 3px; border: 1px solid #ccc;">{{ $item->remarks ?? '' }}</td>
                     </tr>
-
-                @else
-
-                    <tr>
-                        <td colspan="12" style="padding: 12px; text-align: center; border: 1px solid #ccc;">
-                            No qualifying semi-expendable property items found.<br>
-                            Criteria: Unit Price &le; &#8369;49,999.00<br>
-                            Total items in database: {{ $totalItems }}
-                            @if ($totalItems > 0)
-                                <br>Sample items:
-                                @foreach ($items->take(3) as $sample)
-                                    <br>- {{ $sample->description }} (&#8369;{{ number_format($sample->unit_price, 2) }}, {{ $sample->co_mooe }})
-                                @endforeach
-                            @endif
-                        </td>
-                    </tr>
-
-                @endif
+                @empty
+                    <tr><td colspan="20" style="padding: 12px; text-align: center; border: 1px solid #ccc;">No qualifying semi-expendable property items found.</td></tr>
+                @endforelse
             </tbody>
         </table>
     </div>
@@ -286,7 +198,7 @@ $classificationItems = $filteredItems->groupBy('division');
         <table style="width: 100%; border: none; margin-top: 8px;">
         <tr>
 
-        {{-- Certified Correct — 4 signatories --}}
+        {{-- Certified Correct Ã¢â‚¬â€ 4 signatories --}}
         <td style="width: 45%; vertical-align: top; border: none; padding-right: 12px;">
             <table style="width: 100%; border: none;">
 
@@ -380,8 +292,9 @@ $classificationItems = $filteredItems->groupBy('division');
 
     {{-- ===== FOOTER (matches PPE style) ===== --}}
     <div class="pdf-footer pdf-mt-2" style="margin-top: 8px; font-size: 10px; text-align: center; border-top: 1px solid #ccc; padding-top: 5px;">
-        Total Records: {{ $filteredItems->count() }} | Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Inventory Management System - MGB
+        Total Records: {{ $propertyItems->count() }} | Generated on: {{ now('Asia/Manila')->format('F d, Y h:i A') }} | Inventory Management System - MGB
     </div>
 
 </body>
 </html>
+

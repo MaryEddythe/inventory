@@ -50,6 +50,21 @@
 
         {{ $css }}
 
+        .property-report-table,
+        .property-report-table tbody {
+            page-break-inside: auto;
+        }
+
+        .property-report-table tbody tr {
+            page-break-inside: auto !important;
+            page-break-after: auto !important;
+        }
+
+        .pdf-signature-section {
+            page-break-before: always !important;
+            page-break-inside: avoid !important;
+        }
+
         .property-report-table {
             table-layout: fixed;
         }

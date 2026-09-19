@@ -99,6 +99,22 @@ body {
     page-break-after: auto;
 }
 
+/* Property rows should continue across pages instead of leaving unused space. */
+.property-report-table {
+    page-break-inside: auto;
+}
+
+.property-report-table tbody tr {
+    page-break-inside: auto;
+    page-break-after: auto;
+}
+
+.property-report-table + .pdf-signature-section,
+.pdf-signature-section {
+    page-break-before: always;
+    page-break-inside: avoid;
+}
+
 .pdf-text-right {
     text-align: right;
 }

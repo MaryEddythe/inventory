@@ -81,7 +81,29 @@
 
     {{-- ===== DETAILED PPE INVENTORY TABLE ===== --}}
     <div class="pdf-mt-3" style="margin: 8px 0;">
-        <table class="pdf-table pdf-table-striped" style="font-size: 5px; table-layout: fixed;">
+        <table class="pdf-table pdf-table-striped property-report-table" style="font-size: 4px; table-layout: fixed;">
+            <colgroup>
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 6%">
+                <col style="width: 11%">
+                <col style="width: 7%">
+                <col style="width: 5%">
+                <col style="width: 4%">
+                <col style="width: 4%">
+                <col style="width: 6%">
+                <col style="width: 6%">
+                <col style="width: 7%">
+                <col style="width: 3%">
+                <col style="width: 4%">
+                <col style="width: 3%">
+                <col style="width: 4%">
+                <col style="width: 6%">
+                <col style="width: 4%">
+                <col style="width: 3%">
+                <col style="width: 4%">
+                <col style="width: 5%">
+            </colgroup>
             <thead>
                 <tr>
                     <th colspan="20" class="pdf-bg-dark" style="padding: 4px; background-color: #333; color: white;">DETAILED INVENTORY LISTING</th>
@@ -273,4 +295,3 @@
 
 </body>
 </html>
-

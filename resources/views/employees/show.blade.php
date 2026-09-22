@@ -259,7 +259,7 @@
                 <div>
                     <p class="leave-section-eyebrow">Time off</p>
                     <h3 class="card-title h5 fw-bold mb-0">Leave Benefits</h3>
-                    <div class="text-muted small mt-1">Balances are shown in leave days. One approved leave day deducts one day from the corresponding balance.</div>
+                    <div class="text-muted small mt-1">Balances are shown in leave credits. Under the four-day workweek policy, one approved leave day deducts 1.25 days from the corresponding balance.</div>
                 </div>
                 <button type="button" onclick="openLeaveModal()" class="btn btn-primary btn-sm">Apply Leave</button>
             </div>

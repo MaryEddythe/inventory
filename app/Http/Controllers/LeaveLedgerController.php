@@ -232,7 +232,8 @@ class LeaveLedgerController extends Controller
                 if ((int) $cursor->year === $year) {
                     $month = (int) $cursor->month;
 
-                    $usage[$month][$application->leave_type] = ($usage[$month][$application->leave_type] ?? 0) + 1.25;
+                    $usage[$month][$application->leave_type] = ($usage[$month][$application->leave_type] ?? 0)
+                        + LeaveBalanceCalculator::MONTHLY_ACCRUAL_DAYS;
                 }
 
                 $cursor->addDay();

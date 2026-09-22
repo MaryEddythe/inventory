@@ -1,0 +1,20 @@
+Plan draft (PPE header → data alignment)
+
+- Problem found:
+  - `export-ppe-pdf.blade.php` has a table header that declares 13 columns via `colspan="13"`, but the header rows define a total of 12 logical columns (and also contains an extra nested <tr> tag: `<tr style=...><tr class="rpcsp-header-row">...`).
+  - PPE rows render 13 `<td>` cells (rowNumber + department_name + enduser + classification + description + serial + property_number + unit_price + co_mooe + date_acquired + remarks + badge/status + serviceability).
+  - Therefore PDF table columns misalign, producing “wrong data under PPE table header”.
+
+- Implement:
+  - Replace the PPE table header section with one that mirrors the 13 columns produced in the row body.
+  - Remove the invalid nested `<tr>`.
+  - Decide the header labels for the 13 columns to match actual cells.
+  - Update PPE row cells to match header order if necessary.
+
+- Files:
+  - Edit: `resources/views/inventory/export-ppe-pdf.blade.php` only.
+
+- Verification:
+  - Run a Blade syntax check / php -l if possible.
+  - Render a PPE export PDF and confirm each header label aligns with the intended data fields.
+

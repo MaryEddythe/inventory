@@ -156,9 +156,9 @@ class LeaveBalanceCalculator
             $leaveType = $this->canonicalLeaveType((string) $approvedApplication->leave_type);
 
             if ($leaveType === 'Vacation Leave') {
-                $vacationBalance -= $days * self::MONTHLY_ACCRUAL_DAYS;
+                $vacationBalance -= $this->leaveCreditDeduction($days);
             } elseif ($leaveType === 'Sick Leave') {
-                $sickBalance -= $days * self::MONTHLY_ACCRUAL_DAYS;
+                $sickBalance -= $this->leaveCreditDeduction($days);
             }
         }
 
@@ -172,10 +172,10 @@ class LeaveBalanceCalculator
         $requestedDays = $this->calendarDays($application);
         $leaveType = $this->canonicalLeaveType((string) $application->leave_type);
         $vacationLess = $leaveType === 'Vacation Leave'
-            ? $requestedDays * self::MONTHLY_ACCRUAL_DAYS
+            ? $this->leaveCreditDeduction($requestedDays)
             : 0;
         $sickLess = $leaveType === 'Sick Leave'
-            ? $requestedDays * self::MONTHLY_ACCRUAL_DAYS
+            ? $this->leaveCreditDeduction($requestedDays)
             : 0;
 
         return [
@@ -302,7 +302,10 @@ class LeaveBalanceCalculator
             while ($cursor->lte($end)) {
                 if ((int) $cursor->year === $year) {
                     $month = (int) $cursor->month;
-                    $usage[$month][$application->leave_type] = ($usage[$month][$application->leave_type] ?? 0) + 1;
+                    // Use the same four-day-workweek policy calculation as the
+                    // leave application certification/PDF.
+                    $usage[$month][$application->leave_type] = ($usage[$month][$application->leave_type] ?? 0)
+                        + $this->leaveCreditDeduction(1);
                 }
 
                 $cursor->addDay();
@@ -327,6 +330,11 @@ class LeaveBalanceCalculator
         $end = $application->date_to ? Carbon::parse($application->date_to) : $start;
 
         return ((int) $start->diffInDays($end)) + 1;
+    }
+
+    protected function leaveCreditDeduction(int $calendarDays): float
+    {
+        return $calendarDays * self::MONTHLY_ACCRUAL_DAYS;
     }
 
     protected function canonicalLeaveType(string $leaveType): string
